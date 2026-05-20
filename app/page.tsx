@@ -56,7 +56,7 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pb-28">
+    <div className="min-h-screen flex flex-col pb-56">
       <GlassHeader title="연애 사주" subtitle="별이 말해주는 당신의 연애운" />
 
       {/* 메인 배너 */}
@@ -157,20 +157,25 @@ export default function Page() {
       </div>
 
       {/* 하단 버튼 */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[390px] px-4">
-        <div className="relative">
-          {isReady && (
-            <div className="absolute -inset-1 rounded-xl bg-linear-to-r from-violet-500/50 via-cyan-500/50 to-pink-500/50 blur-lg opacity-80" />
-          )}
-          <GlassButton
-            variant="primary"
-            size="lg"
-            onClick={submit}
-            disabled={!isReady}
-            className="w-full rounded-xl"
-          >
-            ✨ 사주 보기
-          </GlassButton>
+      <div
+        className="fixed left-0 right-0 flex justify-center z-40"
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 100px)" }}
+      >
+        <div className="w-full max-w-[390px] px-4">
+          <div className="relative">
+            {isReady && (
+              <div className="absolute -inset-1 rounded-xl bg-linear-to-r from-violet-500/50 via-cyan-500/50 to-pink-500/50 blur-lg opacity-80" />
+            )}
+            <GlassButton
+              variant="primary"
+              size="lg"
+              onClick={submit}
+              disabled={!isReady}
+              className="w-full rounded-xl"
+            >
+              ✨ 사주 보기
+            </GlassButton>
+          </div>
         </div>
       </div>
 
@@ -220,7 +225,7 @@ function ResultView({
   onTabChange: (tab: NavTab) => void
 }) {
   return (
-    <div className="min-h-screen flex flex-col pb-28">
+    <div className="min-h-screen flex flex-col pb-56">
       <GlassHeader title="사주 결과" subtitle="당신의 연애운이에요" onBack={onBack} />
 
       <div className="px-4 pt-6 space-y-4 flex-1">

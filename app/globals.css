@@ -4,8 +4,17 @@
 * {
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }

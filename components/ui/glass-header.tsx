@@ -12,7 +12,7 @@ interface GlassHeaderProps {
 export function GlassHeader({ title, subtitle, onBack, className }: GlassHeaderProps) {
   return (
     <div className={cn("sticky top-0 z-50 backdrop-blur-2xl border-b border-white/10", "bg-white/5 shadow-[0_4px_32px_rgba(0,0,0,0.3)]", className)}>
-      <div className="px-5 pt-14 pb-4 flex items-center gap-3">
+      <div className="px-5 pb-4 flex items-center gap-3" style={{ paddingTop: "calc(env(safe-area-inset-top) + 48px)" }}>
         {onBack && (
           <button
             onClick={onBack}
