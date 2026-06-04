@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { GlassCard, GlassCardContent } from "@/components/ui/glass-card"
 import { GlassButton } from "@/components/ui/glass-button"
 import { GlassInput } from "@/components/ui/glass-input"
@@ -12,6 +13,7 @@ type Step = "form" | "loading" | "result"
 type NavTab = "home" | "history" | "profile"
 
 export default function Page() {
+  const router = useRouter()
   const [gender, setGender] = useState<"male" | "female" | "">("")
   const [birthDate, setBirthDate] = useState("")
   const [birthTime, setBirthTime] = useState("")
@@ -19,6 +21,15 @@ export default function Page() {
   const [result, setResult] = useState("")
   const [step, setStep] = useState<Step>("form")
   const [activeTab, setActiveTab] = useState<NavTab>("home")
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (!localStorage.getItem("phone_verified")) {
+      router.replace("/onboarding/verify")
+    } else if (!localStorage.getItem("onboarding_complete")) {
+      router.replace("/onboarding")
+    }
+  }, [])
 
   const isReady = gender !== "" && birthDate !== ""
 
@@ -249,7 +260,7 @@ function ResultView({
               <div className="w-1 h-5 rounded-full bg-linear-to-b from-violet-400 to-cyan-400" />
               <span className="text-white/70 text-sm font-semibold">연애 사주 분석</span>
             </div>
-            <p className="text-white/80 text-[13.5px] leading-[2] whitespace-pre-wrap font-medium">
+            <p className="text-white/80 text-[13.5px] leading-loose whitespace-pre-wrap font-medium">
               {result}
             </p>
           </GlassCardContent>

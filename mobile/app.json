@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "사주 에이전트",
+    "slug": "saju-agent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#1e1b4b"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ulruru.sajuagent",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.ulruru.sajuagent",
+      "adaptiveIcon": {
+        "backgroundColor": "#1e1b4b",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "INTERNET"
+      ],
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-splash-screen"
+    ]
+  }
+}

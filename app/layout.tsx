@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)" }} />
         </div>
 
-        <div className="relative w-full max-w-[390px] min-h-screen">
+        <div className="relative w-full max-w-[768px] min-h-screen">
           {children}
         </div>
       </body>
