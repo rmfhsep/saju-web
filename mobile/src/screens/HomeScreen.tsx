@@ -1,12 +1,26 @@
-import React, { useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, BackHandler, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import WebView from 'react-native-webview';
+import * as ScreenCapture from 'expo-screen-capture';
 import { WEB_URL } from '../config/env';
 
 export default function HomeScreen() {
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
+
+  ScreenCapture.usePreventScreenCapture();
+
+  useEffect(() => {
+    const sub = ScreenCapture.addScreenshotListener(() => {
+      Alert.alert(
+        '캡쳐 불가',
+        '이 화면은 개인정보 보호를 위해 캡쳐가 제한됩니다.',
+        [{ text: '확인' }]
+      );
+    });
+    return () => sub.remove();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
