@@ -1,4 +1,4 @@
-import { openai } from "@/lib/openai"
+import { getOpenAI } from "@/lib/openai"
 import { NextResponse } from "next/server"
 
 const SYSTEM_PROMPT = `당신은 30년 경력의 사주명리학 전문가입니다. 특히 연애·궁합·결혼운 분석에 특화되어 있습니다.
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 위 정보를 바탕으로 사주팔자를 구성하고, 연애운을 중심으로 상세히 분석해주세요.
 출생시간이 불명인 경우 년·월·일 기준으로 분석하되 시주 분석은 생략하세요.`
 
-  const result = await openai.chat.completions.create({
+  const result = await getOpenAI().chat.completions.create({
     model: "gpt-4.1",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
