@@ -93,6 +93,7 @@ export default function VerifyPage() {
 
   const rawPhone = phone.replace(/\D/g, "")
   const canSend = rawPhone.length === 11
+  const phoneTouched = rawPhone.length > 0
 
   const pwLengthOk = password.length >= 8 && password.length <= 12
   const pwHasLetter = /[a-zA-Z]/.test(password)
@@ -262,7 +263,32 @@ export default function VerifyPage() {
           </div>
         </div>
 
-        <div className="px-5 pt-4 pb-8 keyboard-safe-bottom">
+        <div className="px-5 pt-4 pb-8 keyboard-safe-bottom flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">휴대폰 번호</label>
+            <div
+              className={`h-[48px] rounded-[4px] px-4 flex items-center bg-white ${
+                phoneTouched && !canSend
+                  ? "border border-[#ff3b30]"
+                  : canSend
+                  ? "border-[#90b7ff]"
+                  : "border border-[#dbdcdf]"
+              }`}
+              style={canSend ? { border: "1.5px solid #90b7ff" } : {}}
+            >
+              <input
+                type="tel"
+                inputMode="numeric"
+                placeholder="010-0000-0000"
+                value={phone}
+                onChange={handlePhoneChange}
+                className="flex-1 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-transparent leading-normal tracking-[-0.32px]"
+              />
+            </div>
+            {phoneTouched && !canSend && (
+              <p className="text-[12px] text-[#ff3b30] leading-[1.4]">올바른 휴대폰 번호를 입력해주세요.</p>
+            )}
+          </div>
           <button
             onClick={handleSendSms}
             disabled={!canSend}
