@@ -301,9 +301,9 @@ export default function VerifyPage() {
         </h1>
 
         <div className="flex flex-col gap-5">
-          {/* 계정 (readonly) */}
+          {/* 아이디 (readonly) */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#0f0f10]">계정</label>
+            <label className="text-[14px] font-semibold text-[#0f0f10]">아이디</label>
             <div className="h-[52px] bg-[#f7f7f8] rounded-[8px] px-4 flex items-center justify-between">
               <span className="text-[15px] text-[#767676]">{phone}</span>
               <div className="w-6 h-6 bg-[#0073ff] rounded-full flex items-center justify-center">
@@ -396,30 +396,20 @@ export default function VerifyPage() {
             </h2>
 
             <div className="flex flex-col gap-0">
-              {/* 전체 동의 */}
-              <button
-                type="button"
-                onClick={toggleAll}
-                className="flex items-center gap-3 py-4 border-b border-[#f1f1f1]"
-              >
-                <Checkbox checked={allChecked} onChange={toggleAll} />
-                <span className="text-[16px] font-semibold text-[#0f0f10]">전체 동의</span>
-              </button>
-
-              {/* 개별 항목 */}
+              {/* 개별 항목 먼저 */}
               {TERMS.map((term) => (
                 <button
                   key={term.key}
                   type="button"
                   onClick={() => toggleTerm(term.key)}
-                  className="flex items-center gap-3 py-3"
+                  className="flex items-center gap-3 py-[14px]"
                 >
                   <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
                   <span className="text-[15px] text-[#0f0f10] flex-1 text-left">
-                    {term.label}
+                    {term.label}{" "}
                     {term.required
-                      ? <span className="text-[#0073ff] ml-1">(필수)</span>
-                      : <span className="text-[#999] ml-1">(선택)</span>
+                      ? <span className="text-[#0073ff] text-[13px]">필수</span>
+                      : null
                     }
                   </span>
                   <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
@@ -427,6 +417,18 @@ export default function VerifyPage() {
                   </svg>
                 </button>
               ))}
+
+              {/* 전체 동의 — 항목 아래 */}
+              <div className="mt-3 bg-[#f7f7f8] rounded-[10px] px-4">
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="flex items-center gap-3 py-[16px] w-full"
+                >
+                  <Checkbox checked={allChecked} onChange={toggleAll} />
+                  <span className="text-[16px] font-semibold text-[#0f0f10]">전체 동의</span>
+                </button>
+              </div>
             </div>
 
             <button

@@ -1,4 +1,5 @@
 import * as SplashScreenExpo from 'expo-splash-screen';
+import * as ScreenCapture from 'expo-screen-capture';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,9 +13,13 @@ export default function App() {
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
+    ScreenCapture.preventScreenCaptureAsync();
+    return () => { ScreenCapture.allowScreenCaptureAsync(); };
+  }, []);
+
+  useEffect(() => {
     async function prepare() {
       try {
-        // 앱 초기화 작업 (폰트 로드 등 여기에 추가)
         await new Promise(resolve => setTimeout(resolve, 100));
       } finally {
         setAppReady(true);

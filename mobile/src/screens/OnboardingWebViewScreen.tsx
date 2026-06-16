@@ -3,6 +3,7 @@ import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-na
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import * as Contacts from 'expo-contacts';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
@@ -17,6 +18,7 @@ const SCREEN_PATHS: Record<string, string> = {
   BirthInfo: '/onboarding/birth-info',
   SajuResult: '/onboarding/result',
   MatchPreview: '/onboarding/matches',
+  Blocking: '/onboarding/blocking',
   ProfileSetup: '/onboarding/profile',
 };
 
@@ -47,6 +49,29 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
     }, [navigation])
   );
 
+  async function handleRequestContacts() {
+    const { status } = await Contacts.requestPermissionsAsync();
+    if (status !== 'granted') {
+      webViewRef.current?.injectJavaScript(
+        `window.__onContactsReceived && window.__onContactsReceived([]); true;`
+      );
+      return;
+    }
+    const { data } = await Contacts.getContactsAsync({
+      fields: [Contacts.Fields.PhoneNumbers],
+    });
+    const phones: string[] = [];
+    for (const contact of data) {
+      for (const p of contact.phoneNumbers ?? []) {
+        const digits = (p.number ?? '').replace(/\D/g, '');
+        if (digits.length >= 9) phones.push(digits);
+      }
+    }
+    webViewRef.current?.injectJavaScript(
+      `window.__onContactsReceived && window.__onContactsReceived(${JSON.stringify(phones)}); true;`
+    );
+  }
+
   function handleMessage(event: WebViewMessageEvent) {
     try {
       const data = JSON.parse(event.nativeEvent.data);
@@ -61,6 +86,11 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
           ? `sms:${data.phone}&body=${encodeURIComponent(data.body)}`
           : `sms:${data.phone}?body=${encodeURIComponent(data.body)}`;
         Linking.openURL(smsUrl);
+        return;
+      }
+
+      if (data.type === 'requestContacts') {
+        handleRequestContacts();
         return;
       }
 

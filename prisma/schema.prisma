@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -11,11 +11,36 @@ model User {
   phone            String   @unique
   passwordHash     String
   name             String?
-  gender           String?  // "MALE" | "FEMALE"
-  calendarType     String?  // "SOLAR" | "LUNAR" | "LUNAR_LEAP"
-  birthDate        String?  // YYYYMMDD
+  gender           String?
+  calendarType     String?
+  birthDate        String?
   birthTime        String?
   birthTimeUnknown Boolean  @default(false)
+
+  termsAgreed      Boolean  @default(false)
+  marketingAgreed  Boolean  @default(false)
+
+  sajuResult       String?
+
+  nickname         String?
+  location         String?
+  job              String?
+  jobDetail        String?
+  height           Int?
+  smoking          String?
+  drinking         String?
+  datingPurpose    String?
+  politics         String?
+  religion         String?
+  income           String?
+  photos           String?
+  bioTags          String?
+  bio              String?
+
+  blockedPhones    String?
+  blockedCount     Int      @default(0)
+  profileComplete  Boolean  @default(false)
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

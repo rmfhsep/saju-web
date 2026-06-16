@@ -17,6 +17,7 @@ const SCREEN_PATHS: Record<string, string> = {
   BirthInfo:    '/onboarding/birth-info',
   SajuResult:   '/onboarding/result',
   MatchPreview: '/onboarding/matches',
+  Blocking:     '/onboarding/blocking',
   ProfileSetup: '/onboarding/profile',
   Home:         '/',
 }
@@ -43,6 +44,23 @@ export function bridgeBack() {
     return
   }
   window.history.back()
+}
+
+/**
+ * Request the native layer to read contacts and return phone numbers.
+ * Native responds by calling window.__onContactsReceived(phones: string[]).
+ */
+export function bridgeRequestContacts() {
+  const rn = getRN()
+  if (rn) {
+    rn.postMessage(JSON.stringify({ type: 'requestContacts' }))
+  }
+}
+
+/** Register a one-time handler for contacts returned from native. */
+export function onContactsReceived(callback: (phones: string[]) => void) {
+  if (typeof window === 'undefined') return
+  ;(window as Window & { __onContactsReceived?: (phones: string[]) => void }).__onContactsReceived = callback
 }
 
 /** Open the native SMS app with recipient and body pre-filled. */
