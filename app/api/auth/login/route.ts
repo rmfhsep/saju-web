@@ -12,12 +12,12 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.findUnique({ where: { phone } })
   if (!user) {
-    return NextResponse.json({ error: "invalid credentials" }, { status: 401 })
+    return NextResponse.json({ error: "USER_NOT_FOUND" }, { status: 401 })
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
-    return NextResponse.json({ error: "invalid credentials" }, { status: 401 })
+    return NextResponse.json({ error: "WRONG_PASSWORD" }, { status: 401 })
   }
 
   const token = await signToken({ userId: user.id, phone: user.phone })

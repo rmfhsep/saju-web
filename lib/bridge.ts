@@ -13,6 +13,7 @@ function getRN(): RNWebView | undefined {
 
 const SCREEN_PATHS: Record<string, string> = {
   Verify:       '/onboarding/verify',
+  Login:        '/onboarding/login',
   Landing:      '/onboarding',
   BirthInfo:    '/onboarding/birth-info',
   SajuResult:   '/onboarding/result',

@@ -6,22 +6,27 @@ import { bridgeNavigate } from "@/lib/bridge"
 export default function OnboardingLandingPage() {
   useEffect(() => {
     async function checkSession() {
+      const token = localStorage.getItem("auth_token")
+
+      if (!token) {
+        bridgeNavigate("Verify")
+        return
+      }
+
+      // 10초 타임아웃 — 네트워크 행 방지
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+
       try {
-        const token = localStorage.getItem("auth_token")
-
-        if (!token) {
-          bridgeNavigate("Verify")
-          return
-        }
-
         const res = await fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         })
+        clearTimeout(timeout)
 
         if (!res.ok) {
-          localStorage.removeItem("auth_token")
-          localStorage.removeItem("user_phone")
-          bridgeNavigate("Verify")
+          // 토큰이 있었으나 만료/무효 → 기존 유저이므로 재로그인 화면으로
+          bridgeNavigate("Login")
           return
         }
 
@@ -30,14 +35,14 @@ export default function OnboardingLandingPage() {
         if (user.profileComplete) {
           bridgeNavigate("Home")
         } else if (user.birthDate) {
-          // 출생 정보는 있지만 프로필 미완성 → 차단 화면부터
           bridgeNavigate("Blocking")
         } else {
-          // 등록만 완료, 출생 정보 미입력
           bridgeNavigate("BirthInfo")
         }
       } catch {
-        bridgeNavigate("Verify")
+        clearTimeout(timeout)
+        // 네트워크 오류 또는 타임아웃 → 재로그인 화면으로
+        bridgeNavigate("Login")
       }
     }
 
