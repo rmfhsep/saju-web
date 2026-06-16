@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
 
-const TOTAL_STEPS = 13
+const TOTAL_STEPS = 12
 
 type ProfileData = {
   nickname: string
@@ -72,11 +72,54 @@ const DEFAULT_TAGS = [
   "연락에 진심", "신뢰가 가장 중요",
 ]
 
+// ── Intro screen ───────────────────────────────────────────────────────────────
+
+function StepIntro({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+  return (
+    <div className="flex flex-col min-h-screen bg-white">
+      <div className="h-[54px] flex items-center px-4">
+        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+            <path d="M9 1L1 9L9 17" stroke="#0f0f10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div className="flex-1 px-5 flex flex-col items-center justify-center gap-6">
+        {/* App logo */}
+        <div className="w-[72px] h-[72px] rounded-[18px] bg-[#b6d0ff] flex items-center justify-center">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <path d="M20 8C14 8 9 13 9 19.5C9 23.5 11 27 14.5 29.5L13 33L17.5 30.5C18.3 30.7 19.1 30.8 20 30.8C26 30.8 31 25.8 31 19.5C31 13.2 26 8 20 8Z" fill="#1a73e8"/>
+            <path d="M15 20C15 20 17 22.5 20 22.5C23 22.5 25 20 25 20" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            <circle cx="16" cy="18" r="1.5" fill="white"/>
+            <circle cx="24" cy="18" r="1.5" fill="white"/>
+          </svg>
+        </div>
+        <div className="flex flex-col gap-3 text-center">
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">
+            인연을 추천받기 위한<br />프로필을 완성해주세요.
+          </h1>
+          <p className="text-[15px] text-[#6b6b6b] leading-relaxed">
+            내가 어떤 사람인지 솔직하게 작성할수록<br />더 잘 맞는 관계를 발견할 수 있어요.<br />좋은 인연을 만나기 위해 진솔하게 채워주세요.
+          </p>
+        </div>
+      </div>
+      <div className="px-5 pb-8 pt-4">
+        <button
+          onClick={onNext}
+          className="w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-tight bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80"
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Shared components ──────────────────────────────────────────────────────────
 
 function ProgressBar({ step }: { step: number }) {
   return (
-    <div className="flex gap-[3px] px-5 py-3">
+    <div className="flex gap-[4px] px-5 py-3">
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
         <div
           key={i}
@@ -104,11 +147,11 @@ function Header({ onBack }: { onBack: () => void }) {
 
 function NextBtn({ active, onClick, label = "다음" }: { active: boolean; onClick: () => void; label?: string }) {
   return (
-    <div className="px-5 pb-10 pt-4 shrink-0">
+    <div className="px-5 pb-8 pt-4 shrink-0 keyboard-safe-bottom">
       <button
         onClick={active ? onClick : undefined}
-        className={`w-full h-[52px] rounded-[8px] text-[16px] font-semibold transition-colors ${
-          active ? "bg-[#aecbff] text-[#0f0f10] active:opacity-80" : "bg-[#f0f0f0] text-[#9e9e9e]"
+        className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-tight transition-colors ${
+          active ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#f4f4f5] text-[#a0a0a0]"
         }`}
       >
         {label}
@@ -122,16 +165,16 @@ function RadioRow({ label, selected, onClick }: { label: string; selected: boole
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 h-[56px] rounded-[10px] transition-colors ${
+      className={`w-full flex items-center gap-3 px-4 h-[48px] rounded-[10px] transition-colors ${
         selected ? "bg-[#eef2ff] border border-[#aecbff]" : "bg-[#f5f5f7] border border-transparent"
       }`}
     >
-      <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center shrink-0 ${
+      <div className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center shrink-0 ${
         selected ? "border-[#1a73e8]" : "border-[#ccc]"
       }`}>
-        {selected && <div className="w-[10px] h-[10px] rounded-full bg-[#1a73e8]" />}
+        {selected && <div className="w-[9px] h-[9px] rounded-full bg-[#1a73e8]" />}
       </div>
-      <span className={`text-[16px] ${selected ? "font-semibold text-[#0f0f10]" : "font-normal text-[#4a4a4a]"}`}>
+      <span className={`text-[15px] ${selected ? "font-semibold text-[#0f0f10]" : "font-normal text-[#4a4a4a]"}`}>
         {label}
       </span>
     </button>
@@ -152,7 +195,7 @@ function StepNickname({ data, onChange, onNext, onBack, step }: {
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-8">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">닉네임을 입력해주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] mb-1">닉네임을 입력해주세요.</h1>
           <p className="mt-2 text-[14px] text-[#6b6b6b] leading-relaxed">
             내 프로필에 보일 이름이에요.<br />한글 및 영문으로 작성해주세요.
           </p>
@@ -165,7 +208,7 @@ function StepNickname({ data, onChange, onNext, onBack, step }: {
               placeholder={`${max}자 이하 한글 및 영문으로 입력해주세요.`}
               value={data.nickname}
               onChange={e => onChange({ nickname: e.target.value.slice(0, max) })}
-              className="w-full h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
+              className="w-full h-[48px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-[#9e9e9e]">
               {data.nickname.length}/{max}
@@ -257,8 +300,8 @@ function StepLocation({ data, onChange, onNext, onBack, step }: {
       <Header onBack={onBack} />
       <ProgressBar step={step} />
       <div className="px-5 pt-6 pb-4 shrink-0">
-        <h1 className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px] mb-[48px]">거주지를 알려주세요.</h1>
-        <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[4px] px-4">
+        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] mb-6">거주지를 알려주세요.</h1>
+        <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[8px] px-4">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="7" stroke="#1f1f1f" strokeWidth="1.6"/>
             <path d="M16.5 16.5L20 20" stroke="#1f1f1f" strokeWidth="1.6" strokeLinecap="round"/>
@@ -293,14 +336,14 @@ function StepLocation({ data, onChange, onNext, onBack, step }: {
               <button
                 key={loc}
                 onClick={() => { onChange({ location: loc }); setQ(loc) }}
-                className="w-full flex items-center justify-between py-[14px] border-b border-[#f4f4f5] text-left"
+                className="w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-left"
               >
-                <span className="text-[14px] tracking-[-0.14px] leading-normal text-[#1f1f1f] font-medium">
+                <span className={`text-[15px] tracking-[-0.15px] leading-normal font-medium ${selected ? "text-[#1a73e8]" : "text-[#1f1f1f]"}`}>
                   {loc}
                 </span>
                 {selected && (
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4 10.5l4.5 4.5L16 6" stroke="#1a75ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M4 10.5l4.5 4.5L16 6" stroke="#1a73e8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
               </button>
@@ -332,7 +375,7 @@ function StepJob({ data, onChange, onNext, onBack, step }: {
         <Header onBack={() => { setShowPro(false); onChange({ jobDetail: "" }) }} />
         <ProgressBar step={step} />
         <div className="px-5 pt-6 shrink-0">
-          <h1 className="text-[28px] font-bold text-[#0f0f10]">전문직 종류를 선택해주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">전문직 종류를 선택해주세요.</h1>
         </div>
         <div className="flex-1 overflow-y-auto px-5 mt-4 flex flex-col gap-2">
           {PROFESSIONALS.map(p => (
@@ -349,8 +392,8 @@ function StepJob({ data, onChange, onNext, onBack, step }: {
       <Header onBack={onBack} />
       <ProgressBar step={step} />
       <div className="px-5 pt-6 flex flex-col gap-4 shrink-0">
-        <h1 className="text-[28px] font-bold text-[#0f0f10]">직업을 알려주세요.</h1>
-        <div className="flex items-center gap-2 h-[48px] border border-[#e0e0e0] rounded-[8px] px-3 bg-white">
+        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">직업을 알려주세요.</h1>
+        <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[8px] px-4 border-none">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="7" cy="7" r="5.5" stroke="#9e9e9e" strokeWidth="1.4"/>
             <path d="M11 11L14 14" stroke="#9e9e9e" strokeWidth="1.4" strokeLinecap="round"/>
@@ -360,7 +403,7 @@ function StepJob({ data, onChange, onNext, onBack, step }: {
             placeholder="업종 검색"
             value={q}
             onChange={e => setQ(e.target.value)}
-            className="flex-1 text-[15px] text-[#0f0f10] placeholder:text-[#9e9e9e] outline-none"
+            className="flex-1 text-[15px] text-[#0f0f10] placeholder:text-[#9e9e9e] outline-none bg-transparent"
           />
         </div>
       </div>
@@ -369,16 +412,20 @@ function StepJob({ data, onChange, onNext, onBack, step }: {
           <button
             key={job.id}
             onClick={() => selectJob(job.id, job.hasDetail)}
-            className={`w-full flex items-center justify-between py-[14px] border-b border-[#f0f0f0] text-[16px] transition-colors ${
-              data.job === job.id ? "text-[#1a73e8] font-semibold" : "text-[#0f0f10]"
+            className={`w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-[15px] transition-colors ${
+              data.job === job.id ? "text-[#1a73e8] font-semibold" : "text-[#0f0f10] font-medium"
             }`}
           >
             {job.id}
-            {job.hasDetail && (
+            {job.hasDetail ? (
               <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                <path d="M1 1l5 5-5 5" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1 1l5 5-5 5" stroke="#b0b0b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            )}
+            ) : data.job === job.id ? (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10.5l4.5 4.5L16 6" stroke="#1a73e8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : null}
           </button>
         ))}
       </div>
@@ -397,7 +444,7 @@ function StepHeight({ data, onChange, onNext, onBack, step }: {
       <Header onBack={onBack} />
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-8">
-        <h1 className="text-[28px] font-bold text-[#0f0f10]">키를 알려주세요.</h1>
+        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">키를 알려주세요.</h1>
         <div className="flex items-center gap-3">
           <input
             type="text"
@@ -405,9 +452,9 @@ function StepHeight({ data, onChange, onNext, onBack, step }: {
             placeholder="숫자만 입력해주세요."
             value={data.height}
             onChange={e => onChange({ height: e.target.value.replace(/\D/g, "").slice(0, 3) })}
-            className="flex-1 h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
+            className="w-[295px] h-[48px] border border-[#d8d8d8] rounded-[8px] px-4 text-[15px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
           />
-          <span className="text-[16px] font-semibold text-[#0f0f10]">cm</span>
+          <span className="text-[15px] font-medium text-[#0f0f10]">cm</span>
         </div>
       </div>
       <NextBtn active={valid} onClick={onNext} />
@@ -419,12 +466,16 @@ function StepRadio({ title, options, value, onChange, onNext, onBack, step }: {
   title: string; options: string[]; value: string
   onChange: (v: string) => void; onNext: () => void; onBack: () => void; step: number
 }) {
+  useEffect(() => {
+    if (!value && options.length > 0) onChange(options[0])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header onBack={onBack} />
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5">
-        <h1 className="text-[28px] font-bold text-[#0f0f10]">{title}</h1>
+        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">{title}</h1>
         <div className="flex flex-col gap-[10px]">
           {options.map(opt => (
             <RadioRow key={opt} label={opt} selected={value === opt} onClick={() => onChange(opt)} />
@@ -436,51 +487,43 @@ function StepRadio({ title, options, value, onChange, onNext, onBack, step }: {
   )
 }
 
+function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-3 px-4 h-[48px] rounded-[10px] transition-colors text-left ${
+        selected ? "bg-[#eef2ff] border border-[#aecbff]" : "bg-[#f5f5f7] border border-transparent"
+      }`}
+    >
+      <div className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "border-[#1a73e8]" : "border-[#ccc]"}`}>
+        {selected && <div className="w-[9px] h-[9px] rounded-full bg-[#1a73e8]" />}
+      </div>
+      <span className={`text-[14px] ${selected ? "font-semibold text-[#0f0f10]" : "text-[#4a4a4a]"}`}>{opt}</span>
+    </button>
+  )
+}
+
 function StepIncome({ data, onChange, onNext, onBack, step }: {
   data: ProfileData; onChange: (d: Partial<ProfileData>) => void
   onNext: () => void; onBack: () => void; step: number
 }) {
-  const grid = INCOME_OPTIONS.slice(0, 8)
-  const last = INCOME_OPTIONS[8]
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header onBack={onBack} />
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0f0f10]">연봉을 알려주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">연봉을 알려주세요.</h1>
           <p className="mt-1 text-[13px] text-[#e53935]">연봉 정보는 프로필에 공개되지 않아요.</p>
         </div>
-        <div className="grid grid-cols-2 gap-[10px]">
-          {grid.map(opt => {
-            const sel = data.income === opt
-            return (
-              <button
-                key={opt}
-                onClick={() => onChange({ income: opt })}
-                className={`flex items-center gap-3 px-4 h-[52px] rounded-[10px] transition-colors text-left ${
-                  sel ? "bg-[#eef2ff] border border-[#aecbff]" : "bg-[#f5f5f7] border border-transparent"
-                }`}
-              >
-                <div className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center shrink-0 ${sel ? "border-[#1a73e8]" : "border-[#ccc]"}`}>
-                  {sel && <div className="w-[9px] h-[9px] rounded-full bg-[#1a73e8]" />}
-                </div>
-                <span className={`text-[14px] ${sel ? "font-semibold text-[#0f0f10]" : "text-[#4a4a4a]"}`}>{opt}</span>
-              </button>
-            )
-          })}
+        {/* 2-column grid for all 9 options; 9th item sits in the left column naturally */}
+        <div className="grid grid-cols-2 gap-[8px]">
+          {INCOME_OPTIONS.slice(0, 8).map(opt => (
+            <IncomeCell key={opt} opt={opt} selected={data.income === opt} onClick={() => onChange({ income: opt })} />
+          ))}
+          {/* 9th item in left column only */}
+          <IncomeCell opt={INCOME_OPTIONS[8]} selected={data.income === INCOME_OPTIONS[8]} onClick={() => onChange({ income: INCOME_OPTIONS[8] })} />
         </div>
-        <button
-          onClick={() => onChange({ income: last })}
-          className={`flex items-center gap-3 px-4 h-[52px] rounded-[10px] text-left transition-colors ${
-            data.income === last ? "bg-[#eef2ff] border border-[#aecbff]" : "bg-[#f5f5f7] border border-transparent"
-          }`}
-        >
-          <div className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${data.income === last ? "border-[#1a73e8]" : "border-[#ccc]"}`}>
-            {data.income === last && <div className="w-[9px] h-[9px] rounded-full bg-[#1a73e8]" />}
-          </div>
-          <span className={`text-[14px] ${data.income === last ? "font-semibold text-[#0f0f10]" : "text-[#4a4a4a]"}`}>{last}</span>
-        </button>
       </div>
       <NextBtn active={!!data.income} onClick={onNext} />
     </div>
@@ -513,50 +556,54 @@ function StepPhotos({ data, onChange, onNext, onBack, step }: {
     <div className="flex flex-col min-h-screen bg-white">
       <Header onBack={onBack} />
       <ProgressBar step={step} />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-5">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-4">
         <div>
-          <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.35]">프로필 사진을 2장 이상<br />등록해주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">프로필 사진을 2장 이상<br />등록해주세요.</h1>
           <p className="mt-2 text-[14px] text-[#6b6b6b]">정면 사진 2장은 필수예요.</p>
           <p className="mt-[2px] text-[13px] text-[#e53935]">가이드에 위배되는 사진은 경고를 받을 수 있습니다.</p>
-          <button className="mt-2 px-3 py-1 border border-[#d0d0d0] rounded-full text-[13px] text-[#6b6b6b]">
+          <button className="mt-3 px-4 h-[28px] border border-[#d0d0d0] rounded-full text-[13px] text-[#6b6b6b] flex items-center">
             사진 등록 가이드
           </button>
         </div>
         <div className="flex flex-col gap-[8px]">
+          {/* Large required slots — square, ~163.5px each with 8px gap */}
           <div className="flex gap-[8px]">
             {[0, 1].map(i => (
               <button
                 key={i}
                 onClick={() => openSlot(i)}
-                className="relative flex-1 rounded-[10px] border-2 border-dashed border-[#d0d0d0] bg-[#f8f8f8] flex flex-col items-center justify-center overflow-hidden"
-                style={{ aspectRatio: "3/4", minHeight: "160px" }}
+                className="relative flex-1 rounded-[10px] border-[1.5px] border-dashed border-[#d0d0d0] bg-[#f5f5f7] flex items-center justify-center overflow-hidden"
+                style={{ aspectRatio: "1/1" }}
               >
                 {slots[i] ? (
                   <img src={slots[i]} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 ) : (
                   <>
-                    <span className="absolute top-2 left-2 bg-[#1a73e8] text-white text-[11px] font-bold px-2 py-[2px] rounded-full">필수</span>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 5v14M5 12h14" stroke="#ccc" strokeWidth="2" strokeLinecap="round"/>
+                    <span className="absolute top-2 left-2 bg-[#1a73e8] text-white text-[11px] font-semibold px-2 py-[2px] rounded-full leading-none">필수</span>
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                      <circle cx="16" cy="16" r="15" stroke="#d0d0d0" strokeWidth="1.5"/>
+                      <path d="M16 10v12M10 16h12" stroke="#c0c0c0" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                   </>
                 )}
               </button>
             ))}
           </div>
+          {/* Small optional slots — square, ~106px each with 8px gap */}
           <div className="flex gap-[8px]">
             {[2, 3, 4].map(i => (
               <button
                 key={i}
                 onClick={() => openSlot(i)}
-                className="relative flex-1 rounded-[10px] border-2 border-dashed border-[#d0d0d0] bg-[#f8f8f8] flex items-center justify-center overflow-hidden"
-                style={{ aspectRatio: "3/4", minHeight: "110px" }}
+                className="relative flex-1 rounded-[10px] border-[1.5px] border-dashed border-[#d0d0d0] bg-[#f5f5f7] flex items-center justify-center overflow-hidden"
+                style={{ aspectRatio: "1/1" }}
               >
                 {slots[i] ? (
                   <img src={slots[i]} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 5v14M5 12h14" stroke="#ccc" strokeWidth="2" strokeLinecap="round"/>
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="15" stroke="#d0d0d0" strokeWidth="1.5"/>
+                    <path d="M16 10v12M10 16h12" stroke="#c0c0c0" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
                 )}
               </button>
@@ -604,18 +651,18 @@ function StepBioTags({ data, onChange, onNext, onBack, step }: {
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5 overflow-y-auto pb-4">
         <div>
-          <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.35]">자기소개를 작성을 위해<br />태그를 선택해주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">자기소개를 작성을 위해<br />태그를 선택해주세요.</h1>
           <p className="mt-2 text-[14px] text-[#6b6b6b] leading-relaxed">
             입력한 출생 정보를 분석해 나의 연애 성향을 기반으로 자동 생성된 태그예요. 원하는 태그를 3개 선택하고 나에 대한 소개를 더 상세하게 작성해주세요.
           </p>
           <p className="mt-2 text-[13px] font-semibold text-[#1a73e8]">3개 선택 필수</p>
         </div>
-        <div className="flex flex-wrap gap-[10px]">
+        <div className="flex flex-wrap gap-[8px]">
           {allTags.map(tag => {
             const sel = data.bioTags.includes(tag)
             return (
               <button key={tag} onClick={() => toggleTag(tag)}
-                className={`px-4 py-2 rounded-full border text-[14px] font-medium transition-colors ${
+                className={`px-4 h-[36px] rounded-full border text-[14px] font-medium transition-colors flex items-center ${
                   sel ? "bg-[#0f0f10] border-[#0f0f10] text-white" : "bg-white border-[#d0d0d0] text-[#0f0f10]"
                 }`}
               >
@@ -638,7 +685,7 @@ function StepBioTags({ data, onChange, onNext, onBack, step }: {
             <button onClick={addCustom} className="px-4 h-[44px] bg-[#0f0f10] text-white rounded-[8px] text-[14px] font-semibold">추가</button>
           </div>
         ) : (
-          <button onClick={() => setShowCustom(true)} className="px-4 py-2 rounded-full border border-[#d0d0d0] text-[14px] font-medium text-[#0f0f10] w-fit">
+          <button onClick={() => setShowCustom(true)} className="px-4 h-[36px] rounded-full border border-[#d0d0d0] text-[14px] font-medium text-[#0f0f10] w-fit flex items-center">
             태그 직접 입력
           </button>
         )}
@@ -665,9 +712,9 @@ function StepBio({ data, onChange, onNext, onBack, step }: {
       <ProgressBar step={step} />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5 overflow-y-auto pb-4">
         <div>
-          <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.35]">자기소개를 작성해주세요.</h1>
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">선택한 태그를 바탕으로<br />나를 더 자세히 소개해주세요.</h1>
           <p className="mt-2 text-[14px] text-[#6b6b6b] leading-relaxed">
-            선택한 태그를 바탕으로 나를 더 자세히 소개해주세요.<br />자세히 쓸수록 나와 잘 맞는 사람을 만날 확률이 높아져요.
+            자세히 쓸수록 나와 잘 맞는 사람을 만날 확률이 높아져요.
           </p>
         </div>
         {data.bioTags.map(tag => (
@@ -693,7 +740,7 @@ function StepBio({ data, onChange, onNext, onBack, step }: {
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const [data, setData] = useState<ProfileData>({
     nickname: "", location: "", job: "", jobDetail: "",
     height: "", smoking: "", drinking: "", datingPurpose: "",
@@ -704,12 +751,13 @@ export default function ProfilePage() {
   function update(d: Partial<ProfileData>) { setData(prev => ({ ...prev, ...d })) }
 
   function next() {
-    if (step < TOTAL_STEPS) setStep(s => s + 1)
+    // TOTAL_STEPS=12 are the form steps; step 13 is the bio writing step
+    if (step < TOTAL_STEPS + 1) setStep(s => s + 1)
     else finish()
   }
 
   function back() {
-    if (step === 1) bridgeBack()
+    if (step === 0) bridgeBack()
     else setStep(s => s - 1)
   }
 
@@ -723,8 +771,11 @@ export default function ProfilePage() {
     bridgeNavigate("Home")
   }
 
-  const props = { data, onChange: update, onNext: next, onBack: back, step }
+  // progress bar shows 1–12; step 0 (intro) has no bar, step 13 (bio writing) shares 12
+  const displayStep = Math.min(Math.max(step, 1), TOTAL_STEPS)
+  const props = { data, onChange: update, onNext: next, onBack: back, step: displayStep }
 
+  if (step === 0)  return <StepIntro onNext={next} onBack={bridgeBack} />
   if (step === 1)  return <StepNickname {...props} />
   if (step === 2)  return <StepLocation {...props} />
   if (step === 3)  return <StepJob {...props} />
@@ -737,5 +788,6 @@ export default function ProfilePage() {
   if (step === 10) return <StepIncome {...props} />
   if (step === 11) return <StepPhotos {...props} />
   if (step === 12) return <StepBioTags {...props} />
-  return <StepBio {...props} />
+  if (step === 13) return <StepBio {...props} />
+  return null
 }

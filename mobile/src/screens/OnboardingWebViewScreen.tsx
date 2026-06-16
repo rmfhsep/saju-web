@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
@@ -59,6 +60,8 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
     }
     const { data } = await Contacts.getContactsAsync({
       fields: [Contacts.Fields.PhoneNumbers],
+      pageSize: 10000,
+      pageOffset: 0,
     });
     const phones: string[] = [];
     for (const contact of data) {
@@ -111,7 +114,7 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <WebView
         ref={webViewRef}
         source={{ uri: url }}
@@ -122,13 +125,14 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
         javaScriptEnabled
         domStorageEnabled
         allowsBackForwardNavigationGestures={false}
+        automaticallyAdjustContentInsets={false}
       />
       {loading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#aecbff" />
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

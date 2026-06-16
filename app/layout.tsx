@@ -17,6 +17,20 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var vv = window.visualViewport;
+            if (!vv) return;
+            function update() {
+              var kh = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+              document.documentElement.style.setProperty('--keyboard-height', kh + 'px');
+            }
+            vv.addEventListener('resize', update);
+            vv.addEventListener('scroll', update);
+          })();
+        `}} />
+      </head>
       <body
         className="min-h-screen flex justify-center"
         style={{ background: "linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #1a0533 70%, #0f0c29 100%)" }}

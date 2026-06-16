@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
+import { signToken } from "@/lib/auth"
 
 const PHONE_RE = /^01[0-9]{8,9}$/
 const PW_LETTER = /[a-zA-Z]/
@@ -23,15 +24,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "password must contain letters and numbers" }, { status: 400 })
     }
 
+    const passwordHash = await bcrypt.hash(password, 10)
+
     const existing = await prisma.user.findUnique({ where: { phone } })
+
+    let userId: number
+    let isNew: boolean
+
     if (existing) {
-      return NextResponse.json({ error: "already registered" }, { status: 409 })
+      // SMS 인증을 통해 본인 확인이 완료됐으므로 비밀번호 재설정 후 로그인
+      await prisma.user.update({
+        where: { phone },
+        data: { passwordHash },
+      })
+      userId = existing.id
+      isNew = false
+    } else {
+      const user = await prisma.user.create({ data: { phone, passwordHash } })
+      userId = user.id
+      isNew = true
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
-    const user = await prisma.user.create({ data: { phone, passwordHash } })
+    const token = await signToken({ userId, phone })
 
-    return NextResponse.json({ id: user.id, phone: user.phone }, { status: 201 })
+    return NextResponse.json(
+      { id: userId, phone, token, isNew },
+      { status: isNew ? 201 : 200 }
+    )
   } catch {
     return NextResponse.json({ error: "server error" }, { status: 500 })
   }

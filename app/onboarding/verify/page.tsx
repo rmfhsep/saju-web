@@ -20,10 +20,10 @@ const OCTOMO_NUMBER = "16663538"
 const OCTOMO_DISPLAY = "1666-3538"
 
 const TERMS = [
-  { key: "service", label: "이용 약관 동의", required: true },
-  { key: "privacy", label: "개인정보 수집 및 이용 동의", required: true },
-  { key: "sensitive", label: "민감정보 수집 및 이용 동의", required: true },
-  { key: "marketing", label: "마케팅 정보 수신 동의", required: false },
+  { key: "service", label: "이용 약관", suffix: " 동의", required: true },
+  { key: "privacy", label: "개인정보 수집 및 이용", suffix: " 동의", required: true },
+  { key: "sensitive", label: "민감정보 수집 및 이용", suffix: " 동의", required: true },
+  { key: "marketing", label: "마케팅 정보 수신", suffix: " 동의", required: false },
 ] as const
 
 type TermKey = typeof TERMS[number]["key"]
@@ -43,25 +43,33 @@ function EyeIcon({ visible }: { visible: boolean }) {
   )
 }
 
-function CheckIcon() {
-  return (
-    <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-      <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
+// Square checkbox matching Figma: rounded-[4px], #e1e2e4 border off, #b6d0ff fill on
 function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
       type="button"
       onClick={onChange}
-      className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-        checked ? "bg-[#0073ff] border-[#0073ff]" : "border-[#d8d8d8]"
+      className={`w-[20px] h-[20px] rounded-[4px] flex items-center justify-center shrink-0 transition-colors ${
+        checked ? "bg-[#b6d0ff]" : "border border-[#e1e2e4]"
       }`}
     >
-      {checked && <CheckIcon />}
+      {checked && (
+        <svg width="7.5" height="5" viewBox="0 0 7.5 5" fill="none">
+          <path d="M1 2.5L3 4.5L6.5 1" stroke="#1f1f1f" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
     </button>
+  )
+}
+
+// Solid blue circle check icon for the account field
+function CircleCheck() {
+  return (
+    <div className="w-[24px] h-[24px] rounded-full bg-[#1a75ff] flex items-center justify-center shrink-0">
+      <svg width="7.5" height="5" viewBox="0 0 7.5 5" fill="none">
+        <path d="M1 2.5L3 4.5L6.5 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
   )
 }
 
@@ -158,9 +166,15 @@ export default function VerifyPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: rawPhone, password }),
       })
-      if (res.ok || res.status === 409) {
+      if (res.ok) {
+        const data = await res.json()
+        if (data.token) localStorage.setItem("auth_token", data.token)
         localStorage.setItem("user_phone", rawPhone)
-        bridgeNavigate("BirthInfo")
+        if (data.isNew === false) {
+          bridgeNavigate("BirthInfo")
+        } else {
+          bridgeNavigate("BirthInfo")
+        }
       }
     } finally {
       setSubmitting(false)
@@ -170,79 +184,90 @@ export default function VerifyPage() {
   // ── Step: phone ──────────────────────────────────────────────
   if (step === "phone") {
     return (
-      <div className="flex flex-col min-h-screen">
-        <div className="h-[54px] flex items-center px-4">
-          <button onClick={() => bridgeBack()} className="w-8 h-8 flex items-center justify-center text-[28px] text-[#0f0f10] leading-none">‹</button>
-        </div>
+      <div className="flex flex-col min-h-screen bg-white">
+        {/* status bar spacer */}
+        <div className="h-[44px]" />
 
-        <div className="flex-1 px-5 pt-4 flex flex-col gap-6 overflow-y-auto pb-4">
-          <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.3]">
-            휴대폰 번호 인증으로<br />간편하게 가입해요.
-          </h1>
-
-          {/* 전화번호 입력 */}
-          <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#0f0f10]">휴대폰 번호</label>
-            <input
-              type="tel"
-              inputMode="numeric"
-              placeholder="010-0000-0000"
-              value={phone}
-              onChange={handlePhoneChange}
-              className="h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 text-[15px] text-[#0f0f10] placeholder:text-[#bbb] outline-none focus:border-[#0f0f10] bg-white tracking-wider"
-            />
-            {phone.length > 0 && !canSend && (
-              <p className="text-[12px] text-[#ff3b30]">올바른 휴대폰 번호를 입력해주세요.</p>
-            )}
+        <div className="flex-1 px-5 pt-[52px] flex flex-col gap-[48px] overflow-y-auto pb-4">
+          {/* title + instructions */}
+          <div className="flex flex-col gap-3">
+            <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+              휴대폰 번호 인증으로<br />간편하게 가입해요.
+            </h1>
+            <ol className="list-decimal flex flex-col gap-0 text-[14px] text-[#777] leading-normal tracking-[-0.14px] pl-[21px]">
+              <li>하단 &apos;인증 코드 보내기&apos; 버튼을 눌러주세요.</li>
+              <li>이동한 메시지 작성 창에서,<br />인증 코드 메시지가 자동으로 입력되어 있어요.</li>
+              <li>인증 메시지를 수정 없이 전송 후,<br />화면으로 다시 돌아와 다음 절차를 진행해주세요.</li>
+            </ol>
           </div>
 
-          <ol className="flex flex-col gap-2">
-            {[
-              "하단 '인증 코드 보내기' 버튼을 눌러주세요.",
-              "이동한 메시지 작성 창에서,\n인증 코드 메시지가 자동으로 입력되어 있어요.",
-              "인증 메시지를 수정 없이 전송 후,\n화면으로 다시 돌아와 다음 절차를 진행해주세요.",
-            ].map((text, i) => (
-              <li key={i} className="flex gap-2 text-[15px] text-[#0f0f10] leading-[1.5]">
-                <span className="shrink-0">{i + 1}.</span>
-                <span style={{ whiteSpace: "pre-line" }}>{text}</span>
-              </li>
-            ))}
-          </ol>
+          {/* SMS preview illustration */}
+          <div className="flex flex-col gap-1">
+            <div className="relative h-[248px] overflow-hidden">
+              {/* Phone message bubble background */}
+              <div className="absolute left-[41px] top-[33px]">
+                {/* Rounded top of phone */}
+                <div
+                  className="absolute left-[62px] top-0 w-[201px] h-[163px] bg-white rounded-tl-[28px] rounded-tr-[28px]"
+                  style={{ border: "8px solid #e1e3e6", borderBottom: "none" }}
+                />
+                <p className="absolute left-[133px] top-[17px] text-[11px] font-bold text-[#1b1c1e] whitespace-nowrap">
+                  새로운 메시지
+                </p>
+                <p className="absolute left-[78px] top-[49px] text-[9px] whitespace-nowrap">
+                  <span className="text-[#878a93]">받는 사람 : </span>
+                  <span className="text-[#1a75ff]">{OCTOMO_DISPLAY}</span>
+                </p>
+                {/* dividers */}
+                <div className="absolute left-[70px] top-[41px] w-[185px] h-px bg-[#e1e3e6]" />
+                <div className="absolute left-[70px] top-[71px] w-[185px] h-px bg-[#e1e3e6]" />
 
-          {/* SMS preview card */}
-          <div className="relative mx-2 mt-2">
-            <div className="bg-[#f2f2f2] rounded-[16px] px-5 py-4 flex flex-col gap-1 shadow-sm">
-              <p className="text-center text-[15px] font-medium text-[#0f0f10]">새로운 메시지</p>
-              <p className="text-[13px] text-[#0073ff]">받는 사람 : {OCTOMO_DISPLAY}</p>
-              <div className="mt-2 bg-white rounded-[12px] p-3 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-[13px] text-[#0f0f10] font-medium">[마주] 인증문자 보내기</p>
-                  <p className="text-[26px] font-bold text-[#0f0f10] tracking-widest">{code}</p>
+                {/* SMS card */}
+                <div className="absolute left-[41px] top-[95px] w-[242px] h-[79px] bg-white rounded-[6px] border border-[#dfdfdf] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.08)] flex items-center justify-between px-3">
+                  <div>
+                    <p className="text-[11px] text-[#5a5c63]">[마주] 인증문자 보내기</p>
+                    <p className="text-[20px] font-semibold text-[#111] tracking-widest mt-0.5">{code}</p>
+                  </div>
+                  {/* Green send button */}
+                  <div className="relative w-[50px] h-[35px] flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#e2ffdf] rounded-[50px]" />
+                    <div className="absolute inset-[8%_8%] bg-[#b7ffb1] rounded-[50px]" />
+                    <div className="absolute inset-[16%_16%] bg-[#41de35] rounded-[50px]" />
+                    <svg className="relative z-10" width="10" height="13" viewBox="0 0 10 13" fill="none">
+                      <path d="M5 12V1M5 1L1 5M5 1L9 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-[#34c759] flex items-center justify-center">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M9 14.25V3.75M9 3.75L4.5 8.25M9 3.75L13.5 8.25" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+
+                {/* Tooltip bubble */}
+                <div className="absolute left-[157px] top-[62px] w-[146px]">
+                  <div className="bg-[#1a75ff] rounded-[4px] px-3 py-2 flex items-center justify-center min-h-[56px]">
+                    <p className="text-[14px] text-white leading-[1.429] text-center">
+                      입력 된 문자를 보내면<br /><span className="font-bold">본인인증</span>이 돼요.
+                    </p>
+                  </div>
+                  {/* Arrow pointing down-left */}
+                  <div className="flex justify-center">
+                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
+                      <path d="M8 8L0 0h16L8 8z" fill="#1a75ff"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="absolute -right-1 top-[60px] bg-[#0073ff] text-white text-[13px] font-semibold px-3 py-2 rounded-[8px] leading-[1.3] max-w-[140px]">
-              입력 된 문자를 보내면<br />본인인증이 돼요.
-              <div className="absolute left-[-6px] top-3 w-0 h-0 border-t-[6px] border-t-transparent border-r-[6px] border-r-[#0073ff] border-b-[6px] border-b-transparent" />
-            </div>
-          </div>
 
-          <p className="text-[13px] text-[#999] leading-normal">
-            ※ 이용중인 통신 요금제에 따라 문자 메시지 발송 비용이 발생할 수 있습니다.
-          </p>
+            <p className="text-[12px] text-[#777] leading-[1.4]">
+              ※ 이용중인 통신 요금제에 따라 문자 메시지 발송 비용이 발생할 수 있습니다.
+            </p>
+          </div>
         </div>
 
-        <div className="px-5 pb-8 pt-3">
+        <div className="px-5 pt-4 pb-8 keyboard-safe-bottom">
           <button
             onClick={handleSendSms}
             disabled={!canSend}
-            className={`w-full h-[52px] rounded-[8px] text-[16px] font-semibold transition-colors ${
-              canSend ? "bg-[#aecbff] text-[#0f0f10] active:opacity-80" : "bg-[#f1f1f1] text-[#0f0f10]"
+            className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] transition-colors ${
+              canSend ? "bg-[#e9f1ff] text-[#1a75ff] active:opacity-80" : "bg-[#e8e8e8] text-white"
             }`}
           >
             인증 코드 보내기
@@ -255,34 +280,34 @@ export default function VerifyPage() {
   // ── Step: loading ─────────────────────────────────────────────
   if (step === "loading") {
     return (
-      <div className="flex flex-col min-h-screen">
-        <div className="h-[54px] flex items-center px-5">
-          <button
-            onClick={() => { setPolling(false); setStep("phone") }}
-            className="w-8 h-8 flex items-center justify-center text-[28px] text-[#0f0f10] leading-none"
-          >
-            ‹
-          </button>
+      <div className="flex flex-col min-h-screen bg-white">
+        {/* status bar spacer */}
+        <div className="h-[44px]" />
+
+        <div className="flex flex-col px-5 pt-[52px] gap-3">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">인증 확인 중 ...</h1>
+          <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">잠시만 기다려주세요.</p>
         </div>
 
-        <div className="flex-1 flex flex-col px-5 pt-4">
-          <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.3]">인증 확인 중 ...</h1>
-          <p className="mt-2 text-[15px] text-[#999]">잠시만 기다려주세요.</p>
-
-          <div className="flex-1 flex items-center justify-center">
-            <div className="relative w-[120px] h-[120px]">
-              <svg className="absolute inset-0 animate-spin" viewBox="0 0 120 120" fill="none">
-                <circle cx="60" cy="60" r="54" stroke="#e9e9e9" strokeWidth="8"/>
-                <path d="M60 6 A54 54 0 0 1 114 60" stroke="#aecbff" strokeWidth="8" strokeLinecap="round"/>
+        {/* Centered spinner */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="relative w-[148px] h-[148px] flex items-center justify-center">
+            {/* Spinner ring */}
+            <svg className="absolute inset-0 animate-spin w-full h-full" viewBox="0 0 148 148" fill="none">
+              <circle cx="74" cy="74" r="68" stroke="#efefef" strokeWidth="8"/>
+              <path
+                d="M74 6 A68 68 0 0 1 142 74"
+                stroke="#90b7ff"
+                strokeWidth="8"
+                strokeLinecap="round"
+              />
+            </svg>
+            {/* Shield check icon */}
+            <div className="relative z-10 w-[56px] h-[56px] rounded-[12px] bg-[#b6d0ff] flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M14 3L5 7v7c0 6.1 4.1 11.8 9.3 13.4C19.9 25.8 24 20.1 24 14V7L14 3z" fill="white"/>
+                <path d="M10 14l3 3 5-5" stroke="#b6d0ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#aecbff] rounded-[12px] flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6L12 2z" fill="white"/>
-                    <path d="M9 12l2 2 4-4" stroke="#aecbff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -292,77 +317,87 @@ export default function VerifyPage() {
 
   // ── Step: password ────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="h-[54px] flex items-center px-5" />
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* status bar spacer */}
+      <div className="h-[44px]" />
 
-      <div className="flex-1 px-5 pt-4 flex flex-col gap-7 pb-4 overflow-y-auto">
-        <h1 className="text-[26px] font-bold text-[#0f0f10] leading-[1.3]">
+      <div className="flex-1 px-5 pt-[52px] flex flex-col gap-[48px] pb-4 overflow-y-auto">
+        <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
           인증이 완료되었어요.<br />비밀번호를 설정해주세요.
         </h1>
 
-        <div className="flex flex-col gap-5">
-          {/* 아이디 (readonly) */}
-          <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#0f0f10]">아이디</label>
-            <div className="h-[52px] bg-[#f7f7f8] rounded-[8px] px-4 flex items-center justify-between">
-              <span className="text-[15px] text-[#767676]">{phone}</span>
-              <div className="w-6 h-6 bg-[#0073ff] rounded-full flex items-center justify-center">
-                <CheckIcon />
-              </div>
+        <div className="flex flex-col gap-[28px]">
+          {/* 계정 (readonly) */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">계정</label>
+            <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
+              <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{phone}</span>
+              <CircleCheck />
             </div>
-            <p className="text-[12px] text-[#767676]">회원님의 휴대폰 번호가 계정이에요.</p>
           </div>
 
           {/* 비밀번호 */}
-          <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#0f0f10]">비밀번호</label>
-              <span className="text-[12px] text-[#0073ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호</label>
             </div>
-            <div className={`h-[52px] border rounded-[8px] px-4 flex items-center justify-between bg-white ${
-              pwError ? "border-[#ff3b30]" : pwTouched && pwValid ? "border-[#0073ff]" : "border-[#d8d8d8]"
-            }`}>
+            <div
+              className={`h-[48px] rounded-[4px] px-4 flex items-center justify-between bg-white ${
+                pwError
+                  ? "border border-[#ff3b30]"
+                  : pwTouched && pwValid
+                  ? "border-[1.5px] border-[#90b7ff]"
+                  : "border border-[#dbdcdf]"
+              }`}
+              style={pwTouched && pwValid ? { borderWidth: "1.5px" } : {}}
+            >
               <input
                 type={showPw ? "text" : "password"}
                 placeholder="영문, 숫자 포함 8~12자 입력"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 text-[15px] text-[#0f0f10] placeholder:text-[#bbb] outline-none bg-transparent"
+                className="flex-1 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-transparent leading-normal tracking-[-0.32px]"
               />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="ml-2 text-[#bbb]">
+              <button type="button" onClick={() => setShowPw(!showPw)} className="ml-2 text-[#b7b7b7]">
                 <EyeIcon visible={showPw} />
               </button>
             </div>
             {pwError && (
-              <p className="text-[12px] text-[#ff3b30]">{pwError}</p>
+              <p className="text-[12px] text-[#ff3b30] leading-[1.4]">{pwError}</p>
             )}
             {pwTouched && pwValid && (
-              <p className="text-[12px] text-[#0073ff]">사용 가능한 비밀번호예요.</p>
+              <p className="text-[12px] text-[#1a75ff] leading-[1.4]">사용 가능한 비밀번호예요.</p>
             )}
           </div>
 
           {/* 비밀번호 확인 */}
-          <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#0f0f10]">비밀번호 확인</label>
-              <span className="text-[12px] text-[#0073ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호 확인</label>
             </div>
-            <div className={`h-[52px] border rounded-[8px] px-4 flex items-center justify-between bg-white ${
-              pwConfirmTouched && !pwMatch ? "border-[#ff3b30]" : pwMatch ? "border-[#0073ff]" : "border-[#d8d8d8]"
-            }`}>
+            <div
+              className={`h-[48px] rounded-[4px] px-4 flex items-center justify-between bg-white ${
+                pwConfirmTouched && !pwMatch
+                  ? "border border-[#ff3b30]"
+                  : pwMatch
+                  ? "border-[#90b7ff]"
+                  : "border border-[#dbdcdf]"
+              }`}
+              style={pwMatch ? { border: "1.5px solid #90b7ff" } : {}}
+            >
               <input
                 type={showPwConfirm ? "text" : "password"}
                 placeholder="영문+숫자 조합으로 8~12자 입력"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                className="flex-1 text-[15px] text-[#0f0f10] placeholder:text-[#bbb] outline-none bg-transparent"
+                className="flex-1 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-transparent leading-normal tracking-[-0.32px]"
               />
-              <button type="button" onClick={() => setShowPwConfirm(!showPwConfirm)} className="ml-2 text-[#bbb]">
+              <button type="button" onClick={() => setShowPwConfirm(!showPwConfirm)} className="ml-2 text-[#b7b7b7]">
                 <EyeIcon visible={showPwConfirm} />
               </button>
             </div>
             {pwConfirmTouched && (
-              <p className={`text-[12px] ${pwMatch ? "text-[#0073ff]" : "text-[#ff3b30]"}`}>
+              <p className={`text-[12px] leading-[1.4] ${pwMatch ? "text-[#1a75ff]" : "text-[#ff3b30]"}`}>
                 {pwMatch ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다."}
               </p>
             )}
@@ -370,12 +405,12 @@ export default function VerifyPage() {
         </div>
       </div>
 
-      <div className="px-5 pb-8 pt-3">
+      <div className="px-5 pt-4 pb-8 keyboard-safe-bottom">
         <button
           onClick={() => canFinish && setShowTerms(true)}
           disabled={!canFinish}
-          className={`w-full h-[52px] rounded-[8px] text-[16px] font-semibold transition-colors ${
-            canFinish ? "bg-[#0f0f10] text-white active:opacity-80" : "bg-[#f1f1f1] text-[#0f0f10]"
+          className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] transition-colors ${
+            canFinish ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#e8e8e8] text-white"
           }`}
         >
           {submitting ? "처리 중..." : "완료"}
@@ -387,59 +422,61 @@ export default function VerifyPage() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           {/* dim */}
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/61"
             onClick={() => setShowTerms(false)}
           />
-          <div className="relative bg-white rounded-t-[20px] px-5 pt-6 pb-8 flex flex-col gap-5">
-            <h2 className="text-[18px] font-semibold text-[#0f0f10]">
-              마주를 이용하려면 동의가 필요해요.
-            </h2>
+          <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6 items-center">
+            <div className="flex flex-col gap-7 w-[335px]">
+              <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px] text-center w-full">
+                마주를 이용하려면 동의가 필요해요.
+              </h2>
 
-            <div className="flex flex-col gap-0">
-              {/* 개별 항목 먼저 */}
-              {TERMS.map((term) => (
-                <button
-                  key={term.key}
-                  type="button"
-                  onClick={() => toggleTerm(term.key)}
-                  className="flex items-center gap-3 py-[14px]"
-                >
-                  <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
-                  <span className="text-[15px] text-[#0f0f10] flex-1 text-left">
-                    {term.label}{" "}
-                    {term.required
-                      ? <span className="text-[#0073ff] text-[13px]">필수</span>
-                      : null
-                    }
-                  </span>
-                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                    <path d="M1 1l5 5-5 5" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              ))}
+              <div className="flex flex-col gap-6">
+                {/* Individual terms */}
+                <div className="flex flex-col gap-5">
+                  {TERMS.map((term) => (
+                    <button
+                      key={term.key}
+                      type="button"
+                      onClick={() => toggleTerm(term.key)}
+                      className="flex items-center gap-2"
+                    >
+                      <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-[15px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.3px]">
+                          <span className="underline underline-offset-auto">{term.label}</span>
+                          {term.suffix}
+                        </span>
+                        {term.required && (
+                          <span className="text-[12px] text-[#1a75ff] leading-[1.4]">필수</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-              {/* 전체 동의 — 항목 아래 */}
-              <div className="mt-3 bg-[#f7f7f8] rounded-[10px] px-4">
-                <button
-                  type="button"
-                  onClick={toggleAll}
-                  className="flex items-center gap-3 py-[16px] w-full"
+                {/* 전체 동의 */}
+                <div
+                  className={`rounded-[4px] p-4 flex items-center gap-2 ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}
                 >
                   <Checkbox checked={allChecked} onChange={toggleAll} />
-                  <span className="text-[16px] font-semibold text-[#0f0f10]">전체 동의</span>
-                </button>
+                  <span className="text-[16px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.32px]">전체 동의</span>
+                </div>
               </div>
             </div>
 
-            <button
-              onClick={handleAgreeAndFinish}
-              disabled={!allRequired}
-              className={`w-full h-[52px] rounded-[8px] text-[16px] font-semibold transition-colors ${
-                allRequired ? "bg-[#0f0f10] text-white active:opacity-80" : "bg-[#f1f1f1] text-[#0f0f10]"
-              }`}
-            >
-              동의
-            </button>
+            {/* CTA */}
+            <div className="w-full px-5 pb-8 pt-0 flex flex-col">
+              <button
+                onClick={handleAgreeAndFinish}
+                disabled={!allRequired}
+                className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] transition-colors ${
+                  allRequired ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#e8e8e8] text-white"
+                }`}
+              >
+                동의
+              </button>
+            </div>
           </div>
         </div>
       )}

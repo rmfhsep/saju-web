@@ -1,31 +1,52 @@
 "use client"
 
+import { useEffect } from "react"
 import { bridgeNavigate } from "@/lib/bridge"
 
-const LOGO_URL = "/logo.svg"
-
 export default function OnboardingLandingPage() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 flex flex-col items-center justify-center gap-7 px-4">
-        <img src={LOGO_URL} alt="logo" width={140} height={140} className="rounded-full" />
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-[24px] font-bold text-[#0f0f10] leading-normal">나만의 천생연분</h1>
-          <p className="text-[15px] text-[#0f0f10] leading-normal">
-            명리학 빅데이터를 기반으로<br />
-            가장 조화로운 인연을 연결해 드립니다.
-          </p>
-        </div>
-      </div>
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const token = localStorage.getItem("auth_token")
 
-      <div className="px-4 pb-8">
-        <button
-          onClick={() => bridgeNavigate("BirthInfo")}
-          className="w-full h-[48px] bg-[#aecbff] rounded-[4px] text-[16px] font-semibold text-[#0f0f10] active:opacity-80"
-        >
-          내 인연 찾기
-        </button>
-      </div>
+        if (!token) {
+          bridgeNavigate("Verify")
+          return
+        }
+
+        const res = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!res.ok) {
+          localStorage.removeItem("auth_token")
+          localStorage.removeItem("user_phone")
+          bridgeNavigate("Verify")
+          return
+        }
+
+        const user = await res.json()
+
+        if (user.profileComplete) {
+          bridgeNavigate("Home")
+        } else if (user.birthDate) {
+          // 출생 정보는 있지만 프로필 미완성 → 차단 화면부터
+          bridgeNavigate("Blocking")
+        } else {
+          // 등록만 완료, 출생 정보 미입력
+          bridgeNavigate("BirthInfo")
+        }
+      } catch {
+        bridgeNavigate("Verify")
+      }
+    }
+
+    checkSession()
+  }, [])
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="w-8 h-8 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }

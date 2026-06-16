@@ -145,12 +145,14 @@ export default function BirthInfoPage() {
     })
   }
 
-  const toggleSel = "flex-1 h-[52px] rounded-[8px] text-[15px] font-medium border-0 transition-colors bg-[#e9f1ff] text-[#0f0f10]"
-  const toggleUnsel = "flex-1 h-[52px] rounded-[8px] text-[15px] font-medium border-0 transition-colors bg-[#f7f7f8] text-[#777777]"
+  // Selected toggle: light blue bg, dark text
+  const toggleSel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border-0 transition-colors bg-[#e9f1ff] text-[#1f1f1f] tracking-[-0.32px]"
+  // Unselected toggle: navy-50 bg, gray text
+  const toggleUnsel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border-0 transition-colors bg-[#f7f7f8] text-[#777]  tracking-[-0.32px]"
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Header with back button */}
       <div className="h-[54px] flex items-center px-5">
         <button
           onClick={() => bridgeBack()}
@@ -161,39 +163,42 @@ export default function BirthInfoPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-5 pt-4 flex flex-col gap-7 overflow-y-auto pb-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.3]">
+      <div className="flex-1 px-5 flex flex-col gap-12 overflow-y-auto pb-4">
+        {/* Title block */}
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             정확한 연애운 분석을 위해<br />출생 정보를 알려주세요.
           </h1>
-          <p className="text-[15px] text-[#777] leading-normal">
-            태어난 시간을 제외한 정보는 수정할 수 없어요.<br />정확하게 입력해주세요.
+          <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">
+            태어난 시간을 제외한 정보는 수정할 수 없어요.{" "}
+            <br />정확하게 입력해주세요.
           </p>
         </div>
 
-        <div className="flex flex-col gap-6">
+        {/* Form fields */}
+        <div className="flex flex-col gap-7">
           {/* 이름 */}
-          <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#1f1f1f]">이름</label>
-              <span className="text-[12px] font-medium text-[#1a75ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] leading-normal">이름</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
             </div>
             <input
               type="text"
               placeholder="김마주"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white"
+              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white tracking-[-0.32px]"
             />
           </div>
 
           {/* 성별 */}
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#1f1f1f]">성별</label>
-              <span className="text-[12px] font-medium text-[#1a75ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] leading-normal">성별</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               {(["MALE", "FEMALE"] as const).map((g) => (
                 <button key={g} onClick={() => setGender(g)} className={gender === g ? toggleSel : toggleUnsel}>
                   {g === "MALE" ? "남성" : "여성"}
@@ -203,10 +208,10 @@ export default function BirthInfoPage() {
           </div>
 
           {/* 양력/음력 */}
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#1f1f1f]">양력/음력</label>
-              <span className="text-[12px] font-medium text-[#1a75ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] leading-normal">양력/음력</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
             </div>
             <div className="flex gap-2">
               {(["SOLAR", "LUNAR", "LUNAR_LEAP"] as const).map((c) => (
@@ -218,10 +223,10 @@ export default function BirthInfoPage() {
           </div>
 
           {/* 생년월일 */}
-          <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <label className="text-[14px] font-semibold text-[#1f1f1f]">생년월일</label>
-              <span className="text-[12px] font-medium text-[#1a75ff]">필수</span>
+              <label className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] leading-normal">생년월일</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
             </div>
             <input
               type="text"
@@ -229,7 +234,7 @@ export default function BirthInfoPage() {
               placeholder="숫자 8자리 입력 (예시 20000101)"
               value={birthDate}
               onChange={(e) => setBirthDate(formatBirthDate(e.target.value))}
-              className="h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white tracking-wider"
+              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white tracking-[-0.32px]"
             />
             {rawBirthDate.length > 0 && rawBirthDate.length < 8 && (
               <p className="text-[12px] text-[#ff3b30]">8자리 숫자를 입력해주세요.</p>
@@ -238,13 +243,13 @@ export default function BirthInfoPage() {
 
           {/* 태어난 시간 */}
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[14px] font-semibold text-[#1f1f1f]">태어난 시간</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] leading-normal">태어난 시간</label>
               <button
                 type="button"
                 disabled={unknownTime}
                 onClick={() => !unknownTime && setShowTimePicker(true)}
-                className={`h-[52px] border border-[#d8d8d8] rounded-[8px] px-4 flex items-center text-[16px] text-left transition-colors ${
+                className={`h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center text-[16px] text-left transition-colors tracking-[-0.32px] ${
                   unknownTime
                     ? "bg-[#f7f7f8] text-[#b7b7b7]"
                     : birthTime
@@ -262,7 +267,7 @@ export default function BirthInfoPage() {
                   if (!unknownTime) setBirthTime("")
                 }}
                 className={`w-[18px] h-[18px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
-                  unknownTime ? "bg-[#0f0f10] border-[#0f0f10]" : "border-[#d8d8d8]"
+                  unknownTime ? "bg-[#0f0f10] border-[#0f0f10]" : "border-[#e1e2e4]"
                 }`}
               >
                 {unknownTime && (
@@ -271,19 +276,19 @@ export default function BirthInfoPage() {
                   </svg>
                 )}
               </div>
-              <span className="text-[15px] font-medium text-[#1f1f1f]">모름</span>
+              <span className="text-[15px] font-medium text-[#1f1f1f] tracking-[-0.3px]">모름</span>
             </label>
           </div>
         </div>
       </div>
 
       {/* CTA */}
-      <div className="px-5 pb-8 pt-3">
+      <div className="px-5 pb-8 pt-4 bg-white">
         <button
           onClick={handleNext}
           disabled={!canProceed}
-          className={`w-full h-[52px] rounded-[8px] text-[16px] font-semibold transition-colors ${
-            canProceed ? "bg-[#aecbff] text-[#1f1f1f] active:opacity-80" : "bg-[#e8e8e8] text-white"
+          className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] transition-colors ${
+            canProceed ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#e8e8e8] text-white"
           }`}
         >
           분석하기
@@ -296,7 +301,7 @@ export default function BirthInfoPage() {
           {/* dim */}
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowTimePicker(false)} />
           <div className="relative bg-white rounded-t-[20px] px-5 pt-6 pb-8 flex flex-col gap-5">
-            <h2 className="text-[18px] font-semibold text-[#1f1f1f]">시간을 선택해주세요.</h2>
+            <h2 className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">시간을 선택해주세요.</h2>
 
             {/* Picker rows */}
             <div className="flex items-center gap-2">
@@ -308,7 +313,7 @@ export default function BirthInfoPage() {
 
             <button
               onClick={handleConfirmTime}
-              className="w-full h-[52px] rounded-[8px] text-[16px] font-semibold bg-[#aecbff] text-[#1f1f1f] active:opacity-80"
+              className="w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80"
             >
               확인
             </button>
