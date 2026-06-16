@@ -1,52 +1,50 @@
 "use client"
 
 import { useEffect } from "react"
-import { bridgeNavigate } from "@/lib/bridge"
+import { SCREEN_PATHS, bridgeNavigate } from "@/lib/bridge"
+
+function go(screen: string) {
+  bridgeNavigate(screen)
+  // bridgeNavigate sends postMessage to RN but doesn't change the web URL.
+  // Force the WebView to navigate so the spinner doesn't stay stuck.
+  const path = SCREEN_PATHS[screen] ?? "/"
+  window.location.replace(path)
+}
 
 export default function OnboardingLandingPage() {
   useEffect(() => {
-    async function checkSession() {
-      const token = localStorage.getItem("auth_token")
+    const token = localStorage.getItem("auth_token")
 
-      if (!token) {
-        bridgeNavigate("Verify")
-        return
-      }
-
-      // 10초 타임아웃 — 네트워크 행 방지
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000)
-
-      try {
-        const res = await fetch("/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        })
-        clearTimeout(timeout)
-
-        if (!res.ok) {
-          // 토큰이 있었으나 만료/무효 → 기존 유저이므로 재로그인 화면으로
-          bridgeNavigate("Login")
-          return
-        }
-
-        const user = await res.json()
-
-        if (user.profileComplete) {
-          bridgeNavigate("Home")
-        } else if (user.birthDate) {
-          bridgeNavigate("Blocking")
-        } else {
-          bridgeNavigate("BirthInfo")
-        }
-      } catch {
-        clearTimeout(timeout)
-        // 네트워크 오류 또는 타임아웃 → 재로그인 화면으로
-        bridgeNavigate("Login")
-      }
+    if (!token) {
+      go("Verify")
+      return
     }
 
-    checkSession()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+      go("Login")
+    }, 10000)
+
+    fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
+      .then(res => {
+        clearTimeout(timeout)
+        if (!res.ok) { go("Login"); return null }
+        return res.json()
+      })
+      .then(user => {
+        if (!user) return
+        if (user.profileComplete)   go("Home")
+        else if (user.birthDate)    go("Blocking")
+        else                        go("BirthInfo")
+      })
+      .catch(() => {
+        clearTimeout(timeout)
+        go("Login")
+      })
   }, [])
 
   return (

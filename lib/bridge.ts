@@ -11,7 +11,7 @@ function getRN(): RNWebView | undefined {
   return (window as Window & { ReactNativeWebView?: RNWebView }).ReactNativeWebView
 }
 
-const SCREEN_PATHS: Record<string, string> = {
+export const SCREEN_PATHS: Record<string, string> = {
   Verify:       '/onboarding/verify',
   Login:        '/onboarding/login',
   Landing:      '/onboarding',
