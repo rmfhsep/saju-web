@@ -2,12 +2,33 @@
 
 import { useState } from "react"
 import { bridgeNavigate } from "@/lib/bridge"
+import Screen from "@/components/ui/screen"
+import PageFooter from "@/components/ui/page-footer"
+import CtaButton from "@/components/ui/cta-button"
 
 function formatPhone(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 11)
   if (d.length <= 3) return d
   if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
+}
+
+function EyeToggle({ visible, onClick }: { visible: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="absolute right-4 top-1/2 -translate-y-1/2">
+      {visible ? (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M2.5 2.5l15 15" stroke="#9e9e9e" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M8.82 8.82A2.5 2.5 0 0011.18 11.18M6.1 6.1C4.3 7.2 2.9 8.9 2 10c1.7 2.4 4.6 5 8 5 1.5 0 2.9-.5 4.1-1.3M9.5 5.06C9.67 5.02 9.83 5 10 5c3.4 0 6.3 2.6 8 5-.5.8-1.2 1.7-2 2.4" stroke="#9e9e9e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M2 10C3.7 7 6.6 4.5 10 4.5S16.3 7 18 10c-1.7 3-4.6 5.5-8 5.5S3.7 13 2 10z" stroke="#9e9e9e" strokeWidth="1.5"/>
+          <circle cx="10" cy="10" r="2.5" stroke="#9e9e9e" strokeWidth="1.5"/>
+        </svg>
+      )}
+    </button>
+  )
 }
 
 export default function LoginPage() {
@@ -36,11 +57,8 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        if (data.error === "USER_NOT_FOUND") {
-          setPhoneError("등록되지 않은 휴대폰 번호예요.")
-        } else {
-          setPwError("비밀번호가 일치하지 않아요.")
-        }
+        if (data.error === "USER_NOT_FOUND") setPhoneError("등록되지 않은 휴대폰 번호예요.")
+        else setPwError("비밀번호가 일치하지 않아요.")
         return
       }
 
@@ -49,13 +67,9 @@ export default function LoginPage() {
         localStorage.setItem("user_phone", rawPhone)
       }
 
-      if (data.profileComplete) {
-        bridgeNavigate("Home")
-      } else if (data.birthDate) {
-        bridgeNavigate("Blocking")
-      } else {
-        bridgeNavigate("BirthInfo")
-      }
+      if (data.profileComplete) bridgeNavigate("Home")
+      else if (data.birthDate) bridgeNavigate("Blocking")
+      else bridgeNavigate("BirthInfo")
     } catch {
       setPwError("네트워크 오류가 발생했어요. 다시 시도해 주세요.")
     } finally {
@@ -64,23 +78,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <Screen>
       <div className="h-[44px]" />
 
-      <div className="flex-1 px-5 pt-12 flex flex-col gap-[52px]">
-        {/* Title */}
+      <div className="flex-1 px-5 pt-12 flex flex-col gap-[52px] scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-3">
-          <h1 className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">
-            로그인이 필요해요.
-          </h1>
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">로그인이 필요해요.</h1>
           <p className="text-[14px] text-[#777] tracking-[-0.3px] leading-normal">
             새로운 프로필을 확인하려면 다시 로그인 해주세요.
           </p>
         </div>
 
-        {/* Fields */}
         <div className="flex flex-col gap-[28px]">
-          {/* Phone */}
+          {/* 계정 */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-[14px] font-semibold text-[#1f1f1f]">계정</label>
             <input
@@ -88,22 +98,15 @@ export default function LoginPage() {
               inputMode="numeric"
               placeholder="휴대폰 번호를 입력해주세요."
               value={phone}
-              onChange={e => {
-                setPhone(formatPhone(e.target.value))
-                setPhoneError("")
-              }}
+              onChange={e => { setPhone(formatPhone(e.target.value)); setPhoneError("") }}
               className={`h-[48px] border rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                phoneError
-                  ? "border-[#ff3b30] focus:border-[#ff3b30]"
-                  : "border-[#dbdcdf] focus:border-[#90b7ff]"
+                phoneError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
               }`}
             />
-            {phoneError && (
-              <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{phoneError}</p>
-            )}
+            {phoneError && <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{phoneError}</p>}
           </div>
 
-          {/* Password */}
+          {/* 비밀번호 */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-[14px] font-semibold text-[#1f1f1f]">비밀번호</label>
             <div className="relative">
@@ -111,42 +114,16 @@ export default function LoginPage() {
                 type={showPw ? "text" : "password"}
                 placeholder="영문, 숫자 포함 8~12자"
                 value={password}
-                onChange={e => {
-                  setPassword(e.target.value.slice(0, 12))
-                  setPwError("")
-                }}
+                onChange={e => { setPassword(e.target.value.slice(0, 12)); setPwError("") }}
                 className={`w-full h-[48px] border rounded-[4px] px-4 pr-12 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                  pwError
-                    ? "border-[#ff3b30] focus:border-[#ff3b30]"
-                    : "border-[#dbdcdf] focus:border-[#90b7ff]"
+                  pwError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
                 }`}
               />
-              {password.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowPw(v => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
-                >
-                  {showPw ? (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2.5 2.5l15 15" stroke="#9e9e9e" strokeWidth="1.5" strokeLinecap="round"/>
-                      <path d="M8.82 8.82A2.5 2.5 0 0011.18 11.18M6.1 6.1C4.3 7.2 2.9 8.9 2 10c1.7 2.4 4.6 5 8 5 1.5 0 2.9-.5 4.1-1.3M9.5 5.06C9.67 5.02 9.83 5 10 5c3.4 0 6.3 2.6 8 5-.5.8-1.2 1.7-2 2.4" stroke="#9e9e9e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C3.7 7 6.6 4.5 10 4.5S16.3 7 18 10c-1.7 3-4.6 5.5-8 5.5S3.7 13 2 10z" stroke="#9e9e9e" strokeWidth="1.5"/>
-                      <circle cx="10" cy="10" r="2.5" stroke="#9e9e9e" strokeWidth="1.5"/>
-                    </svg>
-                  )}
-                </button>
-              )}
+              {password.length > 0 && <EyeToggle visible={showPw} onClick={() => setShowPw(v => !v)} />}
             </div>
-            {pwError && (
-              <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{pwError}</p>
-            )}
+            {pwError && <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{pwError}</p>}
           </div>
 
-          {/* Forgot password */}
           <div className="flex justify-center">
             <button
               type="button"
@@ -159,20 +136,11 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="px-5 pb-8 pt-4 keyboard-safe-bottom">
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-tight transition-colors ${
-            canSubmit && !loading
-              ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80"
-              : "bg-[#e8e8e8] text-white"
-          }`}
-        >
+      <PageFooter>
+        <CtaButton disabled={!canSubmit} loading={loading} onClick={handleLogin}>
           {loading ? "로그인 중..." : "로그인"}
-        </button>
-      </div>
-    </div>
+        </CtaButton>
+      </PageFooter>
+    </Screen>
   )
 }

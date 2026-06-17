@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, BackHandler, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import WebView from 'react-native-webview';
+import KeyboardAwareWebView from '../components/KeyboardAwareWebView';
 import * as ScreenCapture from 'expo-screen-capture';
 import { WEB_URL } from '../config/env';
 
@@ -38,7 +39,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <WebView
+      <KeyboardAwareWebView
         ref={webViewRef}
         source={{ uri: WEB_URL }}
         style={styles.webview}

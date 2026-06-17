@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
-import * as Contacts from 'expo-contacts';
+import KeyboardAwareWebView from '../components/KeyboardAwareWebView';
+import { Contact, ContactField, requestPermissionsAsync } from 'expo-contacts';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
@@ -51,28 +52,30 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
   );
 
   async function handleRequestContacts() {
-    const { status } = await Contacts.requestPermissionsAsync();
-    if (status !== 'granted') {
+    try {
+      const { status } = await requestPermissionsAsync();
+      if (status !== 'granted') {
+        webViewRef.current?.injectJavaScript(
+          `window.__onContactsReceived && window.__onContactsReceived([]); true;`
+        );
+        return;
+      }
+      const contacts = await Contact.getAllDetails([ContactField.PHONES]);
+      const phones: string[] = [];
+      for (const contact of contacts) {
+        for (const p of contact.phones ?? []) {
+          const digits = (p.number ?? '').replace(/\D/g, '');
+          if (digits.length >= 9) phones.push(digits);
+        }
+      }
+      webViewRef.current?.injectJavaScript(
+        `window.__onContactsReceived && window.__onContactsReceived(${JSON.stringify(phones)}); true;`
+      );
+    } catch {
       webViewRef.current?.injectJavaScript(
         `window.__onContactsReceived && window.__onContactsReceived([]); true;`
       );
-      return;
     }
-    const { data } = await Contacts.getContactsAsync({
-      fields: [Contacts.Fields.PhoneNumbers],
-      pageSize: 10000,
-      pageOffset: 0,
-    });
-    const phones: string[] = [];
-    for (const contact of data) {
-      for (const p of contact.phoneNumbers ?? []) {
-        const digits = (p.number ?? '').replace(/\D/g, '');
-        if (digits.length >= 9) phones.push(digits);
-      }
-    }
-    webViewRef.current?.injectJavaScript(
-      `window.__onContactsReceived && window.__onContactsReceived(${JSON.stringify(phones)}); true;`
-    );
   }
 
   function handleMessage(event: WebViewMessageEvent) {
@@ -115,7 +118,7 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <WebView
+      <KeyboardAwareWebView
         ref={webViewRef}
         source={{ uri: url }}
         style={styles.webview}
