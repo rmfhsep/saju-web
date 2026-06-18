@@ -23,6 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             var vv = window.visualViewport;
             if (!vv) return;
             function update() {
+              // React Native WebView에서는 KeyboardAvoidingView가 이미 뷰 크기를 줄여줌
+              // JS까지 패딩을 추가하면 키보드 높이만큼 두 번 처리되므로 건너뜀
+              if (window.ReactNativeWebView) return;
               var kh = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
               document.documentElement.style.setProperty('--keyboard-height', kh + 'px');
             }
