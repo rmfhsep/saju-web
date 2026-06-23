@@ -41,6 +41,15 @@ model User {
   blockedCount     Int      @default(0)
   profileComplete  Boolean  @default(false)
 
+  preferredFilterType String?
+  preferredHeightMin  Int?
+  preferredHeightMax  Int?
+  preferredSmoking    String?
+  preferredDrinking   String?
+  preferredPolitics   String?
+  preferredReligion   String?
+  filterComplete      Boolean  @default(false)
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

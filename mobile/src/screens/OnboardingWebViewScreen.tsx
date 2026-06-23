@@ -22,6 +22,7 @@ const SCREEN_PATHS: Record<string, string> = {
   MatchPreview: '/onboarding/matches',
   Blocking: '/onboarding/blocking',
   ProfileSetup: '/onboarding/profile',
+  Filter: '/onboarding/filter',
 };
 
 function buildUrl(path: string, params?: Record<string, string>): string {

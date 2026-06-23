@@ -9,30 +9,54 @@ import StepHeader from "./StepHeader"
 import { JOBS, PROFESSIONALS } from "../constants"
 import type { StepProps } from "../types"
 
+const PROFESSIONAL_JOB_ID = "전문직"
+
 export default function StepJob({ data, onChange, onNext, onBack, step }: StepProps) {
   const [q, setQ] = useState("")
-  const [showPro, setShowPro] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
   const filtered = q ? JOBS.filter(j => j.id.toLowerCase().includes(q.toLowerCase())) : JOBS
 
-  function selectJob(jobId: string, hasDetail: boolean) {
-    if (hasDetail) { setShowPro(true); onChange({ job: jobId, jobDetail: "" }) }
-    else { onChange({ job: jobId, jobDetail: "" }) }
+  function selectJob(jobId: string) {
+    onChange({ job: jobId, jobDetail: "" })
+    setShowDetail(true)
   }
 
-  if (showPro) {
+  if (showDetail) {
+    const isProfessional = data.job === PROFESSIONAL_JOB_ID
+    const filteredPros = isProfessional && data.jobDetail
+      ? PROFESSIONALS.filter(p => p.includes(data.jobDetail))
+      : PROFESSIONALS
+
     return (
       <Screen>
-        <StepHeader onBack={() => { setShowPro(false); onChange({ jobDetail: "" }) }} step={step} title="프로필 설정" />
-        <div className="px-5 pt-6 shrink-0">
-          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">전문직 종류를 선택해주세요.</h1>
+        <StepHeader onBack={() => setShowDetail(false)} step={step} title="프로필 설정" />
+        <div className="px-5 pt-6 flex flex-col gap-4 shrink-0">
+          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">
+            {isProfessional ? "전문직 종류를 선택해주세요." : "직무명을 입력해주세요."}
+          </h1>
+          <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[8px] px-4">
+            <input
+              type="text"
+              placeholder={isProfessional ? "전문직 검색 또는 직접 입력" : "직무명을 입력해주세요."}
+              value={data.jobDetail}
+              onChange={e => onChange({ jobDetail: e.target.value })}
+              className="flex-1 text-[15px] text-[#0f0f10] placeholder:text-[#9e9e9e] outline-none bg-transparent"
+            />
+          </div>
         </div>
-        <div className="flex-1 scroll-area overflow-y-auto px-5 mt-4 flex flex-col gap-2">
-          {PROFESSIONALS.map(p => (
-            <RadioOption key={p} label={p} selected={data.jobDetail === p} onClick={() => onChange({ jobDetail: p })} />
-          ))}
-        </div>
+        {isProfessional && (
+          <div className="flex-1 scroll-area overflow-y-auto px-5 mt-2 flex flex-col gap-2">
+            {filteredPros.length === 0 ? (
+              <p className="text-[14px] text-[#777] leading-relaxed pt-4">검색 결과가 없어요.</p>
+            ) : (
+              filteredPros.map(p => (
+                <RadioOption key={p} label={p} selected={data.jobDetail === p} onClick={() => onChange({ jobDetail: p })} />
+              ))
+            )}
+          </div>
+        )}
         <PageFooter>
-          <CtaButton disabled={!data.jobDetail} onClick={onNext}>다음</CtaButton>
+          <CtaButton disabled={!data.jobDetail.trim()} onClick={onNext}>다음</CtaButton>
         </PageFooter>
       </Screen>
     )
@@ -58,29 +82,29 @@ export default function StepJob({ data, onChange, onNext, onBack, step }: StepPr
         </div>
       </div>
       <div className="flex-1 scroll-area overflow-y-auto px-5">
-        {filtered.map(job => (
-          <button
-            key={job.id}
-            onClick={() => selectJob(job.id, job.hasDetail)}
-            className={`w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-[15px] transition-colors ${
-              data.job === job.id ? "text-[#1a73e8] font-semibold" : "text-[#0f0f10] font-medium"
-            }`}
-          >
-            {job.id}
-            {job.hasDetail ? (
+        {filtered.length === 0 ? (
+          <p className="text-[14px] text-[#777] leading-relaxed pt-4">
+            검색 결과가 없어요.<br />업종을 다시 확인해주세요.
+          </p>
+        ) : (
+          filtered.map(job => (
+            <button
+              key={job.id}
+              onClick={() => selectJob(job.id)}
+              className={`w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-[15px] transition-colors ${
+                data.job === job.id ? "text-[#1a73e8] font-semibold" : "text-[#0f0f10] font-medium"
+              }`}
+            >
+              {job.id}
               <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                 <path d="M1 1l5 5-5 5" stroke="#b0b0b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            ) : data.job === job.id ? (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M4 10.5l4.5 4.5L16 6" stroke="#1a73e8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : null}
-          </button>
-        ))}
+            </button>
+          ))
+        )}
       </div>
       <PageFooter>
-        <CtaButton disabled={!data.job} onClick={onNext}>다음</CtaButton>
+        <CtaButton disabled={!data.job} onClick={() => setShowDetail(true)}>다음</CtaButton>
       </PageFooter>
     </Screen>
   )

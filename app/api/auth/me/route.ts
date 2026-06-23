@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         birthTime: true,
         birthTimeUnknown: true,
         profileComplete: true,
+        filterComplete: true,
         blockedPhones: true,
       },
     })

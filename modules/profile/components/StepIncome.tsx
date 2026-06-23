@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect } from "react"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
@@ -22,6 +25,11 @@ function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean
 }
 
 export default function StepIncome({ data, onChange, onNext, onBack, step }: StepProps) {
+  useEffect(() => {
+    if (!data.income) onChange({ income: INCOME_OPTIONS[0] })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Screen>
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />

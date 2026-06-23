@@ -12,6 +12,7 @@ function getRN(): RNWebView | undefined {
 }
 
 export const SCREEN_PATHS: Record<string, string> = {
+  PhoneInput:   '/onboarding/phone',
   Verify:       '/onboarding/verify',
   Login:        '/onboarding/login',
   Landing:      '/onboarding',
@@ -20,6 +21,7 @@ export const SCREEN_PATHS: Record<string, string> = {
   MatchPreview: '/onboarding/matches',
   Blocking:     '/onboarding/blocking',
   ProfileSetup: '/onboarding/profile',
+  Filter:       '/onboarding/filter',
   Home:         '/',
 }
 
@@ -35,6 +37,22 @@ export function bridgeNavigate(screen: string, params?: Record<string, string>) 
   const url = new URL(path, window.location.origin)
   if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   window.location.href = url.toString()
+}
+
+/**
+ * Navigate to a screen and also force the current WebView to change its URL.
+ * bridgeNavigate's postMessage only triggers a native push for screens the
+ * RN app recognizes (BirthInfo, Blocking, ProfileSetup, ...). Auth-flow
+ * screens (PhoneInput/Verify/Login/Landing) live entirely inside the initial
+ * WebView and aren't registered natively, so without this forced replace the
+ * WebView would stay on the old screen.
+ */
+export function navigateAndReplace(screen: string, params?: Record<string, string>) {
+  bridgeNavigate(screen, params)
+  const path = SCREEN_PATHS[screen] ?? '/'
+  const url = new URL(path, window.location.origin)
+  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
+  window.location.replace(url.toString())
 }
 
 /** Go back — pops the current screen off the stack. */

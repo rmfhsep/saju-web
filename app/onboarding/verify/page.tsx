@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { bridgeNavigate, bridgeOpenSms } from "@/lib/bridge"
+import { Suspense, useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { bridgeNavigate, bridgeOpenSms, navigateAndReplace } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 
-type Step = "phone" | "loading" | "password"
+type Step = "start" | "loading" | "password"
+type Mode = "register" | "reset"
 
 function generateCode() {
   return String(Math.floor(1000 + Math.random() * 9000))
@@ -109,9 +111,12 @@ function PasswordInput({ value, show, onChange, onToggle, placeholder, error, su
   )
 }
 
-export default function VerifyPage() {
-  const [step, setStep] = useState<Step>("phone")
-  const [phone, setPhone] = useState("")
+function VerifyForm() {
+  const searchParams = useSearchParams()
+  const rawPhone = (searchParams.get("phone") ?? "").replace(/\D/g, "")
+  const mode: Mode = searchParams.get("mode") === "reset" ? "reset" : "register"
+
+  const [step, setStep] = useState<Step>("start")
   const [code] = useState(generateCode)
   const [polling, setPolling] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -125,10 +130,6 @@ export default function VerifyPage() {
   const [agreed, setAgreed] = useState<Record<TermKey, boolean>>({
     service: false, privacy: false, sensitive: false, marketing: false,
   })
-
-  const rawPhone = phone.replace(/\D/g, "")
-  const canSend = rawPhone.length === 11
-  const phoneTouched = rawPhone.length > 0
 
   const pwLengthOk = password.length >= 8 && password.length <= 12
   const pwHasLetter = /[a-zA-Z]/.test(password)
@@ -146,12 +147,8 @@ export default function VerifyPage() {
   const allRequired = TERMS.filter(t => t.required).every(t => agreed[t.key])
   const allChecked = TERMS.every(t => agreed[t.key])
 
-  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPhone(formatPhone(e.target.value.replace(/\D/g, "").slice(0, 11)))
-  }
-
   function handleSendSms() {
-    if (!canSend) return
+    if (!rawPhone) return
     bridgeOpenSms(OCTOMO_NUMBER, code)
     setStep("loading")
     setPolling(true)
@@ -177,6 +174,15 @@ export default function VerifyPage() {
           setPolling(false)
           if (intervalRef.current) clearInterval(intervalRef.current)
           localStorage.setItem("phone_verified", rawPhone)
+
+          if (mode === "register") {
+            const checkRes = await fetch(`/api/auth/check?phone=${rawPhone}`)
+            const checkData = await checkRes.json()
+            if (checkData.exists) {
+              navigateAndReplace("Login", { phone: rawPhone })
+              return
+            }
+          }
           setStep("password")
         }
       } catch { /* keep polling */ }
@@ -196,19 +202,51 @@ export default function VerifyPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: rawPhone, password }),
       })
+      const data = await res.json()
       if (res.ok) {
-        const data = await res.json()
         if (data.token) localStorage.setItem("auth_token", data.token)
         localStorage.setItem("user_phone", rawPhone)
         bridgeNavigate("BirthInfo")
+      } else if (data.error === "PHONE_ALREADY_REGISTERED") {
+        navigateAndReplace("Login", { phone: rawPhone })
       }
     } finally {
       setSubmitting(false)
     }
   }
 
-  // ── Step: phone ───────────────────────────────────────────────
-  if (step === "phone") {
+  async function handleResetPassword() {
+    if (!canFinish) return
+    setSubmitting(true)
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: rawPhone, password }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        if (data.token) localStorage.setItem("auth_token", data.token)
+        localStorage.setItem("user_phone", rawPhone)
+        if (data.profileComplete) {
+          if (data.filterComplete) bridgeNavigate("Home")
+          else bridgeNavigate("Filter")
+        } else if (data.birthDate) bridgeNavigate("Blocking")
+        else bridgeNavigate("BirthInfo")
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function handlePasswordCta() {
+    if (!canFinish) return
+    if (mode === "register") setShowTerms(true)
+    else handleResetPassword()
+  }
+
+  // ── Step: start ───────────────────────────────────────────────
+  if (step === "start") {
     return (
       <Screen>
         <div className="h-[44px]" />
@@ -216,7 +254,9 @@ export default function VerifyPage() {
         <div className="flex-1 px-5 pt-[52px] flex flex-col gap-[48px] scroll-area overflow-y-auto pb-4">
           <div className="flex flex-col gap-3">
             <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
-              휴대폰 번호 인증으로<br />간편하게 가입해요.
+              {mode === "reset"
+                ? <>비밀번호 재설정을 위해<br />가입한 번호로 인증해 주세요.</>
+                : <>휴대폰 번호 인증으로<br />간편하게 가입해요.</>}
             </h1>
             <ol className="list-decimal flex flex-col gap-0 text-[14px] text-[#777] leading-normal tracking-[-0.14px] pl-[21px]">
               <li>하단 &apos;인증 코드 보내기&apos; 버튼을 눌러주세요.</li>
@@ -275,31 +315,7 @@ export default function VerifyPage() {
         </div>
 
         <PageFooter>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">휴대폰 번호</label>
-              <div
-                className={`h-[48px] rounded-[4px] px-4 flex items-center bg-white ${
-                  phoneTouched && !canSend ? "border border-[#ff3b30]"
-                  : canSend ? "border-[1.5px] border-[#90b7ff]"
-                  : "border border-[#dbdcdf]"
-                }`}
-              >
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="010-0000-0000"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  className="flex-1 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-transparent leading-normal tracking-[-0.32px]"
-                />
-              </div>
-              {phoneTouched && !canSend && (
-                <p className="text-[12px] text-[#ff3b30] leading-[1.4]">올바른 휴대폰 번호를 입력해주세요.</p>
-              )}
-            </div>
-            <CtaButton disabled={!canSend} onClick={handleSendSms}>인증 코드 보내기</CtaButton>
-          </div>
+          <CtaButton disabled={!rawPhone} onClick={handleSendSms}>인증 코드 보내기</CtaButton>
         </PageFooter>
       </Screen>
     )
@@ -347,7 +363,7 @@ export default function VerifyPage() {
           <div className="flex flex-col gap-2">
             <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">계정</label>
             <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
-              <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{phone}</span>
+              <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{formatPhone(rawPhone)}</span>
               <CircleCheck />
             </div>
           </div>
@@ -383,13 +399,13 @@ export default function VerifyPage() {
       </div>
 
       <PageFooter>
-        <CtaButton disabled={!canFinish} loading={submitting} onClick={() => canFinish && setShowTerms(true)}>
+        <CtaButton disabled={!canFinish} loading={submitting} onClick={handlePasswordCta}>
           {submitting ? "처리 중..." : "완료"}
         </CtaButton>
       </PageFooter>
 
-      {/* 이용약관 Bottom Sheet */}
-      {showTerms && (
+      {/* 이용약관 Bottom Sheet — 신규 가입일 때만 노출 */}
+      {showTerms && mode === "register" && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/61" onClick={() => setShowTerms(false)} />
           <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6 items-center">
@@ -425,5 +441,13 @@ export default function VerifyPage() {
         </div>
       )}
     </Screen>
+  )
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense>
+      <VerifyForm />
+    </Suspense>
   )
 }

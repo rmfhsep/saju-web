@@ -24,33 +24,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "password must contain letters and numbers" }, { status: 400 })
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
-
     const existing = await prisma.user.findUnique({ where: { phone } })
-
-    let userId: number
-    let isNew: boolean
-
     if (existing) {
-      // SMS 인증을 통해 본인 확인이 완료됐으므로 비밀번호 재설정 후 로그인
-      await prisma.user.update({
-        where: { phone },
-        data: { passwordHash },
-      })
-      userId = existing.id
-      isNew = false
-    } else {
-      const user = await prisma.user.create({ data: { phone, passwordHash } })
-      userId = user.id
-      isNew = true
+      return NextResponse.json({ error: "PHONE_ALREADY_REGISTERED" }, { status: 409 })
     }
 
-    const token = await signToken({ userId, phone })
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = await prisma.user.create({ data: { phone, passwordHash } })
+    const token = await signToken({ userId: user.id, phone })
 
-    return NextResponse.json(
-      { id: userId, phone, token, isNew },
-      { status: isNew ? 201 : 200 }
-    )
+    return NextResponse.json({ id: user.id, phone, token, isNew: true }, { status: 201 })
   } catch {
     return NextResponse.json({ error: "server error" }, { status: 500 })
   }

@@ -1,17 +1,35 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import StepHeader from "./StepHeader"
-import { ALL_LOCATIONS } from "../locations"
 import type { StepProps } from "../types"
 
 export default function StepLocation({ data, onChange, onNext, onBack, step }: StepProps) {
-  const [q, setQ] = useState("")
+  const [q, setQ] = useState(data.location)
+  const [results, setResults] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const filtered = q.trim() ? ALL_LOCATIONS.filter(l => l.includes(q.trim())) : ALL_LOCATIONS
+
+  useEffect(() => {
+    const query = q.trim()
+    if (!query) { setResults([]); setLoading(false); return }
+    setLoading(true)
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/kakao/address?query=${encodeURIComponent(query)}`)
+        const json = await res.json()
+        setResults(json.results ?? [])
+      } catch {
+        setResults([])
+      } finally {
+        setLoading(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [q])
 
   return (
     <Screen>
@@ -42,12 +60,18 @@ export default function StepLocation({ data, onChange, onNext, onBack, step }: S
         </div>
       </div>
       <div className="flex-1 scroll-area overflow-y-auto px-5">
-        {filtered.length === 0 ? (
+        {!q.trim() ? (
+          <p className="text-[14px] text-[#777] leading-relaxed pt-4">
+            시·군·구를 검색해주세요.
+          </p>
+        ) : loading ? (
+          <p className="text-[14px] text-[#777] leading-relaxed pt-4">검색 중...</p>
+        ) : results.length === 0 ? (
           <p className="text-[14px] text-[#777] leading-relaxed pt-4">
             검색 결과가 없어요.<br />주소를 다시 확인해주세요.
           </p>
         ) : (
-          filtered.map(loc => {
+          results.map(loc => {
             const selected = data.location === loc
             return (
               <button

@@ -23,7 +23,7 @@ export function useProfileForm() {
 
   async function finish() {
     await submitProfile(data)
-    bridgeNavigate("Home")
+    bridgeNavigate("Filter")
   }
 
   return { step, data, update, next, back }

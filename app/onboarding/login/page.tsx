@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { bridgeNavigate } from "@/lib/bridge"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { bridgeNavigate, navigateAndReplace } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
@@ -31,7 +32,8 @@ function EyeToggle({ visible, onClick }: { visible: boolean; onClick: () => void
   )
 }
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams()
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [showPw, setShowPw] = useState(false)
@@ -39,8 +41,21 @@ export default function LoginPage() {
   const [phoneError, setPhoneError] = useState("")
   const [pwError, setPwError] = useState("")
 
+  useEffect(() => {
+    const prefill = searchParams.get("phone")
+    if (prefill) setPhone(formatPhone(prefill))
+  }, [searchParams])
+
   const rawPhone = phone.replace(/\D/g, "")
   const canSubmit = rawPhone.length >= 10 && password.length >= 8
+
+  function handleForgotPassword() {
+    if (rawPhone.length < 10) {
+      setPhoneError("휴대폰 번호를 먼저 입력해주세요.")
+      return
+    }
+    navigateAndReplace("Verify", { phone: rawPhone, mode: "reset" })
+  }
 
   async function handleLogin() {
     if (!canSubmit || loading) return
@@ -67,8 +82,10 @@ export default function LoginPage() {
         localStorage.setItem("user_phone", rawPhone)
       }
 
-      if (data.profileComplete) bridgeNavigate("Home")
-      else if (data.birthDate) bridgeNavigate("Blocking")
+      if (data.profileComplete) {
+        if (data.filterComplete) bridgeNavigate("Home")
+        else bridgeNavigate("Filter")
+      } else if (data.birthDate) bridgeNavigate("Blocking")
       else bridgeNavigate("BirthInfo")
     } catch {
       setPwError("네트워크 오류가 발생했어요. 다시 시도해 주세요.")
@@ -127,7 +144,7 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <button
               type="button"
-              onClick={() => bridgeNavigate("Verify")}
+              onClick={handleForgotPassword}
               className="text-[14px] text-[#777] underline underline-offset-[3px]"
             >
               비밀번호를 잊으셨나요?
@@ -142,5 +159,13 @@ export default function LoginPage() {
         </CtaButton>
       </PageFooter>
     </Screen>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

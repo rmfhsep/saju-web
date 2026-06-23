@@ -4,6 +4,8 @@ import CtaButton from "@/components/ui/cta-button"
 import StepHeader from "./StepHeader"
 import type { StepProps } from "../types"
 
+const DISALLOWED_RE = /[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]/g
+
 export default function StepNickname({ data, onChange, onNext, onBack, step }: StepProps) {
   const max = 12
   const valid = data.nickname.trim().length > 0 && data.nickname.trim().length <= max
@@ -25,7 +27,7 @@ export default function StepNickname({ data, onChange, onNext, onBack, step }: S
               type="text"
               placeholder={`${max}자 이하 한글 및 영문으로 입력해주세요.`}
               value={data.nickname}
-              onChange={e => onChange({ nickname: e.target.value.slice(0, max) })}
+              onChange={e => onChange({ nickname: e.target.value.replace(DISALLOWED_RE, "").slice(0, max) })}
               className="w-full h-[48px] border border-[#d8d8d8] rounded-[8px] px-4 text-[16px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-[#9e9e9e]">
