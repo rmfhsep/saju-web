@@ -82,6 +82,12 @@ export function onContactsReceived(callback: (phones: string[]) => void) {
   ;(window as Window & { __onContactsReceived?: (phones: string[]) => void }).__onContactsReceived = callback
 }
 
+/** Register a one-time handler for native contacts-permission denial. */
+export function onContactsPermissionDenied(callback: () => void) {
+  if (typeof window === 'undefined') return
+  ;(window as Window & { __onContactsPermissionDenied?: () => void }).__onContactsPermissionDenied = callback
+}
+
 /** Open the native SMS app with recipient and body pre-filled. */
 export function bridgeOpenSms(phone: string, body: string) {
   const rn = getRN()

@@ -24,9 +24,9 @@ interface StepHeaderProps {
 export default function StepHeader({ onBack, step, title }: StepHeaderProps) {
   return (
     <>
-      <div className="h-[54px] flex items-center px-4">
+      <div className="h-[54px] flex items-center px-5">
         <BackButton onClick={onBack} />
-        {title && <span className="flex-1 text-center text-[17px] font-semibold text-[#0f0f10]">{title}</span>}
+        {title && <span className="flex-1 text-center text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">{title}</span>}
         {title && <div className="w-8" />}
       </div>
       <ProgressBar step={step} />

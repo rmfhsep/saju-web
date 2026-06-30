@@ -10,7 +10,6 @@ import {
   SMOKING_OPTIONS, DRINKING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
 } from "@/modules/profile/constants"
 import HeightRangeSlider from "./HeightRangeSlider"
-import { HEIGHT_MIN, HEIGHT_MAX } from "../constants"
 import type { FilterCategory, FilterData } from "../types"
 
 const TITLES: Record<FilterCategory, string> = {
@@ -31,13 +30,15 @@ const OPTIONS: Record<Exclude<FilterCategory, "height">, string[]> = {
 interface Props {
   category: FilterCategory
   data: FilterData
+  heightMin: number
+  heightMax: number
   onChange: (d: Partial<FilterData>) => void
   onSubmit: () => void
   onBack: () => void
   submitting: boolean
 }
 
-export default function DetailStep({ category, data, onChange, onSubmit, onBack, submitting }: Props) {
+export default function DetailStep({ category, data, heightMin, heightMax, onChange, onSubmit, onBack, submitting }: Props) {
   useEffect(() => {
     if (category !== "height" && !data[category]) {
       onChange({ [category]: OPTIONS[category][0] } as Partial<FilterData>)
@@ -47,7 +48,7 @@ export default function DetailStep({ category, data, onChange, onSubmit, onBack,
 
   return (
     <Screen>
-      <div className="h-[54px] flex items-center px-4">
+      <div className="h-[54px] flex items-center px-5">
         <BackButton onClick={onBack} />
       </div>
       <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
@@ -58,19 +59,19 @@ export default function DetailStep({ category, data, onChange, onSubmit, onBack,
             <div className="flex items-center justify-between">
               <span className="text-[14px] font-semibold text-[#1f1f1f]">범위 설정</span>
               <span className="text-[14px] text-[#1a73e8] font-semibold">
-                {data.heightMin}~{data.heightMax >= HEIGHT_MAX ? `${HEIGHT_MAX}+` : data.heightMax}cm
+                {data.heightMin}~{data.heightMax >= heightMax ? `${heightMax}+` : data.heightMax}cm
               </span>
             </div>
             <HeightRangeSlider
-              min={HEIGHT_MIN}
-              max={HEIGHT_MAX}
+              min={heightMin}
+              max={heightMax}
               valueMin={data.heightMin}
               valueMax={data.heightMax}
               onChange={(min, max) => onChange({ heightMin: min, heightMax: max })}
             />
             <div className="flex items-center justify-between text-[13px] text-[#9e9e9e]">
-              <span>{HEIGHT_MIN}cm</span>
-              <span>{HEIGHT_MAX}+cm</span>
+              <span>{heightMin}cm</span>
+              <span>{heightMax}+cm</span>
             </div>
           </div>
         ) : (

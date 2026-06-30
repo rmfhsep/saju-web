@@ -16,7 +16,7 @@ interface Props {
 export default function CategoryStep({ value, onSelect, onNext, onBack }: Props) {
   return (
     <Screen>
-      <div className="h-[54px] flex items-center px-4">
+      <div className="h-[54px] flex items-center px-5">
         <BackButton onClick={onBack} />
       </div>
       <div className="flex-1 px-5 pt-6 flex flex-col gap-6 scroll-area overflow-y-auto pb-4">

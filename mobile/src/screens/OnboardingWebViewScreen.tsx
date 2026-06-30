@@ -9,29 +9,12 @@ import { Contact, ContactField, requestPermissionsAsync } from 'expo-contacts';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
-import { WEB_URL } from '../config/env';
+import { SCREEN_PATHS, buildUrl } from '../lib/webBridge';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'OnboardingWebView'>;
   route: RouteProp<RootStackParamList, 'OnboardingWebView'>;
 };
-
-const SCREEN_PATHS: Record<string, string> = {
-  BirthInfo: '/onboarding/birth-info',
-  SajuResult: '/onboarding/result',
-  MatchPreview: '/onboarding/matches',
-  Blocking: '/onboarding/blocking',
-  ProfileSetup: '/onboarding/profile',
-  Filter: '/onboarding/filter',
-};
-
-function buildUrl(path: string, params?: Record<string, string>): string {
-  const base = WEB_URL.endsWith('/') ? WEB_URL.slice(0, -1) : WEB_URL;
-  const url = `${base}${path}`;
-  if (!params || Object.keys(params).length === 0) return url;
-  const qs = new URLSearchParams(params as Record<string, string>).toString();
-  return `${url}?${qs}`;
-}
 
 export default function OnboardingWebViewScreen({ navigation, route }: Props) {
   const { url } = route.params;
@@ -57,7 +40,7 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
       const { status } = await requestPermissionsAsync();
       if (status !== 'granted') {
         webViewRef.current?.injectJavaScript(
-          `window.__onContactsReceived && window.__onContactsReceived([]); true;`
+          `window.__onContactsPermissionDenied && window.__onContactsPermissionDenied(); true;`
         );
         return;
       }

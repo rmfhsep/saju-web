@@ -8,7 +8,13 @@ export const FILTER_CATEGORIES: { key: FilterCategory; label: string }[] = [
   { key: "religion", label: "종교" },
 ]
 
-export const HEIGHT_MIN = 168
-export const HEIGHT_MAX = 200
-export const DEFAULT_HEIGHT_MIN = 174
-export const DEFAULT_HEIGHT_MAX = 184
+// 선호 상대의 키 범위 — 내 성별 기준 이성의 범위 (여성: 140~170+, 남성: 168~200+)
+export const HEIGHT_RANGES = {
+  MALE: { min: 140, max: 170 },
+  FEMALE: { min: 168, max: 200 },
+} as const
+
+export function defaultHeightRange(min: number, max: number) {
+  const mid = Math.round((min + max) / 2)
+  return { min: mid - 10, max: mid }
+}

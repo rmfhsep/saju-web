@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { bridgeNavigate } from "@/lib/bridge"
+import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
 
 type User = {
   id: number
@@ -68,7 +69,7 @@ export default function HomePage() {
   if (!user) return null
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white" style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}>
       <div className="px-5 pt-14 pb-6">
         <p className="text-[14px] text-[#6b6b6b]">안녕하세요</p>
         <h1 className="text-[28px] font-bold text-[#0f0f10] mt-1">
@@ -100,6 +101,8 @@ export default function HomePage() {
           로그아웃
         </button>
       </div>
+
+      <AppBottomNav />
     </div>
   )
 }

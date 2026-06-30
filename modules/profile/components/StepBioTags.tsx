@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
@@ -12,8 +12,32 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
   const [customInput, setCustomInput] = useState("")
   const [showCustom, setShowCustom] = useState(false)
   const [toast, setToast] = useState(false)
-  const userTags = data.bioTags.filter(t => !DEFAULT_TAGS.includes(t))
-  const allTags = [...DEFAULT_TAGS, ...userTags]
+  const [suggestedTags, setSuggestedTags] = useState<string[]>(DEFAULT_TAGS)
+
+  useEffect(() => {
+    const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
+    if (!phone) return
+    fetch("/api/profile/suggest-tags", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        datingPurpose: data.datingPurpose,
+        politics: data.politics,
+        drinking: data.drinking,
+        smoking: data.smoking,
+      }),
+    })
+      .then(res => (res.ok ? res.json() : null))
+      .then((suggestion: { love: string[]; life: string[] } | null) => {
+        if (suggestion) setSuggestedTags([...suggestion.love, ...suggestion.life])
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const userTags = data.bioTags.filter(t => !suggestedTags.includes(t))
+  const allTags = [...suggestedTags, ...userTags]
 
   function toggleTag(tag: string) {
     const sel = data.bioTags.includes(tag)

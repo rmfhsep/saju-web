@@ -20,17 +20,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
-            var vv = window.visualViewport;
-            if (!vv) return;
+            var root = document.documentElement;
             function update() {
-              // React Native WebView에서는 KeyboardAvoidingView가 이미 뷰 크기를 줄여줌
-              // JS까지 패딩을 추가하면 키보드 높이만큼 두 번 처리되므로 건너뜀
-              if (window.ReactNativeWebView) return;
-              var kh = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-              document.documentElement.style.setProperty('--keyboard-height', kh + 'px');
+              var vv = window.visualViewport;
+              var h = vv ? Math.round(vv.height) : window.innerHeight;
+              var kh = Math.max(0, window.innerHeight - h);
+              root.style.setProperty('--app-height', h + 'px');
+              root.style.setProperty('--keyboard-height', kh + 'px');
             }
-            vv.addEventListener('resize', update);
-            vv.addEventListener('scroll', update);
+            update();
+            if (window.visualViewport) {
+              window.visualViewport.addEventListener('resize', update);
+              window.visualViewport.addEventListener('scroll', update);
+            }
+            window.addEventListener('resize', update);
+
+            // 인풋 포커스 시 화면 안으로 스크롤
+            document.addEventListener('focusin', function(e) {
+              var el = e.target;
+              if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+                setTimeout(function() {
+                  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }, 380);
+              }
+            });
           })();
         `}} />
       </head>

@@ -5,7 +5,10 @@ interface ScreenProps {
 
 export default function Screen({ children, className }: ScreenProps) {
   return (
-    <div className={`flex flex-col h-screen bg-white overflow-hidden ${className ?? ""}`}>
+    <div
+      className={`flex flex-col bg-white overflow-hidden ${className ?? ""}`}
+      style={{ height: "var(--app-height, 100dvh)" }}
+    >
       {children}
     </div>
   )

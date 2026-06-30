@@ -52,7 +52,7 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   return (
     <button
       type="button"
-      onClick={onChange}
+      onClick={e => { e.stopPropagation(); onChange() }}
       className={`w-[20px] h-[20px] rounded-[4px] flex items-center justify-center shrink-0 transition-colors ${
         checked ? "bg-[#b6d0ff]" : "border border-[#e1e2e4]"
       }`}
@@ -416,7 +416,7 @@ function VerifyForm() {
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-5">
                   {TERMS.map(term => (
-                    <button key={term.key} type="button" onClick={() => toggleTerm(term.key)} className="flex items-center gap-2">
+                    <div key={term.key} onClick={() => toggleTerm(term.key)} className="flex items-center gap-2 cursor-pointer">
                       <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
                       <div className="flex items-center gap-1">
                         <span className="text-[15px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.3px]">
@@ -425,7 +425,7 @@ function VerifyForm() {
                         </span>
                         {term.required && <span className="text-[12px] text-[#1a75ff] leading-[1.4]">필수</span>}
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
                 <div className={`rounded-[4px] p-4 flex items-center gap-2 ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}>

@@ -1,68 +1,56 @@
-# 마주(MAJU) 연애 사주 리포트 — AI 프롬프트 명세서
+/**
+ * prompt/maju_report_prompt_specv2.md 를 그대로 옮긴 Claude 호출 모듈.
+ * 계산 로직/매핑 테이블 문구는 spec 원문을 그대로 유지해야 출력 스키마가 보장된다.
+ */
+import { getClaude, parseClaudeJson } from "@/lib/claude"
+import type { SajuComputed } from "@/lib/saju"
 
-> **용도**: 사주팔자 입력값을 받아 연애 사주 리포트 4개 섹션을 동적으로 생성하는 Claude API 호출용 통합 프롬프트입니다.  
-> **모델**: `claude-sonnet-4-6`  
-> **출력 형식**: JSON
+const MODEL = "claude-sonnet-4-6"
 
----
-
-## 1. 시스템 프롬프트 (System Prompt)
-
-```
-당신은 사주 명리학 기반의 연애 기질 분석 전문가입니다.
+const SYSTEM_PROMPT = `당신은 사주 명리학 기반의 연애 기질 분석 전문가입니다.
 사용자의 사주팔자 데이터를 입력받아 연애 사주 리포트를 JSON 형식으로 출력합니다.
 반드시 아래 계산 로직과 매핑 테이블을 정확히 따라야 하며, 추론이나 임의 해석을 추가하지 마세요.
-응답은 반드시 JSON만 출력하고, 마크다운 코드블록(```)이나 설명 텍스트를 포함하지 마세요.
-```
+응답은 반드시 JSON만 출력하고, 마크다운 코드블록(\`\`\`)이나 설명 텍스트를 포함하지 마세요.`
 
----
+function buildUserPrompt(input: SajuComputed): string {
+  return `## 입력 데이터
 
-## 2. 유저 프롬프트 (User Prompt)
-
-> 아래 전체 텍스트를 API `messages[0].content`에 삽입합니다.  
-> `{{변수}}` 항목은 서버에서 실제 값으로 치환하세요.
-
----
-
-```
-## 입력 데이터
-
-- 일간(日干): {{일간}} (예: 갑, 을, 병, 정, 무, 기, 경, 신, 임, 계)
-- 일간 음양: {{음양}} (양간 또는 음간)
-- 시주 입력 여부: {{시주_입력여부}} (true 또는 false)
-- 세운(世運) 천간: {{세운_천간}} (올해의 천간)
-- 세운(世運) 지지: {{세운_지지}} (올해의 지지)
-- 일지(日支): {{일지}}
-- 월지(月支): {{월지}}
+- 일간(日干): ${input.일간} (예: 갑, 을, 병, 정, 무, 기, 경, 신, 임, 계)
+- 일간 음양: ${input.음양} (양간 또는 음간)
+- 시주 입력 여부: ${input.시주_입력여부} (true 또는 false)
+- 세운(世運) 천간: ${input.세운_천간} (올해의 천간)
+- 세운(世運) 지지: ${input.세운_지지} (올해의 지지)
+- 일지(日支): ${input.일지}
+- 월지(月支): ${input.월지}
 
 ### 십성(十星) 개수 (천간 4자 + 지지 4자 기준, 시주 미입력 시 3기둥 기준)
-- 식신(食神): {{식신_개수}}개
-- 상관(傷官): {{상관_개수}}개
-- 인성(印星, 정인+편인 합산): {{인성_개수}}개
-- 비겁(比劫): {{비겁_개수}}개
-- 관성(官星, 정관+편관 합산): {{관성_개수}}개
-- 재성(財星, 정재+편재 합산): {{재성_개수}}개
+- 식신(食神): ${input.식신_개수}개
+- 상관(傷官): ${input.상관_개수}개
+- 인성(印星, 정인+편인 합산): ${input.인성_개수}개
+- 비겁(比劫): ${input.비겁_개수}개
+- 관성(官星, 정관+편관 합산): ${input.관성_개수}개
+- 재성(財星, 정재+편재 합산): ${input.재성_개수}개
 
 ### 오행(五行) 개수 (천간 4자 + 지지 4자 기준)
-- 목(木): {{목_개수}}개
-- 화(火): {{화_개수}}개
-- 토(土): {{토_개수}}개
-- 금(金): {{금_개수}}개
-- 수(水): {{수_개수}}개
-- 수오행 점수 (0개→0, 1개→30, 2개→60, 3개↑→90): {{수오행_점수}}점
-- 음간보정 (음간→20, 양간→0): {{음간보정}}
+- 목(木): ${input.목_개수}개
+- 화(火): ${input.화_개수}개
+- 토(土): ${input.토_개수}개
+- 금(金): ${input.금_개수}개
+- 수(水): ${input.수_개수}개
+- 수오행 점수 (0개→0, 1개→30, 2개→60, 3개↑→90): ${input.수오행_점수}점
+- 음간보정 (음간→20, 양간→0): ${input.음간보정}
 
 ### 일간-세운 관계 (해당 항목 모두 true/false로 입력)
-- 천간 합(合): {{천간합}}
-- 천간 충(沖): {{천간충}}
-- 지지 합(合): {{지지합}}
-- 지지 충(沖): {{지지충}}
-- 생(生) 관계 (세운이 일간을 생): {{생관계}}
-- 극(克) 관계 (세운이 일간을 극): {{극관계}}
-- 비화(比和): {{비화}}
+- 천간 합(合): ${input.천간합}
+- 천간 충(沖): ${input.천간충}
+- 지지 합(合): ${input.지지합}
+- 지지 충(沖): ${input.지지충}
+- 생(生) 관계 (세운이 일간을 생): ${input.생관계}
+- 극(克) 관계 (세운이 일간을 극): ${input.극관계}
+- 비화(比和): ${input.비화}
 
 ### 일지·월지 충(沖) 여부
-- 일지·월지 충: {{일지월지충}} (true 또는 false)
+- 일지·월지 충: ${input.일지월지충} (true 또는 false)
 
 
 ---
@@ -71,81 +59,39 @@
 
 아래 JSON 스키마를 정확히 따라 출력하세요.
 
-```json
+\`\`\`json
 {
   "meta": {
     "시주입력여부": true | false,
     "시주미입력안내": "시간 미입력으로 일부 수치가 부정확할 수 있어요." // 시주 미입력 시에만 포함
   },
   "섹션1_연애기질": {
-    "표현방식": {
-      "원점수": 0,
-      "최종점수": 0,
-      "태그": "",
-      "설명": ""
+    "ai_tags": {
+      "express": 0,   // 표현방식 최종점수 (0~100) — 낮을수록 내향·신중 / 높을수록 표현형·감성형
+      "emotion": 0,   // 감정깊이 최종점수 (0~100) — 낮을수록 가볍고 유쾌함 / 높을수록 깊고 진지함
+      "lead": 0,      // 주도성 최종점수 (0~100) — 낮을수록 수동형·배려형 / 높을수록 리드형·추진력형
+      "attach": 0     // 집착도 최종점수 (0~100) — 낮을수록 독립적 / 높을수록 밀착형·의존형
     },
-    "감정깊이": {
-      "원점수": 0,
-      "최종점수": 0,
-      "태그": "",
-      "설명": ""
-    },
-    "주도성": {
-      "원점수": 0,
-      "최종점수": 0,
-      "태그": "",
-      "설명": ""
-    },
-    "집착도": {
-      "원점수": 0,
-      "최종점수": 0,
-      "태그": "",
-      "설명": ""
-    }
+    "표현방식": { "원점수": 0, "최종점수": 0, "태그": "", "설명": "" },
+    "감정깊이": { "원점수": 0, "최종점수": 0, "태그": "", "설명": "" },
+    "주도성": { "원점수": 0, "최종점수": 0, "태그": "", "설명": "" },
+    "집착도": { "원점수": 0, "최종점수": 0, "태그": "", "설명": "" }
   },
   "섹션2_이상형유형": {
-    "끌리는유형": {
-      "유형명": "",
-      "설명": "",
-      "태그": []
-    },
-    "피하면좋은유형": {
-      "유형명": "",
-      "설명": "",
-      "태그": []
-    }
+    "끌리는유형": { "유형명": "", "설명": "", "태그": [] },
+    "피하면좋은유형": { "유형명": "", "설명": "", "태그": [] }
   },
   "섹션3_올해연애운": {
-    "상반기": {
-      "기간": "1–6월",
-      "레벨": "HIGH | MID | LOW",
-      "텍스트": ""
-    },
-    "하반기": {
-      "기간": "7–9월",
-      "레벨": "HIGH | MID | LOW",
-      "텍스트": ""
-    },
-    "연말": {
-      "기간": "10–12월",
-      "레벨": "HIGH | MID | LOW",
-      "텍스트": ""
-    }
+    "상반기": { "기간": "1–6월", "레벨": "HIGH | MID | LOW", "텍스트": "" },
+    "하반기": { "기간": "7–9월", "레벨": "HIGH | MID | LOW", "텍스트": "" },
+    "연말": { "기간": "10–12월", "레벨": "HIGH | MID | LOW", "텍스트": "" }
   },
   "섹션4_주의포인트": [
-    {
-      "id": "C01",
-      "제목": "",
-      "설명": ""
-    },
-    {
-      "id": "C02",
-      "제목": "",
-      "설명": ""
-    }
+    { "id": "C01", "제목": "", "설명": "" },
+    { "id": "C02", "제목": "", "설명": "" }
   ]
 }
-```
+\`\`\`
 
 
 ---
@@ -319,134 +265,36 @@
 
 ---
 
-지금까지의 입력 데이터와 위 로직을 바탕으로 최종 JSON을 출력하세요.
-```
+지금까지의 입력 데이터와 위 로직을 바탕으로 최종 JSON을 출력하세요.`
+}
 
----
+export interface SajuReport {
+  meta: { 시주입력여부: boolean; 시주미입력안내?: string }
+  섹션1_연애기질: {
+    ai_tags: { express: number; emotion: number; lead: number; attach: number }
+    표현방식: { 원점수: number; 최종점수: number; 태그: string; 설명: string }
+    감정깊이: { 원점수: number; 최종점수: number; 태그: string; 설명: string }
+    주도성: { 원점수: number; 최종점수: number; 태그: string; 설명: string }
+    집착도: { 원점수: number; 최종점수: number; 태그: string; 설명: string }
+  }
+  섹션2_이상형유형: {
+    끌리는유형: { 유형명: string; 설명: string; 태그: string[] }
+    피하면좋은유형: { 유형명: string; 설명: string; 태그: string[] }
+  }
+  섹션3_올해연애운: {
+    상반기: { 기간: string; 레벨: "HIGH" | "MID" | "LOW"; 텍스트: string }
+    하반기: { 기간: string; 레벨: "HIGH" | "MID" | "LOW"; 텍스트: string }
+    연말: { 기간: string; 레벨: "HIGH" | "MID" | "LOW"; 텍스트: string }
+  }
+  섹션4_주의포인트: { id: string; 제목: string; 설명: string }[]
+}
 
-## 3. API 호출 예시 코드 (Node.js / TypeScript)
-
-```typescript
-const response = await fetch("https://api.anthropic.com/v1/messages", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    // API 키는 서버 환경변수에서 주입 (클라이언트 노출 금지)
-  },
-  body: JSON.stringify({
-    model: "claude-sonnet-4-6",
+export async function generateSajuReport(input: SajuComputed): Promise<SajuReport> {
+  const response = await getClaude().messages.create({
+    model: MODEL,
     max_tokens: 2000,
-    system: `당신은 사주 명리학 기반의 연애 기질 분석 전문가입니다.
-사용자의 사주팔자 데이터를 입력받아 연애 사주 리포트를 JSON 형식으로 출력합니다.
-반드시 아래 계산 로직과 매핑 테이블을 정확히 따라야 하며, 추론이나 임의 해석을 추가하지 마세요.
-응답은 반드시 JSON만 출력하고, 마크다운 코드블록이나 설명 텍스트를 포함하지 마세요.`,
-    messages: [
-      {
-        role: "user",
-        content: buildUserPrompt(sajuInput), // 위 유저 프롬프트 템플릿에 변수 치환
-      },
-    ],
-  }),
-});
-
-const data = await response.json();
-const resultText = data.content
-  .filter((item: any) => item.type === "text")
-  .map((item: any) => item.text)
-  .join("");
-
-const report = JSON.parse(resultText); // 섹션 1~4 포함 JSON
-```
-
----
-
-## 4. 입력 변수 치환 함수 예시
-
-```typescript
-function buildUserPrompt(input: SajuInput): string {
-  return PROMPT_TEMPLATE
-    .replace("{{일간}}", input.ilgan)
-    .replace("{{음양}}", input.eumyang)
-    .replace("{{시주_입력여부}}", String(input.hasSiJu))
-    .replace("{{세운_천간}}", input.sewun.cheongan)
-    .replace("{{세운_지지}}", input.sewun.jiji)
-    .replace("{{일지}}", input.ilji)
-    .replace("{{월지}}", input.wolji)
-    .replace("{{식신_개수}}", String(input.sipseong.sikshin))
-    .replace("{{상관_개수}}", String(input.sipseong.sanggwan))
-    .replace("{{인성_개수}}", String(input.sipseong.inseong))
-    .replace("{{비겁_개수}}", String(input.sipseong.bigeob))
-    .replace("{{관성_개수}}", String(input.sipseong.gwanseong))
-    .replace("{{재성_개수}}", String(input.sipseong.jaeseong))
-    .replace("{{목_개수}}", String(input.ohaeng.mok))
-    .replace("{{화_개수}}", String(input.ohaeng.hwa))
-    .replace("{{토_개수}}", String(input.ohaeng.to))
-    .replace("{{금_개수}}", String(input.ohaeng.geum))
-    .replace("{{수_개수}}", String(input.ohaeng.su))
-    .replace("{{수오행_점수}}", String(input.suScore))
-    .replace("{{음간보정}}", String(input.eumganBojeong))
-    .replace("{{천간합}}", String(input.sewunRelation.cheonganHap))
-    .replace("{{천간충}}", String(input.sewunRelation.cheonganChung))
-    .replace("{{지지합}}", String(input.sewunRelation.jijiHap))
-    .replace("{{지지충}}", String(input.sewunRelation.jijiChung))
-    .replace("{{생관계}}", String(input.sewunRelation.saeng))
-    .replace("{{극관계}}", String(input.sewunRelation.geuk))
-    .replace("{{비화}}", String(input.sewunRelation.bihwa))
-    .replace("{{일지월지충}}", String(input.iljiWoljiChung));
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: buildUserPrompt(input) }],
+  })
+  return parseClaudeJson<SajuReport>(response.content)
 }
-```
-
----
-
-## 5. 응답 JSON 예시
-
-```json
-{
-  "meta": {
-    "시주입력여부": false,
-    "시주미입력안내": "시간 미입력으로 일부 수치가 부정확할 수 있어요."
-  },
-  "섹션1_연애기질": {
-    "표현방식": { "원점수": 62, "최종점수": 72, "태그": "표현형", "설명": "감정을 말로 자주 전달하고, 솔직한 편이에요" },
-    "감정깊이": { "원점수": 55, "최종점수": 45, "태그": "균형형", "설명": "상황에 따라 감정 깊이가 달라지고, 크게 치우치지 않아요" },
-    "주도성": { "원점수": 48, "최종점수": 58, "태그": "유동형", "설명": "좋아하는 감정이 확실하면 먼저 표현하기도 해요" },
-    "집착도": { "원점수": 44, "최종점수": 34, "태그": "독립형", "설명": "좋아해도 집착하지 않으려 노력하는 편이에요" }
-  },
-  "섹션2_이상형유형": {
-    "끌리는유형": {
-      "유형명": "든든한 리더형",
-      "설명": "방향을 제시하고 이끌어주는 사람에게서 안정감을 느껴요",
-      "태그": ["안정적", "신뢰감", "결단력", "다정한"]
-    },
-    "피하면좋은유형": {
-      "유형명": "즉흥적 자유형",
-      "설명": "계획 없이 감정대로 움직이는 사람과는 마찰이 잦아요",
-      "태그": ["즉흥적", "변덕스러운", "불안정"]
-    }
-  },
-  "섹션3_올해연애운": {
-    "상반기": { "기간": "1–6월", "레벨": "MID", "텍스트": "인연의 씨앗이 뿌려지는 시기예요. 새로운 만남보다 가까운 사람과의 관계가 깊어질 가능성이 높아요." },
-    "하반기": { "기간": "7–9월", "레벨": "HIGH", "텍스트": "연애운이 가장 강한 시기예요. 이성의 시선을 끌기 좋고, 적극적으로 움직일수록 결실이 생겨요." },
-    "연말": { "기간": "10–12월", "레벨": "MID", "텍스트": "감정이 안정되는 시기예요. 관계의 방향을 조용히 돌아보고 정리해보는 것도 좋아요." }
-  },
-  "섹션4_주의포인트": [
-    { "id": "C04", "제목": "완벽한 상대를 찾으려 해요", "설명": "조건이 맞아도 감정이 없으면 오래가기 어려워요. 기준보다 감정의 흐름을 먼저 따라가 보세요." },
-    { "id": "C07", "제목": "관계가 자주 흔들려요", "설명": "안정적인 기반이 약해질 수 있어요. 작은 약속을 꾸준히 지키는 것이 관계를 단단하게 해요." }
-  ]
-}
-```
-
----
-
-## 6. 주요 예외처리 요약
-
-| 상황 | 처리 |
-|-----|-----|
-| 시주 미입력 | 3기둥(연·월·일주) 기준 계산, `meta.시주미입력안내` 노출, C09 제외 |
-| 오프셋 후 0 미만 | `Math.max(0, 값)` 클램핑 |
-| 오프셋 후 100 초과 | `Math.min(100, 값)` 클램핑 |
-| 십성 데이터 누락 | 해당 점수 0으로 처리 |
-| 트리거 조건 없음 | C02, C04 기본 노출 |
-| 트리거 1개만 해당 | 해당 항목 + C04 조합 |
-| 동점 3개 이상 | ID 오름차순 상위 2개 선택 |
-| 복수 세운 관계 해당 | HIGH=2, MID=1, LOW=0 가중 평균 후 반올림 |

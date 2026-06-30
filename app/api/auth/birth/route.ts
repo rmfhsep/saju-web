@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { computeSaju } from "@/lib/saju"
+import { generateSajuReport } from "@/lib/prompts/sajuReport"
 
 const VALID_GENDERS = ["MALE", "FEMALE"] as const
 const VALID_CALENDAR_TYPES = ["SOLAR", "LUNAR", "LUNAR_LEAP"] as const
@@ -36,6 +38,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "user not found" }, { status: 404 })
     }
 
+    let sajuResult: string | null = null
+    try {
+      const saju = computeSaju(
+        { birthDate, birthTime: birthTimeUnknown ? null : birthTime, birthTimeUnknown: !!birthTimeUnknown, calendarType },
+        gender,
+      )
+      const report = await generateSajuReport(saju)
+      sajuResult = JSON.stringify(report)
+    } catch (err) {
+      console.error("saju report generation failed", err)
+    }
+
     const user = await prisma.user.update({
       where: { phone },
       data: {
@@ -45,6 +59,7 @@ export async function POST(req: NextRequest) {
         birthDate,
         birthTime: birthTimeUnknown ? null : (birthTime || null),
         birthTimeUnknown: !!birthTimeUnknown,
+        ...(sajuResult ? { sajuResult } : {}),
       },
     })
 

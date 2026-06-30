@@ -1,7 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { bridgeBack, bridgeNavigate, bridgeRequestContacts, onContactsReceived } from "@/lib/bridge"
+import {
+  bridgeBack,
+  bridgeNavigate,
+  bridgeRequestContacts,
+  onContactsPermissionDenied,
+  onContactsReceived,
+} from "@/lib/bridge"
+import Screen from "@/components/ui/screen"
+import PageFooter from "@/components/ui/page-footer"
+import CtaButton from "@/components/ui/cta-button"
 
 type Phase = "intro" | "loading" | "done"
 
@@ -26,6 +35,11 @@ export default function BlockingPage() {
       }
       setTimeout(() => setPhase("done"), 500)
     })
+
+    onContactsPermissionDenied(() => {
+      setPhase("intro")
+      setShowPermModal(true)
+    })
   }, [])
 
   function handleBlock() {
@@ -41,16 +55,13 @@ export default function BlockingPage() {
 
   if (phase === "done") {
     return (
-      <div className="flex flex-col min-h-screen bg-white">
-        {/* Centered content */}
+      <Screen>
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          {/* Done check icon */}
           <div className="w-[56px] h-[56px] rounded-full bg-[#b6d0ff] flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M5 12.5L9.5 17L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          {/* Text */}
           <div className="flex flex-col gap-2 items-start px-5 w-full text-center">
             <p className="font-bold text-[24px] leading-[1.4] tracking-[-0.48px] text-[#1f1f1f] w-full">
               지인 {blockedCount}명을 차단했어요.
@@ -61,26 +72,19 @@ export default function BlockingPage() {
           </div>
         </div>
 
-        {/* Button area */}
-        <div className="flex flex-col gap-4 p-5 pb-safe keyboard-safe-bottom">
+        <PageFooter className="flex flex-col gap-4">
           <p className="text-[12px] leading-[1.4] text-[#777] text-center w-full">
             언제든 지인을 추가로 차단하거나, 차단을 해제할 수 있어요.
           </p>
-          <button
-            onClick={() => bridgeNavigate("ProfileSetup")}
-            className="w-full h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold leading-[1.4] tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
-          >
-            다음
-          </button>
-        </div>
-      </div>
+          <CtaButton onClick={() => bridgeNavigate("ProfileSetup")}>다음</CtaButton>
+        </PageFooter>
+      </Screen>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white relative">
-      {/* Header */}
-      <div className="flex items-center px-4 h-[52px]">
+    <Screen className="relative">
+      <div className="h-[52px] flex items-center px-5">
         <button
           onClick={() => bridgeBack()}
           className="flex items-center justify-center w-6 h-6"
@@ -94,8 +98,7 @@ export default function BlockingPage() {
         </span>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col gap-3 px-5 pt-5">
+      <div className="flex-1 flex flex-col gap-3 px-5 pt-5 scroll-area overflow-y-auto">
         <p className="font-bold text-[24px] leading-[1.4] tracking-[-0.48px] text-[#1f1f1f] whitespace-pre-wrap">
           {"프로필을 만들기 전에, \n연락처에 있는 지인을 \n먼저 차단할까요?"}
         </p>
@@ -104,8 +107,7 @@ export default function BlockingPage() {
         </p>
       </div>
 
-      {/* CTA */}
-      <div className="mt-auto p-5 pb-safe keyboard-safe-bottom">
+      <PageFooter>
         <div className="flex gap-2 items-center">
           <button
             onClick={() => bridgeNavigate("ProfileSetup")}
@@ -113,14 +115,9 @@ export default function BlockingPage() {
           >
             다음에
           </button>
-          <button
-            onClick={handleBlock}
-            className="flex-1 h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold leading-[1.4] tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
-          >
-            지인 차단하기
-          </button>
+          <CtaButton onClick={handleBlock} className="flex-1">지인 차단하기</CtaButton>
         </div>
-      </div>
+      </PageFooter>
 
       {/* Loading overlay */}
       {phase === "loading" && (
@@ -181,6 +178,6 @@ export default function BlockingPage() {
           </div>
         </div>
       )}
-    </div>
+    </Screen>
   )
 }
