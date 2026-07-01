@@ -1,60 +1,14 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
-import { GlassContainer, GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 
 export type TabKey = 'recommend' | 'like' | 'message' | 'my';
 
-const ACTIVE_COLOR = '#1a75ff';
-const INACTIVE_COLOR = '#9e9e9e';
-
-function TabIcon({ tab, active }: { tab: TabKey; active: boolean }) {
-  const color = active ? ACTIVE_COLOR : INACTIVE_COLOR;
-  switch (tab) {
-    case 'recommend':
-      return (
-        <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
-          <Path
-            d="M10 2.5l2.2 4.46 4.92.72-3.56 3.47.84 4.9L10 13.6l-4.4 2.45.84-4.9L2.88 7.68l4.92-.72L10 2.5z"
-            stroke={color}
-            strokeWidth={1.5}
-            strokeLinejoin="round"
-            fill={active ? color : 'none'}
-          />
-        </Svg>
-      );
-    case 'like':
-      return (
-        <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
-          <Path
-            d="M10 17s-6.5-4-6.5-8.7C3.5 5.5 5.4 4 7.4 4c1 0 2 .5 2.6 1.4C10.6 4.5 11.6 4 12.6 4c2 0 3.9 1.5 3.9 4.3C16.5 13 10 17 10 17z"
-            stroke={color}
-            strokeWidth={1.5}
-            strokeLinejoin="round"
-          />
-        </Svg>
-      );
-    case 'message':
-      return (
-        <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
-          <Path
-            d="M3 4h14a1 1 0 011 1v9a1 1 0 01-1 1H7l-4 3v-3a1 1 0 01-1-1V5a1 1 0 011-1z"
-            stroke={color}
-            strokeWidth={1.5}
-            strokeLinejoin="round"
-          />
-        </Svg>
-      );
-    case 'my':
-      return (
-        <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
-          <Circle cx={10} cy={6.5} r={3.5} stroke={color} strokeWidth={1.5} />
-          <Path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
-        </Svg>
-      );
-  }
-}
+const LABEL_COLOR = '#1f1f1f';
+const ICON_ACTIVE_COLOR = '#1f1f1f';
+const ICON_INACTIVE_COLOR = '#8e8e93';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'recommend', label: '추천' },
@@ -63,97 +17,167 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'my', label: '내 정보' },
 ];
 
-// Liquid Glass가 지원되지 않는 기기/버전용 폴백 탭바
-function FallbackTabBar({
+function TabIcon({
+  tab,
   active,
-  onPress,
-  bottomPad,
+  profilePhotoUrl,
 }: {
-  active: TabKey | null;
-  onPress: (tab: TabKey) => void;
-  bottomPad: number;
+  tab: TabKey;
+  active: boolean;
+  profilePhotoUrl?: string;
 }) {
-  return (
-    <View style={[styles.wrapper, { paddingBottom: bottomPad + 16 }]}>
-      <View style={styles.fallbackBar}>
-        {TABS.map(tab => {
-          const isActive = active === tab.key;
-          return (
-            <Pressable key={tab.key} onPress={() => onPress(tab.key)} style={styles.tabButton}>
-              <TabIcon tab={tab.key} active={isActive} />
-              <Text style={[styles.label, { color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR }]}>
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
+  const color = active ? ICON_ACTIVE_COLOR : ICON_INACTIVE_COLOR;
+
+  switch (tab) {
+    case 'recommend':
+      // 집/홈 아이콘 — 추천 피드
+      return (
+        <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Path
+            d="M2 9.5L11 2l9 7.5V20a1 1 0 01-1 1H14v-6H8v6H3a1 1 0 01-1-1V9.5z"
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinejoin="round"
+            fill={active ? color : 'none'}
+          />
+        </Svg>
+      );
+    case 'like':
+      // 하트 아이콘
+      return (
+        <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Path
+            d="M11 19S3 13.8 3 7.8C3 5 5.2 3 7.8 3c1.3 0 2.5.7 3.2 1.8C11.7 3.7 12.9 3 14.2 3 16.8 3 19 5 19 7.8 19 13.8 11 19 11 19z"
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+    case 'message':
+      // 말풍선 아이콘
+      return (
+        <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Path
+            d="M4 4h14a1 1 0 011 1v9a1 1 0 01-1 1H8.5L4 18.5V15a1 1 0 01-1-1V5a1 1 0 011-1z"
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+    case 'my':
+      // 피그마: 내 정보 탭은 실제 프로필 사진을 원형으로 보여줌
+      if (profilePhotoUrl) {
+        return (
+          <Image
+            source={{ uri: profilePhotoUrl }}
+            style={styles.profilePhoto}
+          />
+        );
+      }
+      // 프로필 사진 없을 때 기본 사람 아이콘
+      return (
+        <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Circle cx={11} cy={7.5} r={4} stroke={color} strokeWidth={1.6} />
+          <Path
+            d="M3 19c0-4 3.6-7 8-7s8 3 8 7"
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinecap="round"
+          />
+        </Svg>
+      );
+  }
 }
 
 export default function LiquidTabBar({
   active,
   onPress,
+  profilePhotoUrl,
 }: {
   active: TabKey | null;
   onPress: (tab: TabKey) => void;
+  profilePhotoUrl?: string;
 }) {
   const insets = useSafeAreaInsets();
+  const glassAvailable = isGlassEffectAPIAvailable();
+
+  // 선택 pill 좌측 위치 애니메이션
+  const pillAnim = useRef(new Animated.Value(0)).current;
+  const activeIdx = active ? TABS.findIndex(t => t.key === active) : 0;
+
+  useEffect(() => {
+    Animated.spring(pillAnim, {
+      toValue: activeIdx,
+      useNativeDriver: false,
+      tension: 350,
+      friction: 28,
+    }).start();
+  }, [activeIdx, pillAnim]);
+
   const bottomPad = insets.bottom || 0;
 
-  // Liquid Glass API가 없는 기기(iOS 26 미만 등)는 폴백으로 렌더링
-  if (!isGlassEffectAPIAvailable()) {
-    return <FallbackTabBar active={active} onPress={onPress} bottomPad={bottomPad} />;
-  }
+  // 탭 버튼 공통 렌더
+  const renderButtons = () =>
+    TABS.map(tab => {
+      const isActive = active === tab.key;
+      return (
+        <Pressable
+          key={tab.key}
+          onPress={() => onPress(tab.key)}
+          style={styles.tabButton}
+          hitSlop={{ top: 6, bottom: 6, left: 2, right: 2 }}
+        >
+          <TabIcon tab={tab.key} active={isActive} profilePhotoUrl={profilePhotoUrl} />
+          <Text style={[styles.label, isActive && styles.labelActive]}>
+            {tab.label}
+          </Text>
+        </Pressable>
+      );
+    });
+
+  // 선택 pill: 탭 1개 너비를 25%로 보고, -2px 여유를 줘서 버튼보다 살짝 넓게
+  const pillLeft = pillAnim.interpolate({
+    inputRange: [0, 1, 2, 3],
+    outputRange: ['0%', '25%', '50%', '75%'],
+  });
+
+  const content = (
+    <View style={styles.innerRow}>
+      {/* 선택 pill 배경 */}
+      {active !== null && (
+        <Animated.View style={[styles.selectionPill, { left: pillLeft }]} />
+      )}
+      {renderButtons()}
+    </View>
+  );
 
   return (
-    <View pointerEvents="box-none" style={[styles.wrapper, { paddingBottom: bottomPad + 16 }]}>
-      {/*
-       * GlassContainer: 내부 GlassView들이 가까워질 때 서로 합쳐지는(morph) Liquid Glass 그룹.
-       * 탭바 전체(bar)와 선택 표시자(pill)를 같은 컨테이너에 두어 iOS 26 모핑 효과를 활성화.
-       */}
-      <GlassContainer spacing={8} style={styles.glassContainer}>
-        {/* 선택된 탭 하이라이트 pill — bar와 같은 GlassContainer 안에서 모핑 */}
-        {active !== null && (
-          <GlassView
-            glassEffectStyle={{ style: 'clear', animate: true, animationDuration: 0.25 }}
-            tintColor="rgba(26,117,255,0.15)"
-            colorScheme="light"
-            style={[
-              styles.selectionPill,
-              { left: `${TABS.findIndex(t => t.key === active) * 25}%` as any },
-            ]}
-          />
-        )}
-
-        {/* 메인 탭바 — overflow 없이 borderRadius만으로 모양을 잡아 블러가 제대로 렌더링되게 함 */}
+    <View
+      pointerEvents="box-none"
+      style={[styles.wrapper, { paddingBottom: bottomPad + 8 }]}
+    >
+      {glassAvailable && Platform.OS === 'ios' ? (
+        // iOS 26+ Liquid Glass 탭바
         <GlassView
           glassEffectStyle="regular"
           colorScheme="light"
           style={styles.bar}
         >
-          {TABS.map(tab => {
-            const isActive = active === tab.key;
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => onPress(tab.key)}
-                style={styles.tabButton}
-                android_ripple={{ color: 'rgba(0,0,0,0.05)', borderless: true }}
-              >
-                <TabIcon tab={tab.key} active={isActive} />
-                <Text style={[styles.label, { color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR }]}>
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {content}
         </GlassView>
-      </GlassContainer>
+      ) : (
+        // 폴백: 피그마 디자인 그대로 (반투명 흰 pill)
+        <View style={[styles.bar, styles.fallbackBg]}>
+          {content}
+        </View>
+      )}
     </View>
   );
 }
+
+const BAR_RADIUS = 999;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -165,55 +189,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingTop: 16,
   },
-  glassContainer: {
+  bar: {
     width: '100%',
     maxWidth: 430,
-    position: 'relative',
-    minHeight: 65,
-  },
-  // 선택 pill: 탭 1개 너비(25%)를 차지하는 절대 위치 GlassView
-  selectionPill: {
-    position: 'absolute',
-    top: 4,
-    width: '25%',
-    bottom: 4,
-    borderRadius: 100,
-    zIndex: 1,
-  },
-  bar: {
-    flexDirection: 'row',
-    borderRadius: 296,
-    // overflow: 'hidden' 제거 — 이게 있으면 네이티브 블러 렌더링이 막혀 glass 효과가 사라짐
+    borderRadius: BAR_RADIUS,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
-    elevation: 8,
-    zIndex: 0,
+    elevation: 6,
+  },
+  fallbackBg: {
+    backgroundColor: 'rgba(255,255,255,0.92)',
+  },
+  innerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 49,
+    paddingHorizontal: 2,
+    position: 'relative',
+  },
+  // 피그마: inset-[0_-2px] → 탭 너비의 25%, 위아래 여백 6px
+  selectionPill: {
+    position: 'absolute',
+    top: 6,
+    bottom: 6,
+    width: '25%',
+    backgroundColor: '#efefef',
+    borderRadius: BAR_RADIUS,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    paddingVertical: 12,
-    zIndex: 2,
+    gap: 3,
+    zIndex: 1,
+    paddingVertical: 6,
   },
   label: {
     fontSize: 9,
     fontWeight: '500',
+    color: ICON_INACTIVE_COLOR,
     lineHeight: 12,
   },
-  // Liquid Glass 미지원 기기용 폴백
-  fallbackBar: {
-    flexDirection: 'row',
-    borderRadius: 296,
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    width: '100%',
-    maxWidth: 430,
+  labelActive: {
+    color: LABEL_COLOR,
+    fontWeight: '600',
+  },
+  profilePhoto: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#e0e0e0',
   },
 });
