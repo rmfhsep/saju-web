@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from "jose"
 
-const secret = new TextEncoder().encode("JWT_SECRET_REMOVED")
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? "saju-dev-secret"
+)
 
 export async function signToken(payload: { userId: number; phone: string }) {
   return new SignJWT(payload as Record<string, unknown>)
