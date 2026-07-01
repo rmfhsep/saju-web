@@ -1,10 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk"
 
+const ANTHROPIC_API_KEY = "ANTHROPIC_API_KEY_REMOVED"
+
 let _claude: Anthropic | null = null
 
 export function getClaude(): Anthropic {
   if (!_claude) {
-    _claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    _claude = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
   }
   return _claude
 }

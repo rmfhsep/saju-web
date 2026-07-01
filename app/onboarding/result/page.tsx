@@ -186,6 +186,29 @@ function ResultContent() {
   const [loveOpen, setLoveOpen] = useState(true)
   const [report, setReport] = useState<SajuReport | null>(null)
   const [loading, setLoading] = useState(true)
+  const [retrying, setRetrying] = useState(false)
+  const [retryError, setRetryError] = useState<string | null>(null)
+
+  async function generateReport(token: string) {
+    setRetrying(true)
+    setRetryError(null)
+    try {
+      const res = await fetch("/api/saju/generate", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (res.ok && data.sajuResult) {
+        try { setReport(JSON.parse(data.sajuResult)) } catch { /* ignore */ }
+      } else {
+        setRetryError(data.detail ?? data.error ?? "알 수 없는 오류")
+      }
+    } catch (e) {
+      setRetryError(String(e))
+    } finally {
+      setRetrying(false)
+    }
+  }
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
@@ -195,16 +218,20 @@ function ResultContent() {
       .then(user => {
         if (user?.sajuResult) {
           try { setReport(JSON.parse(user.sajuResult)) } catch { /* ignore */ }
+        } else if (user) {
+          // sajuResult가 없으면 자동으로 생성 시도
+          generateReport(token)
         }
       })
       .finally(() => setLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const genderLabel = gender === "MALE" ? " (남성)" : gender === "FEMALE" ? " (여성)" : ""
   const isMale = gender === "MALE"
   const birthDisplay = formatBirthDisplay(bd, bt, calendarType)
 
-  if (loading) return <LoadingState name={name} />
+  if (loading || retrying) return <LoadingState name={name} />
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -251,9 +278,22 @@ function ResultContent() {
         </div>
 
         {!report ? (
-          <p className="text-[14px] text-[#777] leading-relaxed">
-            연애운 분석에 실패했어요. 잠시 후 다시 시도해주세요.
-          </p>
+          <div className="flex flex-col gap-4 items-start">
+            <p className="text-[14px] text-[#777] leading-relaxed">
+              {retryError
+                ? `분석 중 오류가 발생했어요.\n${retryError}`
+                : "연애운 분석에 실패했어요. 다시 시도해주세요."}
+            </p>
+            <button
+              onClick={() => {
+                const token = localStorage.getItem("auth_token")
+                if (token) generateReport(token)
+              }}
+              className="h-[44px] px-6 bg-[#b6d0ff] rounded-[4px] text-[15px] font-semibold text-[#1f1f1f]"
+            >
+              다시 분석하기
+            </button>
+          </div>
         ) : (
           <>
             {/* ── 남성 레이아웃 ── */}
