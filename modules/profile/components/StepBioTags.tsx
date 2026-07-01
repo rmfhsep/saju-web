@@ -5,14 +5,38 @@ import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import StepHeader from "./StepHeader"
-import { DEFAULT_TAGS } from "../constants"
 import type { StepProps } from "../types"
+
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M1 1L13 13M13 1L1 13" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DeleteIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="8" fill="#d9d9d9" />
+      <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Toast({ message }: { message: string }) {
+  return (
+    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 bg-black/[0.74] text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap z-20 tracking-[-0.14px]">
+      {message}
+    </div>
+  )
+}
 
 export default function StepBioTags({ data, onChange, onNext, onBack, step }: StepProps) {
   const [customInput, setCustomInput] = useState("")
-  const [showCustom, setShowCustom] = useState(false)
-  const [toast, setToast] = useState(false)
-  const [suggestedTags, setSuggestedTags] = useState<string[]>(DEFAULT_TAGS)
+  const [showCustomModal, setShowCustomModal] = useState(false)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([])
 
   useEffect(() => {
     const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
@@ -39,10 +63,16 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
   const userTags = data.bioTags.filter(t => !suggestedTags.includes(t))
   const allTags = [...suggestedTags, ...userTags]
 
+  function flashToast(message: string) {
+    setToastMsg(message)
+    setTimeout(() => setToastMsg(null), 2000)
+  }
+
   function toggleTag(tag: string) {
     const sel = data.bioTags.includes(tag)
     if (!sel && data.bioTags.length >= 3) {
-      setToast(true); setTimeout(() => setToast(false), 2000); return
+      flashToast("태그는 최대 3개까지 선택할 수 있어요.")
+      return
     }
     onChange({ bioTags: sel ? data.bioTags.filter(t => t !== tag) : [...data.bioTags, tag] })
   }
@@ -50,9 +80,21 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
   function addCustom() {
     const t = customInput.trim()
     if (!t) return
-    if (data.bioTags.length >= 3) { setToast(true); setTimeout(() => setToast(false), 2000); return }
+    if (data.bioTags.length >= 3) {
+      flashToast("직접 입력한 태그는 최대 3개까지 추가할 수 있어요.")
+      return
+    }
     onChange({ bioTags: [...data.bioTags, t] })
-    setCustomInput(""); setShowCustom(false)
+    setCustomInput("")
+  }
+
+  function removeCustomTag(tag: string) {
+    onChange({ bioTags: data.bioTags.filter(t => t !== tag) })
+  }
+
+  function closeCustomModal() {
+    setShowCustomModal(false)
+    setCustomInput("")
   }
 
   async function handleNext() {
@@ -70,55 +112,98 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
   return (
     <Screen className="relative">
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-5 scroll-area overflow-y-auto pb-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">자기소개를 작성을 위해<br />태그를 선택해주세요.</h1>
-          <p className="mt-2 text-[14px] text-[#6b6b6b] leading-relaxed">
-            입력한 출생 정보를 분석해 나의 연애 성향을 기반으로 자동 생성된 태그예요. 원하는 태그를 3개 선택하고 나에 대한 소개를 더 상세하게 작성해주세요.
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-9 scroll-area overflow-y-auto pb-4">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+            자기소개를 작성을 위해<br />태그를 선택해주세요.
+          </h1>
+          <p className="text-[15px] text-[#777] leading-relaxed tracking-[-0.3px]">
+            입력한 출생 정보를 분석해 나의 연애 성향을 기반으로<br />
+            자동 생성된 태그예요. 원하는 태그를 3개 선택하고 <br />
+            나에 대한 소개를 더 상세하게 작성해주세요.
           </p>
-          <p className="mt-2 text-[13px] font-semibold text-[#1a73e8]">3개 선택 필수</p>
         </div>
-        <div className="flex flex-wrap gap-[8px]">
-          {allTags.map(tag => {
-            const sel = data.bioTags.includes(tag)
-            return (
-              <button key={tag} onClick={() => toggleTag(tag)}
-                className={`px-4 h-[36px] rounded-full border text-[14px] font-medium transition-colors flex items-center ${
-                  sel ? "bg-[#0f0f10] border-[#0f0f10] text-white" : "bg-white border-[#d0d0d0] text-[#0f0f10]"
-                }`}
-              >
-                {tag}
-              </button>
-            )
-          })}
-        </div>
-        {showCustom ? (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="태그를 입력하세요"
-              value={customInput}
-              onChange={e => setCustomInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && addCustom()}
-              autoFocus
-              className="flex-1 h-[44px] border border-[#d8d8d8] rounded-[8px] px-3 text-[15px] outline-none focus:border-[#1a73e8]"
-            />
-            <button onClick={addCustom} className="px-4 h-[44px] bg-[#0f0f10] text-white rounded-[8px] text-[14px] font-semibold">추가</button>
+
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-2">
+            <p className="text-[12px] font-medium text-[#1a75ff]">3개 선택 필수</p>
+            <div className="flex flex-wrap gap-2">
+              {allTags.map(tag => {
+                const sel = data.bioTags.includes(tag)
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`h-9 px-4 rounded-[4px] text-[13px] font-medium transition-colors flex items-center ${
+                      sel ? "bg-[#e9f1ff] border border-[#b6d0ff] text-[#1f1f1f]" : "bg-[#f7f7f8] text-[#777]"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        ) : (
-          <button onClick={() => setShowCustom(true)} className="px-4 h-[36px] rounded-full border border-[#d0d0d0] text-[14px] font-medium text-[#0f0f10] w-fit flex items-center">
+
+          <button
+            onClick={() => setShowCustomModal(true)}
+            className="h-9 px-4 rounded-[4px] bg-[#f4f4f5] text-[13px] font-medium text-[#1f1f1f] w-fit flex items-center"
+          >
             태그 직접 입력
           </button>
-        )}
-      </div>
-      {toast && (
-        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 bg-[#0f0f10]/90 text-white text-[13px] px-4 py-2 rounded-full whitespace-nowrap z-20">
-          태그는 최대 3개까지 선택할 수 있어요.
         </div>
-      )}
+      </div>
+
+      {toastMsg && !showCustomModal && <Toast message={toastMsg} />}
+
       <PageFooter>
         <CtaButton disabled={data.bioTags.length !== 3} onClick={handleNext}>자기 소개 작성하기</CtaButton>
       </PageFooter>
+
+      {showCustomModal && (
+        <div className="fixed inset-0 z-50 bg-white flex flex-col" style={{ height: "var(--app-height, 100dvh)" }}>
+          <div className="h-[52px] flex items-center gap-3 px-5 shrink-0">
+            <button onClick={closeCustomModal} className="w-6 h-6 flex items-center justify-center">
+              <CloseIcon />
+            </button>
+            <h2 className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">태그 직접 입력</h2>
+          </div>
+
+          <div className="flex-1 px-5 pt-5 flex flex-col gap-9 scroll-area overflow-y-auto">
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={customInput}
+                onChange={e => setCustomInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && addCustom()}
+                placeholder="입력 후 엔터를 누르세요."
+                autoFocus
+                className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a75ff] tracking-[-0.32px]"
+              />
+              <p className="text-[12px] text-[#777]">최대 3개</p>
+            </div>
+
+            {userTags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {userTags.map(tag => (
+                  <span key={tag} className="h-9 pl-4 pr-3 rounded-[4px] bg-[#f7f7f8] text-[13px] font-medium text-[#777] flex items-center gap-1.5">
+                    {tag}
+                    <button onClick={() => removeCustomTag(tag)} className="w-4 h-4 flex items-center justify-center">
+                      <DeleteIcon />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {toastMsg && <Toast message={toastMsg} />}
+
+          <PageFooter>
+            <CtaButton disabled={userTags.length === 0} onClick={closeCustomModal}>추가</CtaButton>
+          </PageFooter>
+        </div>
+      )}
     </Screen>
   )
 }

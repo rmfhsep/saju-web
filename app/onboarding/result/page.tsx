@@ -42,9 +42,12 @@ const LEVEL_LABEL: Record<string, string> = { HIGH: "활발", MID: "보통", LOW
 function ScoreBar({ label, score }: { label: string; score: number }) {
   return (
     <div className="flex flex-col items-center gap-2 flex-1">
-      <span className="text-[14px] font-semibold text-[#1f1f1f]">{score}</span>
-      <div className="w-4 h-[84px] bg-[#f0f0f0] rounded-full overflow-hidden flex items-end">
-        <div className="w-full bg-[#90b7ff] rounded-full transition-all" style={{ height: `${Math.max(4, score)}%` }} />
+      <span className="text-[12px] font-semibold text-[#1a75ff]">{score}</span>
+      <div className="w-4 h-[120px] flex items-end">
+        <div
+          className="w-full bg-gradient-to-b from-[#b6d0ff] to-[#e4eeff] rounded-[30px] transition-all"
+          style={{ height: `${Math.max(4, score)}%` }}
+        />
       </div>
       <span className="text-[12px] text-[#777] text-center leading-tight">{label}</span>
     </div>
@@ -78,19 +81,29 @@ function TemperamentCard({ section }: { section: SajuReport["섹션1_연애기�
 
 // 섹션2: 끌리는 유형 / 피하면 좋은 유형
 function TypeMatchCards({ section }: { section: SajuReport["섹션2_이상형유형"] }) {
+  const cards = [
+    { title: "끌리는 유형", cardBg: "#f0ecfe", chipBg: "#dbd3fe", data: section.끌리는유형 },
+    { title: "피하면 좋은 유형", cardBg: "#feecec", chipBg: "#fed5d5", data: section.피하면좋은유형 },
+  ]
   return (
     <div className="grid grid-cols-2 gap-3">
-      {[
-        { title: "끌리는 유형", data: section.끌리는유형 },
-        { title: "피하면 좋은 유형", data: section.피하면좋은유형 },
-      ].map(({ title, data }) => (
-        <div key={title} className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-2">
-          <p className="text-[14px] font-semibold text-[#1f1f1f]">{title}</p>
-          <p className="text-[15px] font-semibold text-[#1a75ff]">{data.유형명}</p>
-          <p className="text-[13px] text-[#6b6b6b] leading-normal">{data.설명}</p>
-          <div className="flex flex-wrap gap-1.5 mt-1">
+      {cards.map(({ title, cardBg, chipBg, data }) => (
+        <div
+          key={title}
+          className="rounded-[4px] p-4 flex flex-col items-center gap-[15px] text-center"
+          style={{ background: cardBg }}
+        >
+          <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">{title}</p>
+          <span
+            className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px] rounded-[20px] px-4 py-[2px]"
+            style={{ background: chipBg }}
+          >
+            {data.유형명}
+          </span>
+          <p className="text-[14px] text-[#3f3f3f] leading-normal tracking-[-0.14px]">{data.설명}</p>
+          <div className="flex flex-wrap gap-1.5 justify-center">
             {data.태그.map(tag => (
-              <span key={tag} className="text-[11px] font-medium text-[#1f1f1f] bg-white border border-[#e1e2e4] rounded-[4px] px-2 py-[3px]">
+              <span key={tag} className="text-[12px] font-medium text-white bg-[#1f1f1f] rounded-[4px] px-2 py-[3px] h-6 flex items-center">
                 {tag}
               </span>
             ))}
@@ -111,15 +124,18 @@ function LoveFlowCard({ section }: { section: SajuReport["섹션3_올해연애�
   return (
     <div className="bg-white border border-[#e8e8e8] rounded-[4px] px-5 py-4 flex flex-col gap-4">
       <p className="text-[17px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.34px]">올해 연애운</p>
-      <div className="flex flex-col gap-4">
+      <div className="relative flex flex-col gap-4">
+        <span className="absolute left-2 top-2 bottom-2 w-px bg-[#cbdeff]" />
         {periods.map(p => (
           <div key={p.label} className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#1a75ff] shrink-0" />
+              <span className="relative z-10 w-4 h-4 rounded-full bg-[#cbdeff] flex items-center justify-center shrink-0">
+                <span className="w-2 h-2 rounded-full bg-[#90b7ff]" />
+              </span>
               <span className="text-[14px] font-semibold text-[#1f1f1f]">{p.label} ({p.기간})</span>
               <span className="text-[11px] font-medium text-[#1a75ff] bg-[#e9f1ff] rounded-[4px] px-1.5 py-[2px]">{LEVEL_LABEL[p.레벨] ?? p.레벨}</span>
             </div>
-            <p className="text-[13px] text-[#3f3f3f] leading-normal pl-4">{p.텍스트}</p>
+            <p className="text-[13px] text-[#3f3f3f] leading-normal pl-6">{p.텍스트}</p>
           </div>
         ))}
       </div>
@@ -183,7 +199,6 @@ function ResultContent() {
   const calendarType = params.get("calendarType") ?? "SOLAR"
   const bd = params.get("bd") ?? ""
   const bt = params.get("bt") ?? ""
-  const [loveOpen, setLoveOpen] = useState(true)
   const [report, setReport] = useState<SajuReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [retrying, setRetrying] = useState(false)
@@ -233,6 +248,13 @@ function ResultContent() {
 
   if (loading || retrying) return <LoadingState name={name} />
 
+  const infoCard = (
+    <div className="bg-[#f7f7f8] rounded-[4px] px-5 py-4 flex flex-col gap-1">
+      <p className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">{name}{genderLabel}</p>
+      <p className="text-[14px] font-normal text-[#1f1f1f] leading-normal tracking-[-0.14px]">{birthDisplay}</p>
+    </div>
+  )
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Header — left-aligned title, matches Figma */}
@@ -271,110 +293,84 @@ function ResultContent() {
           </h1>
         </div>
 
-        {/* User info card */}
-        <div className="bg-[#f7f7f8] rounded-[4px] px-5 py-4 flex flex-col gap-1">
-          <p className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">{name}{genderLabel}</p>
-          <p className="text-[14px] font-normal text-[#1f1f1f] leading-normal tracking-[-0.14px]">{birthDisplay}</p>
-        </div>
-
         {!report ? (
-          <div className="flex flex-col gap-4 items-start">
-            <p className="text-[14px] text-[#777] leading-relaxed">
-              {retryError
-                ? `분석 중 오류가 발생했어요.\n${retryError}`
-                : "연애운 분석에 실패했어요. 다시 시도해주세요."}
-            </p>
-            <button
-              onClick={() => {
-                const token = localStorage.getItem("auth_token")
-                if (token) generateReport(token)
-              }}
-              className="h-[44px] px-6 bg-[#b6d0ff] rounded-[4px] text-[15px] font-semibold text-[#1f1f1f]"
-            >
-              다시 분석하기
-            </button>
-          </div>
-        ) : (
           <>
-            {/* ── 남성 레이아웃 ── */}
-            {isMale && (
-              <>
-                {/* Profile cards horizontal scroll */}
-                <div className="overflow-x-auto flex gap-3 pb-1 -mx-5 px-5" style={{ scrollbarWidth: "none" }}>
-                  {MALE_PROFILES.map((p) => (
+            {infoCard}
+            <div className="flex flex-col gap-4 items-start">
+              <p className="text-[14px] text-[#777] leading-relaxed">
+                {retryError
+                  ? `분석 중 오류가 발생했어요.\n${retryError}`
+                  : "연애운 분석에 실패했어요. 다시 시도해주세요."}
+              </p>
+              <button
+                onClick={() => {
+                  const token = localStorage.getItem("auth_token")
+                  if (token) generateReport(token)
+                }}
+                className="h-[44px] px-6 bg-[#b6d0ff] rounded-[4px] text-[15px] font-semibold text-[#1f1f1f]"
+              >
+                다시 분석하기
+              </button>
+            </div>
+          </>
+        ) : isMale ? (
+          <>
+            {/* 유저 정보 + 나의 연애 기질 */}
+            <div className="flex flex-col gap-3">
+              {infoCard}
+              <TemperamentCard section={report.섹션1_연애기질} />
+            </div>
+
+            {/* 추천 프로필 캐러셀 + CTA */}
+            <div className="flex flex-col gap-3">
+              <div className="overflow-x-auto flex gap-3 pb-1 -mx-5 px-5" style={{ scrollbarWidth: "none" }}>
+                {MALE_PROFILES.map((p) => (
+                  <div
+                    key={p.name}
+                    className="shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden"
+                    style={{ background: p.grad }}
+                  >
                     <div
-                      key={p.name}
-                      className="shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden"
-                      style={{ background: p.grad }}
-                    >
-                      <div
-                        className="absolute inset-0 rounded-[8px]"
-                        style={{ background: "rgba(31,31,31,0.52)", backdropFilter: "blur(10px)" }}
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.name}</span>
-                          <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">/</span>
-                          <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.age}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {p.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-[12px] font-medium text-[#1f1f1f] bg-[#cbdeff] rounded-[4px] px-2 py-[3px] leading-[1.4]"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                      className="absolute inset-0 rounded-[8px]"
+                      style={{ background: "rgba(31,31,31,0.52)", backdropFilter: "blur(10px)" }}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.name}</span>
+                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">/</span>
+                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.age}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {p.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[12px] font-medium text-[#1f1f1f] bg-[#cbdeff] rounded-[4px] px-2 py-[3px] leading-[1.4]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => bridgeNavigate("Blocking")}
-                  className="w-full py-2 px-7 bg-[#fff5e5] rounded-[54px] text-[14px] font-medium text-[#1f1f1f] text-center leading-normal active:opacity-80"
-                >
-                  내 프로필을 완성하고 추천 프로필을 열어보세요!
-                </button>
-
-                {/* 나의 연애운 — collapsible with chevron, expanded by default */}
-                <div className="flex flex-col gap-5">
-                  <button
-                    onClick={() => setLoveOpen(!loveOpen)}
-                    className="w-full flex items-center justify-between"
-                  >
-                    <span className="text-[16px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.32px]">나의 연애운</span>
-                    <svg
-                      width="12" height="8" viewBox="0 0 12 8" fill="none"
-                      className={`transition-transform duration-200 ${loveOpen ? "rotate-180" : ""}`}
-                    >
-                      <path d="M1 1.5L6 6.5L11 1.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {loveOpen && (
-                    <div className="flex flex-col gap-3">
-                      <TemperamentCard section={report.섹션1_연애기질} />
-                      <TypeMatchCards section={report.섹션2_이상형유형} />
-                      <LoveFlowCard section={report.섹션3_올해연애운} />
-                      <CautionCard items={report.섹션4_주의포인트} />
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* ── 여성 레이아웃: 분석 바로 표시 ── */}
-            {!isMale && (
-              <div className="flex flex-col gap-3">
-                <TemperamentCard section={report.섹션1_연애기질} />
-                <TypeMatchCards section={report.섹션2_이상형유형} />
-                <LoveFlowCard section={report.섹션3_올해연애운} />
-                <CautionCard items={report.섹션4_주의포인트} />
+                  </div>
+                ))}
               </div>
-            )}
+
+              <button
+                onClick={() => bridgeNavigate("Blocking")}
+                className="w-full py-2 px-7 bg-[#fff5e5] rounded-[54px] text-[14px] font-medium text-[#1f1f1f] text-center leading-normal active:opacity-80"
+              >
+                내 프로필을 완성하고 추천 프로필을 열어보세요!
+              </button>
+            </div>
           </>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {infoCard}
+            <TemperamentCard section={report.섹션1_연애기질} />
+            <TypeMatchCards section={report.섹션2_이상형유형} />
+            <LoveFlowCard section={report.섹션3_올해연애운} />
+            <CautionCard items={report.섹션4_주의포인트} />
+          </div>
         )}
       </div>
 
