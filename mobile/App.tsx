@@ -1,5 +1,6 @@
 import * as SplashScreenExpo from 'expo-splash-screen';
-import * as ScreenCapture from 'expo-screen-capture';
+// TODO: 오픈 전에 expo-screen-capture 재설치 후 주석 해제
+// import * as ScreenCapture from 'expo-screen-capture';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,10 +13,11 @@ export default function App() {
   const [appReady, setAppReady] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
 
-  useEffect(() => {
-    ScreenCapture.preventScreenCaptureAsync();
-    return () => { ScreenCapture.allowScreenCaptureAsync(); };
-  }, []);
+  // TODO: 오픈 전에 아래 코드 주석 해제 (캡쳐 방지)
+  // useEffect(() => {
+  //   ScreenCapture.preventScreenCaptureAsync();
+  //   return () => { ScreenCapture.allowScreenCaptureAsync(); };
+  // }, []);
 
   useEffect(() => {
     async function prepare() {

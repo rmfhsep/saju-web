@@ -14,7 +14,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import WebView, { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview';
 import KeyboardAwareWebView from '../components/KeyboardAwareWebView';
 import LiquidTabBar, { TabKey } from '../components/LiquidTabBar';
-import * as ScreenCapture from 'expo-screen-capture';
 import { Contact, ContactField, requestPermissionsAsync } from 'expo-contacts';
 import { WEB_URL } from '../config/env';
 import { SCREEN_PATHS, buildUrl } from '../lib/webBridge';
@@ -45,14 +44,9 @@ export default function HomeScreen() {
   );
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>();
 
-  // TODO: 오픈 전에 아래 캡쳐 방지 코드 주석 해제
-  // ScreenCapture.usePreventScreenCapture();
-  // React.useEffect(() => {
-  //   const sub = ScreenCapture.addScreenshotListener(() => {
-  //     Alert.alert('캡쳐 불가', '이 화면은 개인정보 보호를 위해 캡쳐가 제한됩니다.', [{ text: '확인' }]);
-  //   });
-  //   return () => sub.remove();
-  // }, []);
+  // TODO: 오픈 전에 expo-screen-capture 재설치 후 캡쳐 방지 코드 추가
+  // npm install expo-screen-capture → import * as ScreenCapture from 'expo-screen-capture'
+  // → ScreenCapture.usePreventScreenCapture() 호출
 
   useFocusEffect(
     useCallback(() => {
