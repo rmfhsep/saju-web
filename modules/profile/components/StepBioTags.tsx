@@ -24,6 +24,18 @@ function DeleteIcon() {
   )
 }
 
+const SKELETON_WIDTHS = [88, 104, 76, 96, 68, 112, 84]
+
+function TagSkeleton() {
+  return (
+    <>
+      {SKELETON_WIDTHS.map((w, i) => (
+        <div key={i} className="h-9 rounded-[4px] bg-[#f0f0f1] animate-pulse" style={{ width: w }} />
+      ))}
+    </>
+  )
+}
+
 function Toast({ message }: { message: string }) {
   return (
     <div className="absolute bottom-28 left-1/2 -translate-x-1/2 bg-black/[0.74] text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap z-20 tracking-[-0.14px]">
@@ -37,10 +49,11 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
   const [showCustomModal, setShowCustomModal] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [suggestedTags, setSuggestedTags] = useState<string[]>([])
+  const [loadingTags, setLoadingTags] = useState(true)
 
   useEffect(() => {
     const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
-    if (!phone) return
+    if (!phone) { setLoadingTags(false); return }
     fetch("/api/profile/suggest-tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,6 +70,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
         if (suggestion) setSuggestedTags([...suggestion.love, ...suggestion.life])
       })
       .catch(() => {})
+      .finally(() => setLoadingTags(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -128,7 +142,9 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
           <div className="flex flex-col gap-2">
             <p className="text-[12px] font-medium text-[#1a75ff]">3개 선택 필수</p>
             <div className="flex flex-wrap gap-2">
-              {allTags.map(tag => {
+              {loadingTags ? (
+                <TagSkeleton />
+              ) : allTags.map(tag => {
                 const sel = data.bioTags.includes(tag)
                 return (
                   <button

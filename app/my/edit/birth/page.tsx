@@ -35,7 +35,7 @@ function ScrollColumn({ items, selected, onChange }: {
 
   return (
     <div className="relative flex-1 h-[156px] overflow-hidden select-none">
-      <div className="absolute inset-x-0 pointer-events-none rounded-[4px] bg-[#f7f7f8]" style={{ top: ITEM_H, height: ITEM_H }} />
+      <div className="absolute inset-x-0 -z-10 pointer-events-none rounded-[4px] bg-[#f7f7f8]" style={{ top: ITEM_H, height: ITEM_H }} />
       <div className="absolute inset-x-0 top-0 h-[52px] bg-linear-to-b from-white to-transparent pointer-events-none z-10" />
       <div className="absolute inset-x-0 bottom-0 h-[52px] bg-linear-to-t from-white to-transparent pointer-events-none z-10" />
       <div
@@ -92,6 +92,13 @@ export default function BirthEditPage() {
       })
   }, [])
 
+  useEffect(() => {
+    if (!showTimePicker) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => { document.body.style.overflow = prevOverflow }
+  }, [showTimePicker])
+
   const calLabel = calendarType === "LUNAR" ? "음력" : calendarType === "LUNAR_LEAP" ? "음력(윤달)" : "양력"
   const birthDateDisplay = birthDate.length === 8
     ? `${birthDate.slice(0, 4)}.${birthDate.slice(4, 6)}.${birthDate.slice(6, 8)}`
@@ -121,7 +128,7 @@ export default function BirthEditPage() {
   return (
     <Screen>
       <EditHeader title="출생 정보 수정" onBack={() => router.back()} />
-      <div className="flex-1 px-5 pt-4 flex flex-col gap-5 scroll-area overflow-y-auto pb-4">
+      <div className={`flex-1 px-5 pt-4 flex flex-col gap-5 scroll-area pb-4 ${showTimePicker ? "overflow-hidden" : "overflow-y-auto"}`}>
         <p className="text-[14px] text-[#777] leading-normal">태어난 시간을 제외한 정보는 수정할 수 없어요.</p>
 
         <ReadOnlyField label="양력/음력" value={calLabel} />

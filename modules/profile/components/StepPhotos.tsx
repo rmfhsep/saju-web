@@ -8,85 +8,226 @@ import StepHeader from "./StepHeader"
 import type { StepProps } from "../types"
 
 const MAX_PHOTOS = 5
+const LONG_PRESS_MS = 350
+const MOVE_CANCEL_PX = 8
 
-const GUIDE_RULES = [
-  "본인의 얼굴이 선명하게 보이는 사진을 등록해주세요.",
-  "타인의 사진, 캐릭터, 풍경 등 본인이 아닌 사진은 삭제될 수 있어요.",
-  "노출이 심하거나 선정적인 사진은 등록할 수 없어요.",
-  "과도한 보정, 필터가 적용된 사진은 매칭에 불리할 수 있어요.",
-]
+function PlusIcon() {
+  return (
+    <div className="w-8 h-8 rounded-full bg-[#f4f4f5] flex items-center justify-center">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 11V1M1 6H11" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    </div>
+  )
+}
+
+function DeleteIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="11" fill="#1f1f1f" opacity="0.61" />
+      <path d="M15.5 8.5l-7 7M8.5 8.5l7 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function GuideRow({ good, children }: { good?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3 items-center">
+      {good ? (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#1a75ff" />
+          <path d="M5.5 10.2l3 3 6-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#ff334b" />
+          <path d="M6.5 6.5l7 7M13.5 6.5l-7 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      )}
+      <p className="flex-1 text-[14px] text-[#1f1f1f] leading-relaxed tracking-[-0.14px]">{children}</p>
+    </div>
+  )
+}
+
+function PhotoSlot({ url, required, dragging, onOpen, onDelete, onPointerDown, slotRef }: {
+  url: string
+  required?: boolean
+  dragging?: boolean
+  onOpen: () => void
+  onDelete: () => void
+  onPointerDown: (e: React.PointerEvent) => void
+  slotRef: (el: HTMLDivElement | null) => void
+}) {
+  return (
+    <div
+      ref={slotRef}
+      onPointerDown={url ? onPointerDown : undefined}
+      style={{ touchAction: url ? "none" : "auto" }}
+      className={`relative flex-1 aspect-square transition-transform ${dragging ? "scale-105 opacity-80 z-10" : ""}`}
+    >
+      <button
+        type="button"
+        onClick={url ? undefined : onOpen}
+        className="absolute inset-0 rounded-[8px] border border-dashed border-[#dfdfdf] bg-white flex items-center justify-center overflow-hidden"
+      >
+        {url ? (
+          <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover rounded-[8px]" />
+        ) : (
+          <PlusIcon />
+        )}
+      </button>
+      {required && (
+        <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-[20px] leading-[1.4]">
+          필수
+        </span>
+      )}
+      {url && (
+        <button type="button" onClick={e => { e.stopPropagation(); onDelete() }} className="absolute -top-2 -right-2 w-6 h-6">
+          <DeleteIcon />
+        </button>
+      )}
+    </div>
+  )
+}
 
 export default function StepPhotos({ data, onChange, onNext, onBack, step }: StepProps) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const [activeSlot, setActiveSlot] = useState<number | null>(null)
   const [showGuide, setShowGuide] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([])
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pressStart = useRef<{ x: number; y: number } | null>(null)
+
   const slots = [...data.photos, ...Array(Math.max(0, MAX_PHOTOS - data.photos.length)).fill("")]
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     e.target.value = ""
-    if (files.length === 0 || activeSlot === null) return
+    const remaining = MAX_PHOTOS - data.photos.length
+    if (files.length === 0 || remaining <= 0) return
 
     setUploading(true)
     try {
       const phone = localStorage.getItem("user_phone") ?? ""
       const formData = new FormData()
       formData.append("phone", phone)
-      files.slice(0, MAX_PHOTOS - activeSlot).forEach(file => formData.append("files", file))
+      files.slice(0, remaining).forEach(file => formData.append("files", file))
 
       const res = await fetch("/api/upload", { method: "POST", body: formData })
       const result = await res.json()
       if (!res.ok || !Array.isArray(result.urls)) return
-
-      const next = [...data.photos]
-      let slot = activeSlot
-      for (const url of result.urls as string[]) {
-        if (slot >= MAX_PHOTOS) break
-        if (slot < next.length) next[slot] = url
-        else next.push(url)
-        slot++
-      }
-      onChange({ photos: next.slice(0, MAX_PHOTOS) })
+      onChange({ photos: [...data.photos, ...result.urls].slice(0, MAX_PHOTOS) })
     } finally {
       setUploading(false)
     }
   }
 
-  function openSlot(idx: number) {
-    if (uploading) return
-    setActiveSlot(idx)
+  function openPicker() {
+    if (uploading || data.photos.length >= MAX_PHOTOS) return
     fileRef.current?.click()
   }
-  function deletePhoto(idx: number) { onChange({ photos: data.photos.filter((_, i) => i !== idx) }) }
+
+  function deletePhoto(idx: number) {
+    onChange({ photos: data.photos.filter((_, i) => i !== idx) })
+  }
+
+  function clearPress() {
+    if (pressTimer.current) clearTimeout(pressTimer.current)
+    pressTimer.current = null
+    pressStart.current = null
+  }
+
+  function handleSlotPointerDown(idx: number, e: React.PointerEvent) {
+    if (idx >= data.photos.length) return
+    pressStart.current = { x: e.clientX, y: e.clientY }
+    pressTimer.current = setTimeout(() => setDragIndex(idx), LONG_PRESS_MS)
+  }
+
+  function handleGridPointerMove(e: React.PointerEvent) {
+    if (dragIndex === null) {
+      if (pressStart.current) {
+        const dx = Math.abs(e.clientX - pressStart.current.x)
+        const dy = Math.abs(e.clientY - pressStart.current.y)
+        if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) clearPress()
+      }
+      return
+    }
+    const overIdx = slotRefs.current.findIndex(el => {
+      if (!el) return false
+      const r = el.getBoundingClientRect()
+      return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom
+    })
+    if (overIdx === -1 || overIdx === dragIndex || overIdx >= data.photos.length) return
+    const next = [...data.photos]
+    const [moved] = next.splice(dragIndex, 1)
+    next.splice(overIdx, 0, moved)
+    onChange({ photos: next })
+    setDragIndex(overIdx)
+  }
+
+  function handleGridPointerUp() {
+    clearPress()
+    setDragIndex(null)
+  }
 
   return (
     <Screen className="relative">
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-4 scroll-area overflow-y-auto pb-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">프로필 사진을 2장 이상<br />등록해주세요.</h1>
-          <p className="mt-2 text-[14px] text-[#6b6b6b]">정면 사진 2장은 필수예요.</p>
-          <p className="mt-[2px] text-[13px] text-[#e53935]">가이드에 위배되는 사진은 경고를 받을 수 있습니다.</p>
-          <button onClick={() => setShowGuide(true)} className="mt-3 px-4 h-[28px] border border-[#d0d0d0] rounded-full text-[13px] text-[#6b6b6b] flex items-center">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-9 scroll-area overflow-y-auto pb-4">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+            프로필 사진을 2장 이상<br />등록해주세요.
+          </h1>
+          <p className="text-[15px] text-[#777] leading-relaxed tracking-[-0.3px]">
+            정면 사진 2장은 필수예요.<br />
+            <span className="text-[#ff334b]">가이드에 위배되는 사진은 경고를 받을 수 있습니다.</span>
+          </p>
+          <button
+            onClick={() => setShowGuide(true)}
+            className="h-[28px] px-3 rounded-[4px] bg-[#e9f1ff] text-[12px] font-medium text-[#1a75ff] flex items-center"
+          >
             사진 등록 가이드
           </button>
         </div>
-        <div className="flex flex-col gap-[8px]">
-          <div className="flex gap-[8px]">
-            {[0, 1].map(i => (
-              <PhotoSlot key={i} url={slots[i]} required onClick={() => openSlot(i)} onDelete={() => deletePhoto(i)} />
-            ))}
+
+        <div className="flex flex-col gap-3">
+          <div
+            className="flex flex-col gap-2"
+            onPointerMove={handleGridPointerMove}
+            onPointerUp={handleGridPointerUp}
+            onPointerCancel={handleGridPointerUp}
+          >
+            <div className="flex gap-2">
+              {[0, 1].map(i => (
+                <PhotoSlot
+                  key={i}
+                  url={slots[i]}
+                  required
+                  dragging={dragIndex === i}
+                  onOpen={openPicker}
+                  onDelete={() => deletePhoto(i)}
+                  onPointerDown={e => handleSlotPointerDown(i, e)}
+                  slotRef={el => { slotRefs.current[i] = el }}
+                />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {[2, 3, 4].map(i => (
+                <PhotoSlot
+                  key={i}
+                  url={slots[i]}
+                  dragging={dragIndex === i}
+                  onOpen={openPicker}
+                  onDelete={() => deletePhoto(i)}
+                  onPointerDown={e => handleSlotPointerDown(i, e)}
+                  slotRef={el => { slotRefs.current[i] = el }}
+                />
+              ))}
+            </div>
           </div>
-          <div className="flex gap-[8px]">
-            {[2, 3, 4].map(i => (
-              <PhotoSlot key={i} url={slots[i]} onClick={() => openSlot(i)} onDelete={() => deletePhoto(i)} />
-            ))}
-          </div>
+          <p className="text-[12px] text-[#777] text-center">길게 눌러 순서를 변경할 수 있어요.</p>
         </div>
-        <p className="text-[13px] text-[#9e9e9e] text-center">
-          {uploading ? "사진을 업로드하는 중이에요..." : "사진을 여러 장 한 번에 선택할 수 있어요."}
-        </p>
       </div>
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
       <PageFooter>
@@ -96,61 +237,29 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
       {showGuide && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/61" onClick={() => setShowGuide(false)} />
-          <div className="relative bg-white rounded-t-[28px] pt-8 pb-8 px-5 flex flex-col gap-6">
-            <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px]">
-              사진 등록 가이드
-            </h2>
-            <ul className="flex flex-col gap-3">
-              {GUIDE_RULES.map(rule => (
-                <li key={rule} className="text-[14px] text-[#4a4a4a] leading-relaxed flex gap-2">
-                  <span className="text-[#1a73e8]">•</span>{rule}
-                </li>
-              ))}
-            </ul>
-            <CtaButton onClick={() => setShowGuide(false)}>확인</CtaButton>
+          <div className="relative bg-white rounded-t-[28px] pt-3 pb-8 flex flex-col items-center gap-6">
+            <div className="w-11 h-1 rounded-full bg-[#dfdfdf]" />
+            <div className="w-full px-5 flex flex-col gap-7">
+              <div className="flex flex-col gap-2 text-center">
+                <h2 className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">사진 등록 가이드</h2>
+                <p className="text-[14px] text-[#777] leading-relaxed tracking-[-0.14px]">
+                  마주 이용을 위해 프로필 사진 2장이 필요해요.<br />
+                  가이드에 위배되는 사진은 경고를 받을 수 있습니다.
+                </p>
+              </div>
+              <div className="bg-[#f7f7f8] rounded-[8px] p-4 flex flex-col gap-4">
+                <GuideRow good>필수 사진 2장은 얼굴이 잘 보이는 정면 사진을<br />등록해주세요.</GuideRow>
+                <GuideRow good>추가 사진은 나의 스타일을 잘 보여줄 수 있는<br />상반신, 전신 사진을 추천해요.</GuideRow>
+                <GuideRow>얼굴을 부분적으로 가리거나 잘 보이지 않는 사진</GuideRow>
+                <GuideRow>과한 보정이나 효과, AI를 사용한 사진</GuideRow>
+                <GuideRow>본인이 누군지 알 수 없는 단체 사진</GuideRow>
+                <GuideRow>중복이거나 비슷한 사진</GuideRow>
+                <GuideRow>상대방에게 불쾌감을 주는 사진 (욕설, 표정, 제스처 등)</GuideRow>
+              </div>
+            </div>
           </div>
         </div>
       )}
     </Screen>
-  )
-}
-
-function PhotoSlot({ url, required, onClick, onDelete }: {
-  url: string
-  required?: boolean
-  onClick: () => void
-  onDelete: () => void
-}) {
-  return (
-    <div className="relative flex-1" style={{ aspectRatio: "1/1" }}>
-      <button
-        onClick={onClick}
-        className="absolute inset-0 rounded-[10px] border-[1.5px] border-dashed border-[#d0d0d0] bg-[#f5f5f7] flex items-center justify-center overflow-hidden"
-      >
-        {url ? (
-          <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <>
-            {required && (
-              <span className="absolute top-2 left-2 bg-[#1a73e8] text-white text-[11px] font-semibold px-2 py-[2px] rounded-full leading-none">필수</span>
-            )}
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="15" stroke="#d0d0d0" strokeWidth="1.5"/>
-              <path d="M16 10v12M10 16h12" stroke="#c0c0c0" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </>
-        )}
-      </button>
-      {url && (
-        <button
-          onClick={e => { e.stopPropagation(); onDelete() }}
-          className="absolute top-1 right-1 w-[20px] h-[20px] rounded-full bg-black/60 flex items-center justify-center"
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
-          </svg>
-        </button>
-      )}
-    </div>
   )
 }
