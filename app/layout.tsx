@@ -49,17 +49,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body
         className="min-h-screen flex justify-center"
-        style={{ background: "linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #1a0533 70%, #0f0c29 100%)" }}
+        style={{ background: "white" }}
       >
         {/* 배경 오브 */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle, #7c3aed, transparent 70%)" }} />
-          <div className="absolute top-[30%] right-[-15%] w-[400px] h-[400px] rounded-full opacity-20"
-            style={{ background: "radial-gradient(circle, #06b6d4, transparent 70%)" }} />
-          <div className="absolute bottom-[-10%] left-[20%] w-[350px] h-[350px] rounded-full opacity-25"
-            style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)" }} />
-        </div>
+        
 
         <div className="relative w-full max-w-[768px] min-h-screen">
           {children}
