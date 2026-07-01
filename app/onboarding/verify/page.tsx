@@ -117,7 +117,11 @@ function VerifyForm() {
   const mode: Mode = searchParams.get("mode") === "reset" ? "reset" : "register"
 
   const [step, setStep] = useState<Step>("start")
-  const [code] = useState(generateCode)
+  const [code, setCode] = useState("")
+
+  useEffect(() => {
+    setCode(generateCode())
+  }, [])
   const [polling, setPolling] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 

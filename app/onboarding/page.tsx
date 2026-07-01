@@ -29,6 +29,12 @@ export default function OnboardingLandingPage() {
       })
       .then(user => {
         if (!user) return
+        if (!user.signupComplete) {
+          localStorage.removeItem("auth_token")
+          localStorage.removeItem("user_phone")
+          navigateAndReplace("PhoneInput")
+          return
+        }
         if (user.profileComplete) {
           if (user.filterComplete) navigateAndReplace("Home")
           else                     navigateAndReplace("Filter")

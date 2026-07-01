@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         birthDate: true,
         birthTime: true,
         birthTimeUnknown: true,
+        signupComplete: true,
         sajuResult: true,
         nickname: true,
         location: true,

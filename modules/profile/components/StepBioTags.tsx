@@ -55,6 +55,18 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
     setCustomInput(""); setShowCustom(false)
   }
 
+  async function handleNext() {
+    const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
+    if (phone) {
+      await fetch("/api/auth/complete-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      }).catch(() => {})
+    }
+    onNext()
+  }
+
   return (
     <Screen className="relative">
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
@@ -105,7 +117,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
         </div>
       )}
       <PageFooter>
-        <CtaButton disabled={data.bioTags.length !== 3} onClick={onNext}>자기 소개 작성하기</CtaButton>
+        <CtaButton disabled={data.bioTags.length !== 3} onClick={handleNext}>자기 소개 작성하기</CtaButton>
       </PageFooter>
     </Screen>
   )

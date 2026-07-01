@@ -19,6 +19,7 @@ model User {
 
   termsAgreed      Boolean  @default(false)
   marketingAgreed  Boolean  @default(false)
+  signupComplete   Boolean  @default(false)
 
   sajuResult       String?
 

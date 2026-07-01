@@ -26,7 +26,11 @@ export async function POST(req: NextRequest) {
 
     const existing = await prisma.user.findUnique({ where: { phone } })
     if (existing) {
-      return NextResponse.json({ error: "PHONE_ALREADY_REGISTERED" }, { status: 409 })
+      if (existing.signupComplete) {
+        return NextResponse.json({ error: "PHONE_ALREADY_REGISTERED" }, { status: 409 })
+      }
+      // 태그 선택(회원가입 완료 시점) 이전에 이탈한 미완료 계정 — 삭제 후 재가입 처리
+      await prisma.user.delete({ where: { phone } })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { computeSaju } from "@/lib/saju"
-import { generateSajuReport } from "@/lib/prompts/sajuReport"
 
 const VALID_GENDERS = ["MALE", "FEMALE"] as const
 const VALID_CALENDAR_TYPES = ["SOLAR", "LUNAR", "LUNAR_LEAP"] as const
@@ -38,18 +36,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "user not found" }, { status: 404 })
     }
 
-    let sajuResult: string | null = null
-    try {
-      const saju = computeSaju(
-        { birthDate, birthTime: birthTimeUnknown ? null : birthTime, birthTimeUnknown: !!birthTimeUnknown, calendarType },
-        gender,
-      )
-      const report = await generateSajuReport(saju)
-      sajuResult = JSON.stringify(report)
-    } catch (err) {
-      console.error("saju report generation failed", err)
-    }
-
+    // 사주 리포트(Claude) 생성은 여기서 기다리지 않는다 — 결과 화면(SajuResult)의
+    // 마운트 시점에 /api/saju/generate 가 호출되어 "분석 중" 화면에서 진행된다.
     const user = await prisma.user.update({
       where: { phone },
       data: {
@@ -59,7 +47,6 @@ export async function POST(req: NextRequest) {
         birthDate,
         birthTime: birthTimeUnknown ? null : (birthTime || null),
         birthTimeUnknown: !!birthTimeUnknown,
-        ...(sajuResult ? { sajuResult } : {}),
       },
     })
 

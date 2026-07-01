@@ -105,6 +105,7 @@ export default function BirthInfoPage() {
   const [pickerHour, setPickerHour] = useState("9")
   const [pickerMin, setPickerMin] = useState("00")
   const [birthTime, setBirthTime] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
   const rawBirthDate = birthDate.replace(/\D/g, "")
   const canProceed = name.trim().length > 0 && gender !== "" && calendarType !== "" && rawBirthDate.length === 8
@@ -115,7 +116,8 @@ export default function BirthInfoPage() {
   }
 
   async function handleNext() {
-    if (!canProceed) return
+    if (!canProceed || submitting) return
+    setSubmitting(true)
     const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
     await fetch("/api/auth/birth", {
       method: "POST",
@@ -246,7 +248,7 @@ export default function BirthInfoPage() {
       </div>
 
       <PageFooter>
-        <CtaButton disabled={!canProceed} onClick={handleNext}>분석하기</CtaButton>
+        <CtaButton disabled={!canProceed} loading={submitting} onClick={handleNext}>분석하기</CtaButton>
       </PageFooter>
 
       {/* 시간 선택 Bottom Sheet */}

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await prisma.user.findUnique({ where: { phone } })
-  if (!user) {
+  if (!user || !user.signupComplete) {
     return NextResponse.json({ error: "USER_NOT_FOUND" }, { status: 404 })
   }
 

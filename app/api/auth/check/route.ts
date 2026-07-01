@@ -7,6 +7,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "phone is required" }, { status: 400 })
   }
 
-  const user = await prisma.user.findUnique({ where: { phone }, select: { id: true } })
-  return NextResponse.json({ exists: !!user })
+  const user = await prisma.user.findUnique({ where: { phone }, select: { signupComplete: true } })
+  return NextResponse.json({ exists: !!user?.signupComplete })
 }
