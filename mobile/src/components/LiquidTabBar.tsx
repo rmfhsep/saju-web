@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { GlassContainer, GlassView } from 'expo-glass-effect';
+import { GlassContainer, GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 
 export type TabKey = 'recommend' | 'like' | 'message' | 'my';
 
@@ -63,6 +63,35 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'my', label: '내 정보' },
 ];
 
+// Liquid Glass가 지원되지 않는 기기/버전용 폴백 탭바
+function FallbackTabBar({
+  active,
+  onPress,
+  bottomPad,
+}: {
+  active: TabKey | null;
+  onPress: (tab: TabKey) => void;
+  bottomPad: number;
+}) {
+  return (
+    <View style={[styles.wrapper, { paddingBottom: bottomPad + 16 }]}>
+      <View style={styles.fallbackBar}>
+        {TABS.map(tab => {
+          const isActive = active === tab.key;
+          return (
+            <Pressable key={tab.key} onPress={() => onPress(tab.key)} style={styles.tabButton}>
+              <TabIcon tab={tab.key} active={isActive} />
+              <Text style={[styles.label, { color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR }]}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 export default function LiquidTabBar({
   active,
   onPress,
@@ -71,24 +100,52 @@ export default function LiquidTabBar({
   onPress: (tab: TabKey) => void;
 }) {
   const insets = useSafeAreaInsets();
+  const bottomPad = insets.bottom || 0;
+
+  // Liquid Glass API가 없는 기기(iOS 26 미만 등)는 폴백으로 렌더링
+  if (!isGlassEffectAPIAvailable()) {
+    return <FallbackTabBar active={active} onPress={onPress} bottomPad={bottomPad} />;
+  }
 
   return (
-    <View pointerEvents="box-none" style={[styles.wrapper, { paddingBottom: insets.bottom || 12 }]}>
-      <GlassContainer spacing={4} style={styles.container}>
-        <GlassView glassEffectStyle="regular" style={styles.bar}>
+    <View pointerEvents="box-none" style={[styles.wrapper, { paddingBottom: bottomPad + 16 }]}>
+      {/*
+       * GlassContainer: 내부 GlassView들이 가까워질 때 서로 합쳐지는(morph) Liquid Glass 그룹.
+       * 탭바 전체(bar)와 선택 표시자(pill)를 같은 컨테이너에 두어 iOS 26 모핑 효과를 활성화.
+       */}
+      <GlassContainer spacing={8} style={styles.glassContainer}>
+        {/* 선택된 탭 하이라이트 pill — bar와 같은 GlassContainer 안에서 모핑 */}
+        {active !== null && (
+          <GlassView
+            glassEffectStyle={{ style: 'clear', animate: true, animationDuration: 0.25 }}
+            tintColor="rgba(26,117,255,0.15)"
+            colorScheme="light"
+            style={[
+              styles.selectionPill,
+              { left: `${TABS.findIndex(t => t.key === active) * 25}%` as any },
+            ]}
+          />
+        )}
+
+        {/* 메인 탭바 — overflow 없이 borderRadius만으로 모양을 잡아 블러가 제대로 렌더링되게 함 */}
+        <GlassView
+          glassEffectStyle="regular"
+          colorScheme="light"
+          style={styles.bar}
+        >
           {TABS.map(tab => {
             const isActive = active === tab.key;
             return (
-              <Pressable key={tab.key} onPress={() => onPress(tab.key)} style={styles.tabButton}>
-                {isActive && (
-                  <GlassView
-                    glassEffectStyle={{ style: 'clear', animate: true }}
-                    tintColor="rgba(26,117,255,0.12)"
-                    style={StyleSheet.absoluteFill}
-                  />
-                )}
+              <Pressable
+                key={tab.key}
+                onPress={() => onPress(tab.key)}
+                style={styles.tabButton}
+                android_ripple={{ color: 'rgba(0,0,0,0.05)', borderless: true }}
+              >
                 <TabIcon tab={tab.key} active={isActive} />
-                <Text style={[styles.label, { color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR }]}>{tab.label}</Text>
+                <Text style={[styles.label, { color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR }]}>
+                  {tab.label}
+                </Text>
               </Pressable>
             );
           })}
@@ -108,30 +165,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingTop: 16,
   },
-  container: {
+  glassContainer: {
     width: '100%',
     maxWidth: 430,
+    position: 'relative',
+    minHeight: 65,
+  },
+  // 선택 pill: 탭 1개 너비(25%)를 차지하는 절대 위치 GlassView
+  selectionPill: {
+    position: 'absolute',
+    top: 4,
+    width: '25%',
+    bottom: 4,
+    borderRadius: 100,
+    zIndex: 1,
   },
   bar: {
     flexDirection: 'row',
     borderRadius: 296,
-    overflow: 'hidden',
+    // overflow: 'hidden' 제거 — 이게 있으면 네이티브 블러 렌더링이 막혀 glass 효과가 사라짐
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
+    elevation: 8,
+    zIndex: 0,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    paddingVertical: 10,
-    borderRadius: 100,
+    paddingVertical: 12,
+    zIndex: 2,
   },
   label: {
     fontSize: 9,
     fontWeight: '500',
     lineHeight: 12,
+  },
+  // Liquid Glass 미지원 기기용 폴백
+  fallbackBar: {
+    flexDirection: 'row',
+    borderRadius: 296,
+    backgroundColor: 'rgba(255,255,255,0.82)',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    width: '100%',
+    maxWidth: 430,
   },
 });

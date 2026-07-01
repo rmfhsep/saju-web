@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, BackHandler, Linking, Platform, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import WebView, { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview';
@@ -134,7 +135,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAwareWebView
         ref={webViewRef}
         source={{ uri }}
@@ -154,12 +155,12 @@ export default function HomeScreen() {
         </View>
       )}
       <LiquidTabBar active={activeTab} onPress={handleTabPress} />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1 },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,
