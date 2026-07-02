@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
+import * as Haptics from 'expo-haptics';
 import {
   LiquidGlassContainerView,
   LiquidGlassView,
@@ -27,10 +28,9 @@ const TABS: { key: TabKey; label: string }[] = [
 
 const BAR_HEIGHT = 60;
 const BAR_RADIUS = 999;
-// 바 내부 좌우 패딩 — pill이 바 끝에 붙지 않도록
-const BAR_INNER_PADDING = 6;
-// pill은 탭 슬롯의 이 비율만큼 (양쪽에 gap)
-const PILL_SLOT_RATIO = 0.82;
+const NUM_TABS = TABS.length;
+// pill 너비 = 탭 슬롯의 이 비율
+const PILL_SLOT_RATIO = 0.80;
 
 const AnimatedLiquidGlassView = Animated.createAnimatedComponent(LiquidGlassView);
 
@@ -107,61 +107,77 @@ export default function LiquidTabBar({
   profilePhotoUrl?: string;
 }) {
   const insets = useSafeAreaInsets();
-  const activeIdx = active ? TABS.findIndex(t => t.key === active) : 0;
+  const activeIdx = Math.max(0, active ? TABS.findIndex(t => t.key === active) : 0);
   const prevIdx = useRef(activeIdx);
 
-  // --- pill 위치 애니메이션 ---
-  // left: 탭 슬롯 % + 슬롯 안 중앙 정렬을 위한 offset
-  // pill 폭 = 25% * PILL_SLOT_RATIO → 남은 공간 / 2 씩 양쪽 margin
-  const slotPct = 100 / TABS.length;                          // 25%
-  const pillWidthPct = slotPct * PILL_SLOT_RATIO;             // ~20.5%
-  const pillMarginPct = (slotPct - pillWidthPct) / 2;         // ~2.25%
+  // ── pill 위치 ──────────────────────────────────────────────
+  // paddingHorizontal 없이 barContainer 전체 너비 기준으로 계산
+  // 슬롯 25%, pill 80% of slot → pill 20%, margin 2.5% 양쪽
+  const slotPct = 100 / NUM_TABS;
+  const pillPct = slotPct * PILL_SLOT_RATIO;
+  const marginPct = (slotPct - pillPct) / 2;
 
-  const pillLeft = useRef(new Animated.Value(activeIdx * slotPct + pillMarginPct)).current;
+  const pillLeft = useRef(
+    new Animated.Value(activeIdx * slotPct + marginPct),
+  ).current;
 
-  // --- 아이콘 scale 애니메이션 (탭당 하나씩) ---
+  // ── 아이콘 scale ───────────────────────────────────────────
   const scaleAnims = useRef(
-    TABS.reduce<Record<TabKey, Animated.Value>>((acc, tab) => {
-      acc[tab.key] = new Animated.Value(tab.key === active ? 1 : 0.88);
+    TABS.reduce<Record<TabKey, Animated.Value>>((acc, tab, i) => {
+      acc[tab.key] = new Animated.Value(i === activeIdx ? 1 : 0.88);
       return acc;
     }, {} as Record<TabKey, Animated.Value>),
   ).current;
 
+  // ── 탭바 전체 wobble scale ──────────────────────────────────
+  const barScale = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
-    // pill 이동 — friction 낮춰서 오버슈트(출렁) 효과
+    // pill 이동 — 낮은 friction으로 오버슈트
     Animated.spring(pillLeft, {
-      toValue: activeIdx * slotPct + pillMarginPct,
+      toValue: activeIdx * slotPct + marginPct,
       useNativeDriver: false,
-      tension: 280,
-      friction: 16,   // 낮을수록 더 출렁임 (12~18 추천)
+      tension: 260,
+      friction: 15,
       overshootClamping: false,
     }).start();
 
-    // 이전 탭 아이콘은 축소, 새 탭 아이콘은 확대 + 통통 튀는 효과
-    TABS.forEach(tab => {
-      const isNewActive = TABS.findIndex(t => t.key === tab.key) === activeIdx;
-      const isPrevActive = TABS.findIndex(t => t.key === tab.key) === prevIdx.current;
+    // 탭바 wrapper 출렁: 살짝 눌렸다가 튀어나오는 효과
+    Animated.sequence([
+      Animated.timing(barScale, {
+        toValue: 0.97,
+        duration: 70,
+        useNativeDriver: true,
+      }),
+      Animated.spring(barScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 380,
+        friction: 11,
+      }),
+    ]).start();
 
-      if (isNewActive) {
-        // 작게 → 크게 튀어나오는 팝 효과
+    // 아이콘 팝: 새 탭 → 축소 후 spring, 이전 탭 → 소폭 축소
+    TABS.forEach((tab, i) => {
+      if (i === activeIdx) {
         Animated.sequence([
           Animated.timing(scaleAnims[tab.key], {
-            toValue: 0.82,
-            duration: 60,
+            toValue: 0.78,
+            duration: 55,
             useNativeDriver: true,
           }),
           Animated.spring(scaleAnims[tab.key], {
             toValue: 1,
             useNativeDriver: true,
-            tension: 400,
-            friction: 12,
+            tension: 420,
+            friction: 11,
           }),
         ]).start();
-      } else if (isPrevActive) {
+      } else if (i === prevIdx.current) {
         Animated.spring(scaleAnims[tab.key], {
           toValue: 0.88,
           useNativeDriver: true,
-          tension: 300,
+          tension: 280,
           friction: 20,
         }).start();
       }
@@ -174,18 +190,25 @@ export default function LiquidTabBar({
   const bottomPad = insets.bottom || 0;
   const supported = isLiquidGlassSupported && Platform.OS === 'ios';
 
-  const pillStyle = [
+  const pillAnimStyle = [
     styles.pill,
-    { width: `${pillWidthPct}%` as `${number}%` },
+    { width: `${pillPct}%` as `${number}%` },
     {
       left: pillLeft.interpolate({
-        inputRange: [0, 75],
-        outputRange: ['0%', '75%'],
+        inputRange: [0, 100],
+        outputRange: ['0%', '100%'],
         extrapolate: 'clamp',
       }),
     },
   ];
 
+  function handlePress(tab: TabKey) {
+    // 햅틱 피드백 (iOS selection 스타일)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onPress(tab);
+  }
+
+  // 탭 버튼 공통 렌더
   const tabButtons = (
     <View style={styles.tabRow}>
       {TABS.map((tab, idx) => {
@@ -193,7 +216,7 @@ export default function LiquidTabBar({
         return (
           <Pressable
             key={tab.key}
-            onPress={() => onPress(tab.key)}
+            onPress={() => handlePress(tab.key)}
             style={styles.tabButton}
             hitSlop={{ top: 8, bottom: 8, left: 2, right: 2 }}
           >
@@ -217,36 +240,35 @@ export default function LiquidTabBar({
       pointerEvents="box-none"
       style={[styles.wrapper, { paddingBottom: bottomPad + 8 }]}
     >
-      {supported ? (
-        <LiquidGlassContainerView spacing={12} style={styles.barContainer}>
-          {/* 메인 탭바 배경 */}
-          <LiquidGlassView
-            effect="regular"
-            colorScheme="light"
-            style={styles.bar}
-          >
-            {tabButtons}
-          </LiquidGlassView>
-
-          {/* 선택 pill */}
-          <AnimatedLiquidGlassView
-            effect="clear"
-            colorScheme="light"
-            interactive
-            style={pillStyle}
-          />
-        </LiquidGlassContainerView>
-      ) : (
-        <View style={[styles.barContainer, styles.fallbackBg]}>
-          <View style={styles.bar}>
+      <Animated.View style={[styles.barOuter, { transform: [{ scale: barScale }] }]}>
+        {supported ? (
+          <LiquidGlassContainerView spacing={12} style={styles.barContainer}>
+            <LiquidGlassView
+              effect="regular"
+              colorScheme="light"
+              style={styles.bar}
+            >
+              {tabButtons}
+            </LiquidGlassView>
             <AnimatedLiquidGlassView
-              effect="none"
-              style={[pillStyle, styles.fallbackPill]}
+              effect="clear"
+              colorScheme="light"
+              interactive
+              style={pillAnimStyle}
             />
-            {tabButtons}
+          </LiquidGlassContainerView>
+        ) : (
+          <View style={[styles.barContainer, styles.fallbackBg]}>
+            <View style={styles.bar}>
+              <AnimatedLiquidGlassView
+                effect="none"
+                style={[pillAnimStyle, styles.fallbackPill]}
+              />
+              {tabButtons}
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </Animated.View>
     </View>
   );
 }
@@ -261,27 +283,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingTop: 12,
   },
-  barContainer: {
+  // barScale 애니메이션을 위한 래퍼
+  barOuter: {
     width: '100%',
     maxWidth: 430,
+  },
+  barContainer: {
+    width: '100%',
     borderRadius: BAR_RADIUS,
     position: 'relative',
   },
   bar: {
     height: BAR_HEIGHT,
     borderRadius: BAR_RADIUS,
-    // 바 좌우 내부 패딩 — pill이 바 가장자리에 붙지 않게
-    paddingHorizontal: BAR_INNER_PADDING,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
     elevation: 6,
     overflow: 'visible',
+    // paddingHorizontal 제거 — pill % 기준과 통일시켜 정렬 맞춤
   },
   tabRow: {
     flexDirection: 'row',
     height: BAR_HEIGHT,
+    // 탭 버튼들이 바 전체 너비에 걸쳐 균등하게 분배됨
   },
   tabButton: {
     flex: 1,
@@ -295,6 +321,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#8e8e93',
     lineHeight: 12,
+    textAlign: 'center',
   },
   labelActive: {
     color: '#1f1f1f',
