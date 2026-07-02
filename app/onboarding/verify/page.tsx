@@ -130,6 +130,7 @@ function VerifyForm() {
   const [showPw, setShowPw] = useState(false)
   const [showPwConfirm, setShowPwConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [registerError, setRegisterError] = useState("")
   const [showTerms, setShowTerms] = useState(false)
   const [agreed, setAgreed] = useState<Record<TermKey, boolean>>({
     service: false, privacy: false, sensitive: false, marketing: false,
@@ -200,6 +201,7 @@ function VerifyForm() {
     if (!allRequired || submitting) return
     setShowTerms(false)
     setSubmitting(true)
+    setRegisterError("")
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -213,7 +215,12 @@ function VerifyForm() {
         bridgeNavigate("BirthInfo")
       } else if (data.error === "PHONE_ALREADY_REGISTERED") {
         navigateAndReplace("Login", { phone: rawPhone })
+      } else {
+        // 서버 오류 — 에러 메시지 표시
+        setRegisterError("오류가 발생했어요. 잠시 후 다시 시도해주세요.")
       }
+    } catch {
+      setRegisterError("네트워크 오류가 발생했어요. 다시 시도해주세요.")
     } finally {
       setSubmitting(false)
     }
@@ -403,6 +410,9 @@ function VerifyForm() {
       </div>
 
       <PageFooter>
+        {registerError && (
+          <p className="text-[12px] text-[#ff3b30] text-center mb-2">{registerError}</p>
+        )}
         <CtaButton disabled={!canFinish} loading={submitting} onClick={handlePasswordCta}>
           {submitting ? "처리 중..." : "완료"}
         </CtaButton>

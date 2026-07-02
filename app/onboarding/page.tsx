@@ -1,12 +1,18 @@
 "use client"
 
 import { useEffect } from "react"
-import { navigateAndReplace } from "@/lib/bridge"
+import { bridgeNavigate, navigateAndReplace } from "@/lib/bridge"
+
+function clearSession() {
+  localStorage.removeItem("auth_token")
+  localStorage.removeItem("user_phone")
+}
 
 export default function OnboardingLandingPage() {
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
 
+    // 토큰 없음 = 첫 설치 or 로그아웃 → 번호 인증부터
     if (!token) {
       navigateAndReplace("PhoneInput")
       return
@@ -15,7 +21,8 @@ export default function OnboardingLandingPage() {
     const controller = new AbortController()
     const timeout = setTimeout(() => {
       controller.abort()
-      navigateAndReplace("Login")
+      clearSession()
+      navigateAndReplace("PhoneInput")
     }, 10000)
 
     fetch("/api/auth/me", {
@@ -24,39 +31,33 @@ export default function OnboardingLandingPage() {
     })
       .then(res => {
         clearTimeout(timeout)
-        if (!res.ok) { navigateAndReplace("Login"); return null }
+        if (!res.ok) {
+          // 토큰 만료 or 서버 오류 → 번호 인증부터
+          clearSession()
+          navigateAndReplace("PhoneInput")
+          return null
+        }
         return res.json()
       })
       .then(user => {
         if (!user) return
 
-        // 회원가입 완료 사용자 → 토큰 지우고 번호 인증부터 재시작
         if (user.signupComplete) {
-          localStorage.removeItem("auth_token")
-          localStorage.removeItem("user_phone")
-          navigateAndReplace("PhoneInput")
-          return
-        }
-
-        // 회원가입 미완료 → 중단된 단계부터 이어서 진행
-        if (user.profileComplete) {
+          // 가입 완료된 유저 → 바로 홈
           if (user.filterComplete) {
-            // filterComplete까지 됐는데 signupComplete가 false면 강제 complete 처리
-            navigateAndReplace("Home")
+            bridgeNavigate("Home")
           } else {
-            navigateAndReplace("Filter")
+            bridgeNavigate("Filter")
           }
-        } else if (user.birthDate) {
-          navigateAndReplace("Blocking")
         } else {
-          navigateAndReplace("BirthInfo")
+          // 가입 미완료 → 세션 지우고 번호 인증부터 다시
+          clearSession()
+          navigateAndReplace("PhoneInput")
         }
       })
       .catch(() => {
         clearTimeout(timeout)
-        // 네트워크/인증 오류 → 번호 인증부터 다시
-        localStorage.removeItem("auth_token")
-        localStorage.removeItem("user_phone")
+        clearSession()
         navigateAndReplace("PhoneInput")
       })
   }, [])
