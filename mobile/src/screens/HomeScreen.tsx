@@ -8,7 +8,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import WebView, { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview';
@@ -43,6 +43,7 @@ export default function HomeScreen() {
     new Set(['recommend', 'my']),
   );
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>();
+  const { top: topInset } = useSafeAreaInsets();
 
   // TODO: 오픈 전에 expo-screen-capture 재설치 후 캡쳐 방지 코드 추가
   // npm install expo-screen-capture → import * as ScreenCapture from 'expo-screen-capture'
@@ -211,7 +212,11 @@ export default function HomeScreen() {
           <View
             key={tab.key}
             pointerEvents={isActive ? 'auto' : 'none'}
-            style={[StyleSheet.absoluteFill, !isActive && styles.hiddenTab]}
+            style={[
+              StyleSheet.absoluteFill,
+              { top: topInset }, // SafeAreaView가 padding을 쓰지만 absoluteFill은 이를 무시 → top inset을 직접 지정
+              !isActive && styles.hiddenTab,
+            ]}
           >
             <KeyboardAwareWebView
               ref={r => { webViewRefs.current[tab.key] = r; }}
