@@ -10,9 +10,15 @@ function clearSession() {
 
 export default function OnboardingLandingPage() {
   useEffect(() => {
+    // 로그아웃 플래그 확인 — 로그인 성공 전까지 유지
+    if (localStorage.getItem("did_logout")) {
+      navigateAndReplace("Login")
+      return
+    }
+
     const token = localStorage.getItem("auth_token")
 
-    // 토큰 없음 = 첫 설치 or 로그아웃 → 번호 인증부터
+    // 토큰 없음 = 첫 설치 or 세션 만료 → 번호 인증부터
     if (!token) {
       navigateAndReplace("PhoneInput")
       return

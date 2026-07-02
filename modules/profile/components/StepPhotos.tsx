@@ -49,9 +49,10 @@ function GuideRow({ good, children }: { good?: boolean; children: React.ReactNod
   )
 }
 
-function PhotoSlot({ url, required, dragging, onOpen, onDelete, onPointerDown, slotRef }: {
+function PhotoSlot({ url, required, loading, dragging, onOpen, onDelete, onPointerDown, slotRef }: {
   url: string
   required?: boolean
+  loading?: boolean
   dragging?: boolean
   onOpen: () => void
   onDelete: () => void
@@ -67,21 +68,26 @@ function PhotoSlot({ url, required, dragging, onOpen, onDelete, onPointerDown, s
     >
       <button
         type="button"
-        onClick={url ? undefined : onOpen}
+        onClick={url || loading ? undefined : onOpen}
         className="absolute inset-0 rounded-[8px] border border-dashed border-[#dfdfdf] bg-white flex items-center justify-center overflow-hidden"
       >
-        {url ? (
+        {loading ? (
+          /* 업로드 중 슬롯별 스피너 */
+          <div className="absolute inset-0 bg-[#f4f4f5] flex items-center justify-center rounded-[8px]">
+            <div className="w-6 h-6 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : url ? (
           <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover rounded-[8px]" />
         ) : (
           <PlusIcon />
         )}
       </button>
-      {required && (
+      {required && !loading && (
         <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-[20px] leading-[1.4]">
           필수
         </span>
       )}
-      {url && (
+      {url && !loading && (
         <button type="button" onClick={e => { e.stopPropagation(); onDelete() }} className="absolute -top-2 -right-2 w-6 h-6">
           <DeleteIcon />
         </button>
@@ -93,38 +99,59 @@ function PhotoSlot({ url, required, dragging, onOpen, onDelete, onPointerDown, s
 export default function StepPhotos({ data, onChange, onNext, onBack, step }: StepProps) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [showGuide, setShowGuide] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [loadingSlots, setLoadingSlots] = useState<Set<number>>(new Set())
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const slotRefs = useRef<(HTMLDivElement | null)[]>([])
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pressStart = useRef<{ x: number; y: number } | null>(null)
 
+  const isUploading = loadingSlots.size > 0
   const slots = [...data.photos, ...Array(Math.max(0, MAX_PHOTOS - data.photos.length)).fill("")]
+
+  async function uploadSingleFile(file: File): Promise<string | null> {
+    const phone = localStorage.getItem("user_phone") ?? ""
+    const fd = new FormData()
+    fd.append("phone", phone)
+    fd.append("files", file)
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      const result = await res.json()
+      if (res.ok && Array.isArray(result.urls) && result.urls[0]) {
+        return result.urls[0] as string
+      }
+    } catch { /* 개별 실패 무시 */ }
+    return null
+  }
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     e.target.value = ""
-    const remaining = MAX_PHOTOS - data.photos.length
+    const currentCount = data.photos.length
+    const remaining = MAX_PHOTOS - currentCount
     if (files.length === 0 || remaining <= 0) return
 
-    setUploading(true)
-    try {
-      const phone = localStorage.getItem("user_phone") ?? ""
-      const formData = new FormData()
-      formData.append("phone", phone)
-      files.slice(0, remaining).forEach(file => formData.append("files", file))
+    const toUpload = files.slice(0, remaining)
+    // 업로드될 슬롯 인덱스를 미리 계산해 스피너 표시
+    const pendingSlots = new Set(toUpload.map((_, i) => currentCount + i))
+    setLoadingSlots(pendingSlots)
 
-      const res = await fetch("/api/upload", { method: "POST", body: formData })
-      const result = await res.json()
-      if (!res.ok || !Array.isArray(result.urls)) return
-      onChange({ photos: [...data.photos, ...result.urls].slice(0, MAX_PHOTOS) })
+    try {
+      // 파일별 개별 업로드 — 하나 실패해도 나머지는 성공
+      const results = await Promise.allSettled(toUpload.map(uploadSingleFile))
+      const uploaded: string[] = []
+      results.forEach(r => {
+        if (r.status === "fulfilled" && r.value) uploaded.push(r.value)
+      })
+      if (uploaded.length > 0) {
+        onChange({ photos: [...data.photos, ...uploaded].slice(0, MAX_PHOTOS) })
+      }
     } finally {
-      setUploading(false)
+      setLoadingSlots(new Set())
     }
   }
 
   function openPicker() {
-    if (uploading || data.photos.length >= MAX_PHOTOS) return
+    if (isUploading || data.photos.length >= MAX_PHOTOS) return
     fileRef.current?.click()
   }
 
@@ -185,7 +212,7 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
           </p>
           <button
             onClick={() => setShowGuide(true)}
-            className="h-[28px] px-3 rounded-[4px] bg-[#e9f1ff] text-[12px] font-medium text-[#1a75ff] flex items-center"
+            className="h-[28px] px-3 rounded-[4px] bg-[#e9f1ff] text-[12px] font-medium text-[#1a75ff] flex items-center w-fit"
           >
             사진 등록 가이드
           </button>
@@ -204,6 +231,7 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
                   key={i}
                   url={slots[i]}
                   required
+                  loading={loadingSlots.has(i)}
                   dragging={dragIndex === i}
                   onOpen={openPicker}
                   onDelete={() => deletePhoto(i)}
@@ -217,6 +245,7 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
                 <PhotoSlot
                   key={i}
                   url={slots[i]}
+                  loading={loadingSlots.has(i)}
                   dragging={dragIndex === i}
                   onOpen={openPicker}
                   onDelete={() => deletePhoto(i)}
@@ -231,7 +260,7 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
       </div>
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
       <PageFooter>
-        <CtaButton disabled={data.photos.length < 2 || uploading} onClick={onNext}>다음</CtaButton>
+        <CtaButton disabled={data.photos.length < 2 || isUploading} onClick={onNext}>다음</CtaButton>
       </PageFooter>
 
       {showGuide && (

@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false)
 
   function handleLogout() {
+    localStorage.setItem("did_logout", "true")
     localStorage.removeItem("auth_token")
     localStorage.removeItem("user_phone")
     bridgeNavigate("Landing")

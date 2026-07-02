@@ -80,6 +80,7 @@ function LoginForm() {
       if (data.token) {
         localStorage.setItem("auth_token", data.token)
         localStorage.setItem("user_phone", rawPhone)
+        localStorage.removeItem("did_logout")
       }
 
       if (data.profileComplete) {
