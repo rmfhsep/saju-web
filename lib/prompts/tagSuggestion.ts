@@ -81,8 +81,6 @@ export async function generateTagSuggestion(input: TagSuggestionInput): Promise<
     max_tokens: 300,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: buildUserPrompt(input) }],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    output_config: { format: { type: "json_object" } } as any,
   })
   return parseClaudeJson<TagSuggestion>(response.content)
 }
