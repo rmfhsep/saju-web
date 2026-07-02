@@ -29,21 +29,35 @@ export default function OnboardingLandingPage() {
       })
       .then(user => {
         if (!user) return
-        if (!user.signupComplete) {
+
+        // 회원가입 완료 사용자 → 토큰 지우고 번호 인증부터 재시작
+        if (user.signupComplete) {
           localStorage.removeItem("auth_token")
           localStorage.removeItem("user_phone")
           navigateAndReplace("PhoneInput")
           return
         }
+
+        // 회원가입 미완료 → 중단된 단계부터 이어서 진행
         if (user.profileComplete) {
-          if (user.filterComplete) navigateAndReplace("Home")
-          else                     navigateAndReplace("Filter")
-        } else if (user.birthDate) navigateAndReplace("Blocking")
-        else                       navigateAndReplace("BirthInfo")
+          if (user.filterComplete) {
+            // filterComplete까지 됐는데 signupComplete가 false면 강제 complete 처리
+            navigateAndReplace("Home")
+          } else {
+            navigateAndReplace("Filter")
+          }
+        } else if (user.birthDate) {
+          navigateAndReplace("Blocking")
+        } else {
+          navigateAndReplace("BirthInfo")
+        }
       })
       .catch(() => {
         clearTimeout(timeout)
-        navigateAndReplace("Login")
+        // 네트워크/인증 오류 → 번호 인증부터 다시
+        localStorage.removeItem("auth_token")
+        localStorage.removeItem("user_phone")
+        navigateAndReplace("PhoneInput")
       })
   }, [])
 
