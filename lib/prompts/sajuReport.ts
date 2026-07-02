@@ -295,6 +295,9 @@ export async function generateSajuReport(input: SajuComputed): Promise<SajuRepor
     max_tokens: 2000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: buildUserPrompt(input) }],
+    // JSON 구조 강제 — 마크다운·따옴표 삽입 등으로 인한 파싱 오류 방지
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    output_config: { format: { type: "json_object" } } as any,
   })
   return parseClaudeJson<SajuReport>(response.content)
 }
