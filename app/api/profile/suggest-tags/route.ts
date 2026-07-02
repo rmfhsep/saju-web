@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db"
 import { generateTagSuggestion } from "@/lib/prompts/tagSuggestion"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   try {
     const { phone, datingPurpose, politics, drinking, smoking } = await req.json()

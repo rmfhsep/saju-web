@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
+export const maxDuration = 60
+
 const VALID_GENDERS = ["MALE", "FEMALE"] as const
 const VALID_CALENDAR_TYPES = ["SOLAR", "LUNAR", "LUNAR_LEAP"] as const
 const BIRTH_DATE_RE = /^\d{8}$/

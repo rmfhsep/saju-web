@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db"
 import { computeSaju } from "@/lib/saju"
 import { generateSajuReport } from "@/lib/prompts/sajuReport"
 
+// Vercel 함수 최대 실행 시간 (초) — Claude API 호출이 길어질 수 있음
+export const maxDuration = 60
+
 /**
  * 사주 리포트 생성 전용 엔드포인트.
  * auth/birth에서 생성이 실패했을 때 결과 페이지에서 재시도용으로 사용.
