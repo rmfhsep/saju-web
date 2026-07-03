@@ -292,7 +292,7 @@ export interface SajuReport {
 export async function generateSajuReport(input: SajuComputed): Promise<SajuReport> {
   const response = await getClaude().messages.create({
     model: MODEL,
-    max_tokens: 2000,
+    max_tokens: 16000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: buildUserPrompt(input) }],
   })

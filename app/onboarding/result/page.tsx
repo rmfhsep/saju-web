@@ -232,9 +232,18 @@ function ResultContent() {
       .then(res => (res.ok ? res.json() : null))
       .then(user => {
         if (user?.sajuResult) {
-          try { setReport(JSON.parse(user.sajuResult)) } catch { /* ignore */ }
+          try {
+            const parsed = JSON.parse(user.sajuResult)
+            // 섹션1이 없으면 불완전한 데이터 (max_tokens 부족으로 잘린 경우 등) → 재생성
+            if (parsed?.섹션1_연애기질?.표현방식) {
+              setReport(parsed)
+            } else {
+              generateReport(token)
+            }
+          } catch {
+            generateReport(token)
+          }
         } else if (user) {
-          // sajuResult가 없으면 자동으로 생성 시도
           generateReport(token)
         }
       })
