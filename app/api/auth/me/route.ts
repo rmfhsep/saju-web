@@ -44,6 +44,15 @@ export async function GET(req: NextRequest) {
         filterComplete: true,
         blockedPhones: true,
         blockedCount: true,
+        preferredFilterType: true,
+        preferredHeightMin: true,
+        preferredHeightMax: true,
+        preferredSmoking: true,
+        preferredDrinking: true,
+        preferredPolitics: true,
+        preferredReligion: true,
+        serviceNotify: true,
+        pushEnabled: true,
       },
     })
 

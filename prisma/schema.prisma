@@ -52,6 +52,10 @@ model User {
   preferredReligion   String?
   filterComplete      Boolean  @default(false)
 
+  // 알림 설정
+  serviceNotify    Boolean  @default(true)   // 서비스(혜택/이벤트) 알림 수신
+  pushEnabled      Boolean  @default(false)  // 기기 푸시 권한 허용 여부 (추후 네이티브가 갱신)
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

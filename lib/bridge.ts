@@ -88,6 +88,14 @@ export function onContactsPermissionDenied(callback: () => void) {
   ;(window as Window & { __onContactsPermissionDenied?: () => void }).__onContactsPermissionDenied = callback
 }
 
+/** Ask the native layer to open the OS app-settings screen (for toggling notifications). */
+export function bridgeOpenAppSettings() {
+  const rn = getRN()
+  if (rn) {
+    rn.postMessage(JSON.stringify({ type: 'openAppSettings' }))
+  }
+}
+
 /** Open the native SMS app with recipient and body pre-filled. */
 export function bridgeOpenSms(phone: string, body: string) {
   const rn = getRN()
