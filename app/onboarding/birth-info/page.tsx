@@ -48,14 +48,14 @@ function ScrollColumn({ items, selected, onChange }: {
   return (
     <div className="relative flex-1 h-[156px] overflow-hidden select-none">
       <div
-        className="absolute inset-x-0 pointer-events-none rounded-[4px] bg-[#f7f7f8]"
+        className="absolute inset-x-0 z-0 pointer-events-none rounded-[4px] bg-[#f7f7f8]"
         style={{ top: ITEM_H, height: ITEM_H }}
       />
-      <div className="absolute inset-x-0 top-0 h-[52px] bg-linear-to-b from-white to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-[52px] bg-linear-to-t from-white to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 top-0 h-[52px] bg-linear-to-b from-white to-transparent pointer-events-none z-20" />
+      <div className="absolute inset-x-0 bottom-0 h-[52px] bg-linear-to-t from-white to-transparent pointer-events-none z-20" />
       <div
         ref={ref}
-        className="h-full overflow-y-scroll no-scrollbar"
+        className="relative z-10 h-full overflow-y-scroll no-scrollbar"
         style={{
           paddingTop: ITEM_H,
           paddingBottom: ITEM_H,
