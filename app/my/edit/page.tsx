@@ -7,6 +7,8 @@ import EditHeader from "@/components/ui/edit-header"
 import type { ProfileData } from "@/modules/profile/types"
 
 const MAX_PHOTOS = 5
+const LONG_PRESS_MS = 350
+const MOVE_CANCEL_PX = 8
 
 const INFO_ROWS: { key: keyof ProfileData | "birth"; label: string; format?: (data: EditData) => string }[] = [
   { key: "birth", label: "출생 정보", format: d => d.birthDisplay },
@@ -52,6 +54,15 @@ export default function ProfileEditPage() {
   const [activeSlot, setActiveSlot] = useState<number | null>(null)
   const [uploading, setUploading] = useState(false)
   const [data, setData] = useState<EditData | null>(null)
+
+  // 사진 롱프레스 드래그 순서 변경
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([])
+  const gridRef = useRef<HTMLDivElement>(null)
+  const activePointerId = useRef<number | null>(null)
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pressStart = useRef<{ x: number; y: number } | null>(null)
+  const orderChanged = useRef(false)
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
@@ -130,6 +141,71 @@ export default function ProfileEditPage() {
     savePhotos(data.photos.filter((_, i) => i !== idx))
   }
 
+  // 순서 변경은 드래그 중 로컬 상태만 갱신하고, 드롭 시 한 번만 서버에 저장한다.
+  function persistPhotos(photos: string[]) {
+    const phone = localStorage.getItem("user_phone") ?? ""
+    fetch("/api/profile/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, photos }),
+    }).catch(() => {})
+  }
+
+  function clearPress() {
+    if (pressTimer.current) clearTimeout(pressTimer.current)
+    pressTimer.current = null
+    pressStart.current = null
+  }
+
+  function handleSlotPointerDown(idx: number, e: React.PointerEvent) {
+    if (!data || idx >= data.photos.length) return
+    activePointerId.current = e.pointerId
+    pressStart.current = { x: e.clientX, y: e.clientY }
+    pressTimer.current = setTimeout(() => {
+      setDragIndex(idx)
+      if (gridRef.current && activePointerId.current != null) {
+        try { gridRef.current.setPointerCapture(activePointerId.current) } catch { /* noop */ }
+      }
+    }, LONG_PRESS_MS)
+  }
+
+  function handleGridPointerMove(e: React.PointerEvent) {
+    if (!data) return
+    if (dragIndex === null) {
+      if (pressStart.current) {
+        const dx = Math.abs(e.clientX - pressStart.current.x)
+        const dy = Math.abs(e.clientY - pressStart.current.y)
+        if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) clearPress()
+      }
+      return
+    }
+    const overIdx = slotRefs.current.findIndex(el => {
+      if (!el) return false
+      const r = el.getBoundingClientRect()
+      return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom
+    })
+    if (overIdx === -1 || overIdx === dragIndex || overIdx >= data.photos.length) return
+    const next = [...data.photos]
+    const [moved] = next.splice(dragIndex, 1)
+    next.splice(overIdx, 0, moved)
+    setData(prev => (prev ? { ...prev, photos: next } : prev))
+    orderChanged.current = true
+    setDragIndex(overIdx)
+  }
+
+  function handleGridPointerUp() {
+    if (gridRef.current && activePointerId.current != null) {
+      try { gridRef.current.releasePointerCapture(activePointerId.current) } catch { /* noop */ }
+    }
+    activePointerId.current = null
+    clearPress()
+    setDragIndex(null)
+    if (orderChanged.current) {
+      orderChanged.current = false
+      if (data) persistPhotos(data.photos)
+    }
+  }
+
   if (!data) {
     return (
       <Screen>
@@ -148,15 +224,38 @@ export default function ProfileEditPage() {
         {/* 프로필 사진 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] text-center">프로필 사진</h2>
-          <div className="flex flex-col gap-2 px-5">
+          <div
+            ref={gridRef}
+            className="flex flex-col gap-2 px-5"
+            onPointerMove={handleGridPointerMove}
+            onPointerUp={handleGridPointerUp}
+            onPointerCancel={handleGridPointerUp}
+          >
             <div className="flex gap-2">
               {[0, 1].map(i => (
-                <EditPhotoSlot key={i} url={slots[i]} required onClick={() => openSlot(i)} onDelete={() => deletePhoto(i)} />
+                <EditPhotoSlot
+                  key={i}
+                  url={slots[i]}
+                  required
+                  dragging={dragIndex === i}
+                  onClick={() => openSlot(i)}
+                  onDelete={() => deletePhoto(i)}
+                  onPointerDown={e => handleSlotPointerDown(i, e)}
+                  slotRef={el => { slotRefs.current[i] = el }}
+                />
               ))}
             </div>
             <div className="flex gap-2">
               {[2, 3, 4].map(i => (
-                <EditPhotoSlot key={i} url={slots[i]} onClick={() => openSlot(i)} onDelete={() => deletePhoto(i)} />
+                <EditPhotoSlot
+                  key={i}
+                  url={slots[i]}
+                  dragging={dragIndex === i}
+                  onClick={() => openSlot(i)}
+                  onDelete={() => deletePhoto(i)}
+                  onPointerDown={e => handleSlotPointerDown(i, e)}
+                  slotRef={el => { slotRefs.current[i] = el }}
+                />
               ))}
             </div>
           </div>
@@ -219,14 +318,22 @@ export default function ProfileEditPage() {
   )
 }
 
-function EditPhotoSlot({ url, required, onClick, onDelete }: {
+function EditPhotoSlot({ url, required, dragging, onClick, onDelete, onPointerDown, slotRef }: {
   url: string
   required?: boolean
+  dragging?: boolean
   onClick: () => void
   onDelete: () => void
+  onPointerDown: (e: React.PointerEvent) => void
+  slotRef: (el: HTMLDivElement | null) => void
 }) {
   return (
-    <div className="relative flex-1" style={{ aspectRatio: "1/1" }}>
+    <div
+      ref={slotRef}
+      onPointerDown={url ? onPointerDown : undefined}
+      style={{ aspectRatio: "1/1", touchAction: url ? "none" : "auto" }}
+      className={`relative flex-1 transition-transform ${dragging ? "scale-105 opacity-80 z-10" : ""}`}
+    >
       <button
         onClick={onClick}
         className="absolute inset-0 rounded-[8px] border-[1.5px] border-dashed border-[#dfdfdf] bg-white flex items-center justify-center overflow-hidden"

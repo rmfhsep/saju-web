@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -39,6 +39,8 @@ export default function HomeScreen() {
   const webViewRefs = useRef<Partial<Record<TabKey, WebView | null>>>({});
 
   const [activeTab, setActiveTab] = useState<TabKey>('recommend');
+  // 하단 탭바(GNB) 노출 여부 — 웹이 라우트별로 setTabBar 메시지로 제어(메인 /·/my 에서만 노출)
+  const [tabBarVisible, setTabBarVisible] = useState(true);
   const [loadingTabs, setLoadingTabs] = useState<Set<TabKey>>(
     new Set(['recommend', 'my']),
   );
@@ -134,6 +136,11 @@ export default function HomeScreen() {
           fetchProfilePhoto(data.token);
           return;
         }
+        if (data.type === 'setTabBar') {
+          // 활성 탭의 WebView가 보낸 신호만 반영 (백그라운드 탭의 신호 무시)
+          if (tabKey === activeTab) setTabBarVisible(!!data.visible);
+          return;
+        }
         if (data.type !== 'navigate') return;
 
         // 로그아웃 / 탈퇴
@@ -201,6 +208,11 @@ export default function HomeScreen() {
     setActiveTab(tab);
   }
 
+  // 탭 전환 시에는 항상 탭바를 다시 노출 (하위 페이지에서 숨겨졌더라도)
+  useEffect(() => {
+    setTabBarVisible(true);
+  }, [activeTab]);
+
   const isAnyLoading = loadingTabs.size > 0;
 
   return (
@@ -244,11 +256,13 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <LiquidTabBar
-        active={activeTab}
-        onPress={handleTabPress}
-        profilePhotoUrl={profilePhotoUrl}
-      />
+      {tabBarVisible && (
+        <LiquidTabBar
+          active={activeTab}
+          onPress={handleTabPress}
+          profilePhotoUrl={profilePhotoUrl}
+        />
+      )}
     </SafeAreaView>
   );
 }
