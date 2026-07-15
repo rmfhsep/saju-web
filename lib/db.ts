@@ -9,7 +9,16 @@ function createPrisma(): PrismaClient {
     throw new Error("DATABASE_URL is not set")
   }
   try {
-    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+    // Supabase 세션 모드 pooler(pool_size 15)에서 커넥션 고갈을 막기 위해
+    // 인스턴스당 pg 풀 크기를 작게 제한하고, 유휴 커넥션은 빠르게 반환한다.
+    // (pg 기본 max=10 → 서버리스 인스턴스 2개만 떠도 15 초과)
+    const poolMax = Number(process.env.DB_POOL_MAX ?? 3)
+    const adapter = new PrismaPg({
+      connectionString: process.env.DATABASE_URL,
+      max: poolMax,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+    })
     return new PrismaClient({ adapter } as never)
   } catch (err) {
     console.error("[prisma] PrismaClient 초기화 실패:", err)
