@@ -96,6 +96,20 @@ export function bridgeOpenAppSettings() {
   }
 }
 
+/**
+ * Tell the native layer whether the bottom tab bar (GNB) should be visible.
+ * Sub-pages navigate client-side within the same WebView, so the native app
+ * can't detect the route change on its own — the web sends this on every
+ * route change (visible only on the main tab roots).
+ * No-op in a plain browser (getRN() is undefined).
+ */
+export function bridgeSetTabBar(visible: boolean) {
+  const rn = getRN()
+  if (rn) {
+    rn.postMessage(JSON.stringify({ type: 'setTabBar', visible }))
+  }
+}
+
 /** Open the native SMS app with recipient and body pre-filled. */
 export function bridgeOpenSms(phone: string, body: string) {
   const rn = getRN()

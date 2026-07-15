@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
+import TabBarController from "@/components/ui/tabbar-controller"
 
 export const metadata: Metadata = {
   title: "연애 사주",
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 배경 오브 */}
         
 
+        <TabBarController />
         <div className="relative w-full max-w-[768px] min-h-screen">
           {children}
         </div>
