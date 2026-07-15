@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { computeSaju } from "@/lib/saju"
-import { generateSajuReport } from "@/lib/prompts/sajuReport"
+import { buildSajuReport } from "@/lib/sajuReport"
 
 // Vercel 함수 최대 실행 시간 (초) — Claude API 호출이 길어질 수 있음
 export const maxDuration = 60
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       user.gender as "MALE" | "FEMALE",
     )
 
-    const report = await generateSajuReport(saju)
+    const report = buildSajuReport(saju)
     const sajuResult = JSON.stringify(report)
 
     await prisma.user.update({

@@ -91,6 +91,21 @@ const BRANCH_CLASH: Record<EarthlyBranch, EarthlyBranch> = {
   사: "해", 해: "사",
 }
 
+// 지지 삼합(三合) 국(局) — 두 글자만 모여도 반합(半合)으로 인정한다.
+const BRANCH_SAMHAP_GROUPS: EarthlyBranch[][] = [
+  ["신", "자", "진"], // 수국(水局)
+  ["해", "묘", "미"], // 목국(木局)
+  ["인", "오", "술"], // 화국(火局)
+  ["사", "유", "축"], // 금국(金局)
+]
+
+/** 두 지지가 합(合) 관계인지 — 육합(六合) 또는 삼합/반합(三合/半合)이면 true. */
+function isBranchHarmony(a: EarthlyBranch, b: EarthlyBranch): boolean {
+  if (a === b) return false
+  if (BRANCH_COMBINE[a] === b) return true // 육합
+  return BRANCH_SAMHAP_GROUPS.some(g => g.includes(a) && g.includes(b)) // 삼합/반합
+}
+
 // 오행 상생(생): 목→화→토→금→수→목
 const ELEMENT_GENERATES: Record<FiveElement, FiveElement> = {
   목: "화", 화: "토", 토: "금", 금: "수", 수: "목",
@@ -204,7 +219,7 @@ export function computeSaju(input: SajuRawInput, gender: Gender): SajuComputed {
     음간보정: dayYinYang === "음" ? 20 : 0,
     천간합: STEM_COMBINE[dayMaster] === currentYearPillar.heavenlyStem,
     천간충: STEM_CLASH[dayMaster] === currentYearPillar.heavenlyStem,
-    지지합: BRANCH_COMBINE[result.day.earthlyBranch] === currentYearPillar.earthlyBranch,
+    지지합: isBranchHarmony(result.day.earthlyBranch, currentYearPillar.earthlyBranch),
     지지충: BRANCH_CLASH[result.day.earthlyBranch] === currentYearPillar.earthlyBranch,
     생관계: ELEMENT_GENERATES[sewunStemElement] === dayElement,
     극관계: ELEMENT_CONTROLS[sewunStemElement] === dayElement,
