@@ -12,8 +12,41 @@ type User = {
   profileComplete: boolean
 }
 
+type Reco = {
+  id: number
+  nickname: string | null
+  name: string | null
+  photos: string | null
+}
+
+const CARD_GRADIENTS = [
+  "linear-gradient(160deg, #b5b0d6 0%, #8b7aa8 100%)",
+  "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
+]
+
+function RecoCard({ reco, gradient }: { reco: Reco; gradient: string }) {
+  const photos: string[] = reco.photos ? JSON.parse(reco.photos) : []
+  const displayName = reco.nickname || reco.name || ""
+  return (
+    <div
+      className="snap-center shrink-0 w-[300px] h-[400px] rounded-[16px] relative overflow-hidden bg-[#f4f4f5]"
+      style={photos[0] ? undefined : { background: gradient }}
+    >
+      {photos[0] && (
+        <img src={photos[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      {/* 하단 그라데이션 + 닉네임 */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-5">
+        <span className="text-[22px] font-semibold text-white tracking-[-0.44px]">{displayName}</span>
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
+  const [recos, setRecos] = useState<Reco[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -42,6 +75,12 @@ export default function HomePage() {
         }
 
         setUser(data)
+
+        // 이성 유저 추천 (최대 2명)
+        fetch("/api/users/discover", { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => (r.ok ? r.json() : null))
+          .then(d => { if (d?.users) setRecos((d.users as Reco[]).slice(0, 2)) })
+          .catch(() => {})
       } catch {
         bridgeNavigate("Landing")
       } finally {
@@ -51,12 +90,6 @@ export default function HomePage() {
 
     check()
   }, [])
-
-  function handleLogout() {
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("user_phone")
-    bridgeNavigate("Landing")
-  }
 
   if (loading) {
     return (
@@ -77,29 +110,24 @@ export default function HomePage() {
         </h1>
       </div>
 
-      <div className="flex-1 px-5 flex flex-col gap-4">
-        <div className="bg-[#f4f4f5] rounded-[12px] p-5 flex flex-col gap-2">
-          <p className="text-[13px] text-[#6b6b6b]">프로필 완성</p>
-          <p className="text-[16px] font-semibold text-[#0f0f10]">
-            {user.gender === "MALE" ? "남성" : user.gender === "FEMALE" ? "여성" : ""} 회원
-          </p>
-        </div>
+      <div className="flex-1 flex flex-col gap-4">
+        <h2 className="px-5 text-[18px] font-bold text-[#0f0f10] tracking-[-0.36px]">오늘의 추천</h2>
 
-        <div className="bg-[#e9f1ff] rounded-[12px] p-5">
-          <p className="text-[14px] text-[#1a75ff] font-semibold mb-1">매칭 준비 중</p>
-          <p className="text-[13px] text-[#4a7fe5]">
-            곧 나와 잘 맞는 인연을 소개해드릴게요.
-          </p>
-        </div>
-      </div>
-
-      <div className="px-5 pb-10">
-        <button
-          onClick={handleLogout}
-          className="w-full h-[48px] bg-[#f4f4f5] rounded-[4px] text-[16px] font-semibold tracking-tight text-[#6b6b6b]"
-        >
-          로그아웃
-        </button>
+        {recos.length > 0 ? (
+          <div
+            className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {recos.map((reco, i) => (
+              <RecoCard key={reco.id} reco={reco} gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]} />
+            ))}
+          </div>
+        ) : (
+          <div className="mx-5 bg-[#f4f4f5] rounded-[12px] p-6 flex flex-col items-center gap-1">
+            <p className="text-[15px] font-semibold text-[#1f1f1f]">아직 소개할 인연이 없어요</p>
+            <p className="text-[13px] text-[#777]">새로운 인연이 생기면 알려드릴게요.</p>
+          </div>
+        )}
       </div>
 
       <AppBottomNav />
