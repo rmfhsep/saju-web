@@ -442,7 +442,10 @@ function VerifyForm() {
                     </div>
                   ))}
                 </div>
-                <div className={`rounded-[4px] p-4 flex items-center gap-2 ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}>
+                <div
+                  onClick={toggleAll}
+                  className={`rounded-[4px] p-4 flex items-center gap-2 cursor-pointer ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}
+                >
                   <Checkbox checked={allChecked} onChange={toggleAll} />
                   <span className="text-[16px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.32px]">전체 동의</span>
                 </div>

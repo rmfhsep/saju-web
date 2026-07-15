@@ -240,7 +240,7 @@ function EditPhotoSlot({ url, required, onClick, onDelete }: {
           </svg>
         )}
         {!url && required && (
-          <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-full leading-[1.4]">필수</span>
+          <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-full leading-[1.4] pointer-events-none">필수</span>
         )}
       </button>
       {url && (

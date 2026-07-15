@@ -7,7 +7,13 @@ import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
 
-const LEVEL_LABEL: Record<string, string> = { HIGH: "활발", MID: "보통", LOW: "잔잔" }
+const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
+// 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-회색
+const LEVEL_BADGE: Record<string, string> = {
+  HIGH: "text-[#ff334b] bg-[#feecec]",
+  MID: "text-[#1a75ff] bg-[#e9f1ff]",
+  LOW: "text-[#949494] bg-[#f4f4f5]",
+}
 
 function formatBirthDisplay(bd: string, bt: string, calendarType: string): string {
   const calLabel =
@@ -118,7 +124,7 @@ function LoveFlowCard({ section }: { section: SajuReport["섹션3_올해연애�
                 <span className="w-2 h-2 rounded-full bg-[#90b7ff]" />
               </span>
               <span className="text-[14px] font-semibold text-[#1f1f1f]">{p.label} ({p.기간})</span>
-              <span className="text-[11px] font-medium text-[#1a75ff] bg-[#e9f1ff] rounded-[4px] px-1.5 py-[2px]">{LEVEL_LABEL[p.레벨] ?? p.레벨}</span>
+              <span className={`text-[11px] font-medium rounded-[4px] px-1.5 py-[2px] ${LEVEL_BADGE[p.레벨] ?? LEVEL_BADGE.MID}`}>{LEVEL_LABEL[p.레벨] ?? p.레벨}</span>
             </div>
             <p className="text-[14px] font-normal text-[#3f3f3f] leading-[1.5] pl-6">{p.텍스트}</p>
           </div>

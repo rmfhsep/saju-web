@@ -83,7 +83,7 @@ function PhotoSlot({ url, required, loading, dragging, onOpen, onDelete, onPoint
         )}
       </button>
       {required && !loading && (
-        <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-[20px] leading-[1.4]">
+        <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-[20px] leading-[1.4] pointer-events-none">
           필수
         </span>
       )}
@@ -102,8 +102,25 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
   const [loadingSlots, setLoadingSlots] = useState<Set<number>>(new Set())
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const slotRefs = useRef<(HTMLDivElement | null)[]>([])
+  const gridRef = useRef<HTMLDivElement>(null)
+  const activePointerId = useRef<number | null>(null)
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pressStart = useRef<{ x: number; y: number } | null>(null)
+
+  // 사진 등록 가이드 바텀시트 — 아래로 스와이프해서 닫기
+  const [guideDragY, setGuideDragY] = useState(0)
+  const guideDragStart = useRef<number | null>(null)
+  function closeGuide() { setShowGuide(false); setGuideDragY(0); guideDragStart.current = null }
+  function onGuidePointerDown(e: React.PointerEvent) { guideDragStart.current = e.clientY }
+  function onGuidePointerMove(e: React.PointerEvent) {
+    if (guideDragStart.current == null) return
+    const dy = e.clientY - guideDragStart.current
+    if (dy > 0) setGuideDragY(dy)
+  }
+  function onGuidePointerUp() {
+    if (guideDragY > 80) closeGuide()
+    else { setGuideDragY(0); guideDragStart.current = null }
+  }
 
   const isUploading = loadingSlots.size > 0
   const slots = [...data.photos, ...Array(Math.max(0, MAX_PHOTOS - data.photos.length)).fill("")]
@@ -167,8 +184,15 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
 
   function handleSlotPointerDown(idx: number, e: React.PointerEvent) {
     if (idx >= data.photos.length) return
+    activePointerId.current = e.pointerId
     pressStart.current = { x: e.clientX, y: e.clientY }
-    pressTimer.current = setTimeout(() => setDragIndex(idx), LONG_PRESS_MS)
+    pressTimer.current = setTimeout(() => {
+      setDragIndex(idx)
+      // 포인터 캡처 — 손가락이 그리드 밖으로 나가도 move/up 이벤트를 놓치지 않아 순서 변경이 매끄러워짐
+      if (gridRef.current && activePointerId.current != null) {
+        try { gridRef.current.setPointerCapture(activePointerId.current) } catch { /* noop */ }
+      }
+    }, LONG_PRESS_MS)
   }
 
   function handleGridPointerMove(e: React.PointerEvent) {
@@ -194,6 +218,10 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
   }
 
   function handleGridPointerUp() {
+    if (gridRef.current && activePointerId.current != null) {
+      try { gridRef.current.releasePointerCapture(activePointerId.current) } catch { /* noop */ }
+    }
+    activePointerId.current = null
     clearPress()
     setDragIndex(null)
   }
@@ -220,6 +248,7 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
 
         <div className="flex flex-col gap-3">
           <div
+            ref={gridRef}
             className="flex flex-col gap-2"
             onPointerMove={handleGridPointerMove}
             onPointerUp={handleGridPointerUp}
@@ -265,8 +294,19 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
 
       {showGuide && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/61" onClick={() => setShowGuide(false)} />
-          <div className="relative bg-white rounded-t-[28px] pt-3 pb-8 flex flex-col items-center gap-6">
+          <div className="absolute inset-0 bg-black/61" onClick={closeGuide} />
+          <div
+            onPointerDown={onGuidePointerDown}
+            onPointerMove={onGuidePointerMove}
+            onPointerUp={onGuidePointerUp}
+            onPointerCancel={onGuidePointerUp}
+            style={{
+              transform: `translateY(${guideDragY}px)`,
+              transition: guideDragStart.current == null ? "transform 0.2s ease-out" : "none",
+              touchAction: "none",
+            }}
+            className="relative bg-white rounded-t-[28px] pt-3 pb-8 flex flex-col items-center gap-6"
+          >
             <div className="w-11 h-1 rounded-full bg-[#dfdfdf]" />
             <div className="w-full px-5 flex flex-col gap-7">
               <div className="flex flex-col gap-2 text-center">
