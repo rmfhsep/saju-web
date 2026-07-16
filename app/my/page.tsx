@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { bridgeNavigate } from "@/lib/bridge"
-import { STAR_BALANCE } from "@/lib/store"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
 import StarIcon from "@/components/ui/star-icon"
 
@@ -12,6 +11,7 @@ type MeUser = {
   name: string | null
   gender: string | null
   photos: string | null
+  stars: number
   filterComplete: boolean
   preferredFilterType: string | null
   preferredHeightMin: number | null
@@ -99,7 +99,7 @@ export default function MyPage() {
           className="flex items-center gap-1.5 h-[34px] pl-3 pr-3.5 bg-[#fff5e5] rounded-full active:opacity-80"
         >
           <StarIcon size={20} color="#FF7B2E" />
-          <span className="text-[16px] font-bold text-[#1f1f1f] tracking-[-0.32px]">{STAR_BALANCE}</span>
+          <span className="text-[16px] font-bold text-[#1f1f1f] tracking-[-0.32px]">{user?.stars ?? 0}</span>
         </button>
       </div>
 

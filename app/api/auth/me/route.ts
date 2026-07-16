@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         preferredReligion: true,
         serviceNotify: true,
         pushEnabled: true,
+        stars: true,
       },
     })
 

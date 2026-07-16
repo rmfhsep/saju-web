@@ -1,15 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import StarIcon from "@/components/ui/star-icon"
-import { STAR_BALANCE, STAR_PACKAGES, formatWon } from "@/lib/store"
+import { STAR_PACKAGES, formatWon } from "@/lib/store"
 
 export default function StorePage() {
   const router = useRouter()
   const [toast, setToast] = useState<string | null>(null)
+  const [stars, setStars] = useState(0)
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    if (!token) return
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => (res.ok ? res.json() : null))
+      .then(u => { if (u) setStars(u.stars ?? 0) })
+      .catch(() => {})
+  }, [])
 
   function handlePurchase(count: number) {
     // 실제 결제 연동 전까지는 안내 토스트만 표시
@@ -35,7 +45,7 @@ export default function StorePage() {
                 <path d="M6 3.5L10.5 8L6 12.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">{STAR_BALANCE}</span>
+            <span className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">{stars}</span>
           </button>
 
           {/* 패키지 목록 */}

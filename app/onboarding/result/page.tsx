@@ -4,6 +4,8 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
+import RunnerGame from "@/components/ui/runner-game"
+import StarIcon from "@/components/ui/star-icon"
 
 const MALE_PROFILES = [
   {
@@ -173,26 +175,47 @@ function CautionCard({ items }: { items: SajuReport["섹션4_주의포인트"] }
   )
 }
 
-function LoadingState({ name }: { name: string }) {
+// 분석 대기 화면 — 스피너 대신 별 모으기 미니게임. 분석이 끝나면 '결과 보기' 활성화.
+function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
+  name: string
+  ready: boolean
+  earnedStars: number
+  onEarn: (score: number) => void
+  onReveal: () => void
+}) {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex flex-col px-5 pt-[52px] gap-3">
-        <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">{name}님의 연애운 분석 중 ...</h1>
-        <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">잠시만 기다려주세요.</p>
+      <div className="flex flex-col px-5 pt-[52px] gap-2">
+        <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+          {ready ? "분석이 완료됐어요!" : <>{name}님의 연애운을<br />분석하고 있어요...</>}
+        </h1>
+        <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">
+          기다리는 동안 별을 모아보세요. 점수만큼 별이 적립돼요!
+        </p>
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="relative w-[148px] h-[148px] flex items-center justify-center">
-          <svg className="absolute inset-0 animate-spin w-full h-full" viewBox="0 0 148 148" fill="none">
-            <circle cx="74" cy="74" r="68" stroke="#efefef" strokeWidth="8" />
-            <path d="M74 6 A68 68 0 0 1 142 74" stroke="#90b7ff" strokeWidth="8" strokeLinecap="round" />
-          </svg>
-          <div className="relative z-10 w-[56px] h-[56px] rounded-[12px] bg-[#b6d0ff] flex items-center justify-center">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M14 3L5 7v7c0 6.1 4.1 11.8 9.3 13.4C19.9 25.8 24 20.1 24 14V7L14 3z" fill="white" />
-              <path d="M10 14l3 3 5-5" stroke="#b6d0ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+
+      <div className="flex-1 flex flex-col justify-center gap-4 px-5">
+        {earnedStars > 0 && (
+          <div className="self-center flex items-center gap-1.5 h-[34px] px-3.5 bg-[#fff5e5] rounded-full">
+            <StarIcon size={20} color="#FF7B2E" />
+            <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
+        )}
+        <div className="rounded-[12px] border border-[#eee] overflow-hidden bg-white">
+          <RunnerGame height={220} onGameOver={onEarn} />
         </div>
+      </div>
+
+      <div className="px-5 pb-8 pt-4">
+        <button
+          onClick={ready ? onReveal : undefined}
+          disabled={!ready}
+          className={`w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] transition-colors ${
+            ready ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#f4f4f5] text-[#a0a0a0]"
+          }`}
+        >
+          {ready ? "결과 보기" : "분석 중..."}
+        </button>
       </div>
     </div>
   )
@@ -209,6 +232,22 @@ function ResultContent() {
   const [loading, setLoading] = useState(true)
   const [retrying, setRetrying] = useState(false)
   const [retryError, setRetryError] = useState<string | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [earnedStars, setEarnedStars] = useState(0)
+
+  async function awardStars(score: number) {
+    const token = localStorage.getItem("auth_token")
+    if (!token) return
+    try {
+      const res = await fetch("/api/stars/add", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ score }),
+      })
+      const d = await res.json()
+      if (res.ok && d.earned) setEarnedStars(prev => prev + d.earned)
+    } catch { /* ignore */ }
+  }
 
   async function generateReport(token: string) {
     setRetrying(true)
@@ -261,7 +300,17 @@ function ResultContent() {
   const isMale = gender === "MALE"
   const birthDisplay = formatBirthDisplay(bd, bt, calendarType)
 
-  if (loading || retrying) return <LoadingState name={name} />
+  if (!revealed) {
+    return (
+      <AnalyzingGameScreen
+        name={name}
+        ready={!loading && !retrying}
+        earnedStars={earnedStars}
+        onEarn={awardStars}
+        onReveal={() => setRevealed(true)}
+      />
+    )
+  }
 
   const infoCard = (
     <div className="bg-[#f7f7f8] rounded-[4px] px-5 py-4 flex flex-col gap-1">
