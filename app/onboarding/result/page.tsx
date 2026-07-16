@@ -201,9 +201,7 @@ function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
             <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
         )}
-        <div className="rounded-[12px] border border-[#eee] overflow-hidden bg-white">
-          <RunnerGame height={220} onGameOver={onEarn} />
-        </div>
+        <RunnerGame height={220} maxPlays={3} onGameOver={onEarn} />
       </div>
 
       <div className="px-5 pb-8 pt-4">
