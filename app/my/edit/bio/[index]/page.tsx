@@ -4,8 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
+import { PencilIcon } from "@/components/ui/icons"
 
 const MIN = 50
 const MAX = 500
@@ -20,6 +19,7 @@ export default function BioEditPage() {
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showTagConfirm, setShowTagConfirm] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
@@ -39,6 +39,15 @@ export default function BioEditPage() {
 
   const tag = bioTags[index]
   const valid = text.trim().length >= MIN
+
+  function handleChangeTagClick() {
+    // 자기소개가 채워져 있으면 태그 변경 시 작성 내용이 사라질 수 있어 확인 모달 노출
+    if (text.trim().length > 0) {
+      setShowTagConfirm(true)
+      return
+    }
+    router.push(`/my/edit/bio/${index}/change-tag`)
+  }
 
   async function handleSave() {
     if (!valid || saving) return
@@ -60,18 +69,20 @@ export default function BioEditPage() {
   if (loading || !tag) return <Screen><EditHeader title="자기소개 수정" onBack={() => router.back()} /></Screen>
 
   return (
-    <Screen>
-      <EditHeader title="자기소개 수정" onBack={() => router.back()} />
+    <Screen className="relative">
+      <EditHeader
+        title="자기소개 수정"
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: !valid || saving }}
+      />
       <div className="flex-1 px-5 pt-2 flex flex-col gap-2 scroll-area overflow-y-auto pb-4">
         <div className="flex items-center justify-between">
           <span className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">선택한 태그</span>
           <button
-            onClick={() => router.push(`/my/edit/bio/${index}/change-tag`)}
+            onClick={handleChangeTagClick}
             className="w-6 h-6 flex items-center justify-center"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M12.5 2.5l3 3-9 9-3.5.5.5-3.5 9-9z" stroke="#777" strokeWidth="1.4" strokeLinejoin="round" />
-            </svg>
+            <PencilIcon size={18} />
           </button>
         </div>
         <span className="h-[36px] w-fit flex items-center px-4 bg-[#e9f1ff] border border-[#b6d0ff] rounded-[4px] text-[13px] font-medium text-[#1f1f1f] mb-2">{tag}</span>
@@ -85,9 +96,34 @@ export default function BioEditPage() {
           <span className="absolute bottom-3 right-3 text-[12px] text-[#9e9e9e]">{text.length}/{MAX}</span>
         </div>
       </div>
-      <PageFooter>
-        <CtaButton disabled={!valid} loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
+
+      {showTagConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-10">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowTagConfirm(false)} />
+          <div className="relative w-full max-w-[320px] bg-white rounded-[16px] p-5 flex flex-col gap-5">
+            <div className="flex flex-col gap-2 text-center">
+              <h2 className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px]">태그를 변경할까요?</h2>
+              <p className="text-[14px] text-[#777] leading-relaxed tracking-[-0.14px]">
+                태그를 변경하면 작성한 자기소개 내용이<br />사라질 수 있어요.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowTagConfirm(false)}
+                className="flex-1 h-[48px] rounded-[4px] bg-[#f4f4f5] text-[16px] font-semibold text-[#1f1f1f]"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => { setShowTagConfirm(false); router.push(`/my/edit/bio/${index}/change-tag`) }}
+                className="flex-1 h-[48px] rounded-[4px] bg-[#b6d0ff] text-[16px] font-semibold text-[#1f1f1f]"
+              >
+                변경
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Screen>
   )
 }

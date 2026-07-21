@@ -6,6 +6,7 @@ import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 import RunnerGame from "@/components/ui/runner-game"
 import StarIcon from "@/components/ui/star-icon"
+import { WarningIcon } from "@/components/ui/icons"
 
 const MALE_PROFILES = [
   {
@@ -39,22 +40,24 @@ function formatBirthDisplay(bd: string, bt: string, calendarType: string): strin
 }
 
 const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
-// 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-회색
+// 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-노랑
 const LEVEL_BADGE: Record<string, string> = {
   HIGH: "text-[#ff334b] bg-[#feecec]",
   MID: "text-[#1a75ff] bg-[#e9f1ff]",
-  LOW: "text-[#949494] bg-[#f4f4f5]",
+  LOW: "text-[#e5920a] bg-[#fff3df]",
 }
 
 // 4축 점수 막대 (표현/감정깊이/주도성/집착도)
+// 숫자는 막대 바로 위에 붙어 있어야 함 → 막대 높이만큼만 차지하는 컨테이너를 bottom 정렬
 function ScoreBar({ label, score }: { label: string; score: number }) {
+  const height = Math.round(Math.min(100, Math.max(0, score)) * 0.82 + 20)
   return (
     <div className="flex flex-col items-center gap-2 flex-1">
-      <span className="text-[12px] font-semibold text-[#1a75ff]">{score}</span>
-      <div className="w-4 h-[120px] flex items-end">
+      <div className="h-[124px] flex flex-col items-center justify-end gap-1">
+        <span className="text-[12px] font-semibold text-[#1a75ff] leading-[1.4]">{score}</span>
         <div
-          className="w-full bg-gradient-to-b from-[#b6d0ff] to-[#e4eeff] rounded-[30px] transition-all"
-          style={{ height: `${Math.max(4, score)}%` }}
+          className="w-4 bg-linear-to-b from-[#b6d0ff] to-[#e4eeff] rounded-[30px] transition-all"
+          style={{ height }}
         />
       </div>
       <span className="text-[12px] text-[#777] text-center leading-tight">{label}</span>
@@ -76,12 +79,11 @@ function TemperamentCard({ section }: { section: SajuReport["섹션1_연애기�
       <div className="flex justify-between gap-1">
         {axes.map(a => <ScoreBar key={a.key} label={a.key} score={a.최종점수} />)}
       </div>
-      <div className="bg-[#f7fbff] rounded-[4px] px-4 py-3 flex flex-col gap-1.5">
-        {axes.map(a => (
-          <p key={a.key} className="text-[13px] text-[#3f3f3f] leading-normal">
-            <span className="font-semibold text-[#1f1f1f]">{a.태그}</span> — {a.설명}
-          </p>
-        ))}
+      {/* 마이(report)와 동일하게 줄글로 통일 */}
+      <div className="bg-[#e9f1ff] rounded-[4px] p-3">
+        <p className="text-[14px] font-normal text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">
+          {axes.map(a => a.설명).join(" ")}
+        </p>
       </div>
     </div>
   )
@@ -154,16 +156,12 @@ function LoveFlowCard({ section }: { section: SajuReport["섹션3_올해연애�
 // 섹션4: 주의 포인트
 function CautionCard({ items }: { items: SajuReport["섹션4_주의포인트"] }) {
   return (
-    <div className="bg-white border border-[#e8e8e8] rounded-[4px] px-5 py-4 flex flex-col gap-4">
+    <div className="bg-[#fff5e5] rounded-[4px] px-5 py-4 flex flex-col gap-4">
       <p className="text-[17px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.34px]">주의 포인트</p>
       <div className="flex flex-col gap-3">
         {items.map(item => (
           <div key={item.id} className="flex gap-2">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0 mt-0.5">
-              <circle cx="10" cy="10" r="9" stroke="#ff3b30" strokeWidth="1.4" />
-              <path d="M10 5.5V11" stroke="#ff3b30" strokeWidth="1.4" strokeLinecap="round" />
-              <circle cx="10" cy="14" r="1" fill="#ff3b30" />
-            </svg>
+            <WarningIcon size={20} className="shrink-0 mt-0.5" />
             <div className="flex flex-col gap-0.5">
               <p className="text-[14px] font-semibold text-[#1f1f1f]">{item.제목}</p>
               <p className="text-[13px] text-[#6b6b6b] leading-normal">{item.설명}</p>
@@ -197,7 +195,7 @@ function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
       <div className="flex-1 flex flex-col justify-center gap-4 px-5">
         {earnedStars > 0 && (
           <div className="self-center flex items-center gap-1.5 h-[34px] px-3.5 bg-[#fff5e5] rounded-full">
-            <StarIcon size={20} color="#FF7B2E" />
+            <StarIcon size={20} color="#FFB020" />
             <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
         )}

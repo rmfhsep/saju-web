@@ -39,7 +39,7 @@ export default function StorePage() {
             className="w-full bg-[#fff5e5] rounded-[8px] h-[66px] px-5 flex items-center justify-between active:opacity-90"
           >
             <div className="flex items-center gap-2">
-              <StarIcon size={24} color="#FF7B2E" />
+              <StarIcon size={24} color="#FFB020" />
               <span className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">보유 별</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 3.5L10.5 8L6 12.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

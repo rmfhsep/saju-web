@@ -12,7 +12,7 @@ const TABS: Tab[] = [
     key: "recommend", label: "추천", href: "/",
     icon: active => (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 2.5l2.2 4.46 4.92.72-3.56 3.47.84 4.9L10 13.6l-4.4 2.45.84-4.9L2.88 7.68l4.92-.72L10 2.5z" stroke={active ? "#1a75ff" : "#9e9e9e"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1a75ff" : "none"} />
+        <path d="M3 8.2L10 3l7 5.2V16a1 1 0 0 1-1 1h-3.2v-4.3H7.2V17H4a1 1 0 0 1-1-1V8.2z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
       </svg>
     ),
   },
@@ -20,7 +20,7 @@ const TABS: Tab[] = [
     key: "like", label: "호감",
     icon: active => (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 17s-6.5-4-6.5-8.7C3.5 5.5 5.4 4 7.4 4c1 0 2 .5 2.6 1.4C10.6 4.5 11.6 4 12.6 4c2 0 3.9 1.5 3.9 4.3C16.5 13 10 17 10 17z" stroke={active ? "#1a75ff" : "#9e9e9e"} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M10 17s-6.5-4-6.5-8.7C3.5 5.5 5.4 4 7.4 4c1 0 2 .5 2.6 1.4C10.6 4.5 11.6 4 12.6 4c2 0 3.9 1.5 3.9 4.3C16.5 13 10 17 10 17z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
       </svg>
     ),
   },
@@ -28,7 +28,7 @@ const TABS: Tab[] = [
     key: "message", label: "메시지",
     icon: active => (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 4h14a1 1 0 011 1v9a1 1 0 01-1 1H7l-4 3v-3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke={active ? "#1a75ff" : "#9e9e9e"} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M3 4h14a1 1 0 011 1v9a1 1 0 01-1 1H7l-4 3v-3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
       </svg>
     ),
   },
@@ -36,8 +36,8 @@ const TABS: Tab[] = [
     key: "my", label: "내 정보", href: "/my",
     icon: active => (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="6.5" r="3.5" stroke={active ? "#1a75ff" : "#9e9e9e"} strokeWidth="1.5" />
-        <path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke={active ? "#1a75ff" : "#9e9e9e"} strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="10" cy="6.5" r="3.5" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" />
+        <path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -81,7 +81,7 @@ export default function AppBottomNav() {
               >
                 {active && <span className="absolute inset-x-0 -inset-y-[2px] rounded-full bg-[#efefef] -z-10" />}
                 {tab.icon(active)}
-                <span className={`text-[9px] font-medium leading-[1.3] ${active ? "text-[#1a75ff]" : "text-[#9e9e9e]"}`}>{tab.label}</span>
+                <span className={`text-[9px] font-medium leading-[1.3] ${active ? "text-[#1f1f1f]" : "text-[#949494]"}`}>{tab.label}</span>
               </button>
             )
           })}

@@ -62,3 +62,9 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
+
+// 탈퇴 회원 재가입 제한 — 탈퇴일로부터 30일간 동일 번호 재가입 불가
+model WithdrawnPhone {
+  phone       String   @id
+  withdrawnAt DateTime @default(now())
+}

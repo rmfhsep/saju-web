@@ -5,6 +5,7 @@ import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import StepHeader from "./StepHeader"
+import { SearchIcon } from "@/components/ui/icons"
 import { ALL_LOCATIONS } from "../constants"
 import type { StepProps } from "../types"
 
@@ -13,20 +14,18 @@ export default function StepLocation({ data, onChange, onNext, onBack, step }: S
   const inputRef = useRef<HTMLInputElement>(null)
 
   const trimmed = q.trim()
+  // 진입 시(검색어 없음)에는 전체 시·군·구 목록을 디폴트로 노출
   const results = trimmed
     ? ALL_LOCATIONS.filter(l => l.replace(/\s/g, "").includes(trimmed.replace(/\s/g, "")))
-    : []
+    : ALL_LOCATIONS
 
   return (
     <Screen>
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="px-5 pt-6 pb-4 shrink-0">
-        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] mb-6">거주지를 알려주세요.</h1>
-        <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[8px] px-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="#1f1f1f" strokeWidth="1.6"/>
-            <path d="M16.5 16.5L20 20" stroke="#1f1f1f" strokeWidth="1.6" strokeLinecap="round"/>
-          </svg>
+      <div className="px-5 pt-6 pb-5 shrink-0">
+        <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] mb-10">거주지를 알려주세요.</h1>
+        <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[4px] px-4">
+          <SearchIcon size={22} color="#1f1f1f" />
           <input
             ref={inputRef}
             type="text"
@@ -46,11 +45,7 @@ export default function StepLocation({ data, onChange, onNext, onBack, step }: S
         </div>
       </div>
       <div className="flex-1 scroll-area overflow-y-auto px-5">
-        {!trimmed ? (
-          <p className="text-[14px] text-[#777] leading-relaxed pt-4">
-            시·군·구를 검색해주세요.
-          </p>
-        ) : results.length === 0 ? (
+        {results.length === 0 ? (
           <p className="text-[14px] text-[#777] leading-relaxed pt-4">
             검색 결과가 없어요.<br />주소를 다시 확인해주세요.
           </p>
@@ -63,7 +58,7 @@ export default function StepLocation({ data, onChange, onNext, onBack, step }: S
                 onClick={() => { onChange({ location: loc }); setQ(loc) }}
                 className="w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-left"
               >
-                <span className={`text-[15px] tracking-[-0.15px] font-medium ${selected ? "text-[#1a73e8]" : "text-[#1f1f1f]"}`}>
+                <span className={`text-[15px] tracking-[-0.15px] font-medium ${selected ? "text-[#1f1f1f]" : "text-[#1f1f1f]"}`}>
                   {loc}
                 </span>
                 {selected && (

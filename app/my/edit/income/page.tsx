@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
 import { INCOME_OPTIONS } from "@/modules/profile/constants"
 
 function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean; onClick: () => void }) {
@@ -16,8 +14,8 @@ function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean
         selected ? "bg-[#e9f1ff] border border-[#b6d0ff]" : "bg-[#f7f7f8] border border-transparent"
       }`}
     >
-      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "border-[#1a75ff]" : "border-[#ccc]"}`}>
-        {selected && <div className="w-[9px] h-[9px] rounded-full bg-[#1a75ff]" />}
+      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "border-[#1f1f1f]" : "border-[#e1e2e4]"}`}>
+        {selected && <div className="w-[9px] h-[9px] rounded-full bg-[#1f1f1f]" />}
       </div>
       <span className={`text-[14px] ${selected ? "font-semibold text-[#1f1f1f]" : "text-[#4a4a4a]"}`}>{opt}</span>
     </button>
@@ -27,7 +25,6 @@ function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean
 export default function IncomeEditPage() {
   const router = useRouter()
   const [income, setIncome] = useState("")
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -36,7 +33,6 @@ export default function IncomeEditPage() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => { if (user?.income) setIncome(user.income) })
-      .finally(() => setLoading(false))
   }, [])
 
   async function handleSave() {
@@ -55,11 +51,13 @@ export default function IncomeEditPage() {
     }
   }
 
-  if (loading) return <Screen><EditHeader title="연봉 수정" onBack={() => router.back()} /></Screen>
-
   return (
     <Screen>
-      <EditHeader title="연봉 수정" onBack={() => router.back()} />
+      <EditHeader
+        title="연봉 수정"
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: !income || saving }}
+      />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5 scroll-area overflow-y-auto pb-4">
         <p className="text-[13px] text-[#ff3b30]">연봉 정보는 프로필에 공개되지 않아요.</p>
         <div className="grid grid-cols-2 gap-2">
@@ -69,9 +67,6 @@ export default function IncomeEditPage() {
           <IncomeCell opt={INCOME_OPTIONS[8]} selected={income === INCOME_OPTIONS[8]} onClick={() => setIncome(INCOME_OPTIONS[8])} />
         </div>
       </div>
-      <PageFooter>
-        <CtaButton disabled={!income} loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
     </Screen>
   )
 }

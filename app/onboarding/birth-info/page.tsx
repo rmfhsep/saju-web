@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
+import { bridgeNavigate } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
-import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 
@@ -19,7 +18,7 @@ function formatBirthDate(raw: string) {
 
 const AMPM = ["오전", "오후"]
 const HOURS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-const MINUTES = ["00", "10", "20", "30", "40", "50"]
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
 const ITEM_H = 52
 
 function ScrollColumn({ items, selected, onChange }: {
@@ -143,11 +142,10 @@ export default function BirthInfoPage() {
 
   return (
     <Screen>
-      <div className="h-[54px] flex items-center px-5">
-        <BackButton onClick={() => bridgeBack()} />
-      </div>
+      {/* 출생 정보 입력 진입 시 뒤로가기 불가 — Top navigation 미노출 */}
+      <div className="h-[54px] shrink-0" />
 
-      <div className="flex-1 px-5 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-3">
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             정확한 연애운 분석을 위해<br />출생 정보를 알려주세요.
@@ -167,7 +165,7 @@ export default function BirthInfoPage() {
               placeholder="김마주"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white tracking-[-0.32px]"
+              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white tracking-[-0.32px]"
             />
           </div>
 
@@ -204,7 +202,7 @@ export default function BirthInfoPage() {
               placeholder="숫자 8자리 입력 (예시 20000101)"
               value={birthDate}
               onChange={e => setBirthDate(formatBirthDate(e.target.value))}
-              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#0f0f10] bg-white tracking-[-0.32px]"
+              className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white tracking-[-0.32px]"
             />
             {rawBirthDate.length > 0 && rawBirthDate.length < 8 && (
               <p className="text-[12px] text-[#ff3b30]">8자리 숫자를 입력해주세요.</p>
@@ -231,13 +229,13 @@ export default function BirthInfoPage() {
             <label className="flex items-center gap-2 cursor-pointer w-fit">
               <div
                 onClick={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
-                className={`w-[18px] h-[18px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
-                  unknownTime ? "bg-[#0f0f10] border-[#0f0f10]" : "border-[#e1e2e4]"
+                className={`w-[20px] h-[20px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
+                  unknownTime ? "bg-[#b6d0ff] border-[#b6d0ff]" : "border-[#e1e2e4]"
                 }`}
               >
                 {unknownTime && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L4 7L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                    <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
               </div>

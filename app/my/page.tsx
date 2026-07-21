@@ -6,6 +6,10 @@ import { bridgeNavigate } from "@/lib/bridge"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
 import StarIcon from "@/components/ui/star-icon"
 
+// 문의하기 → 카카오톡 비즈니스 채널 1:1 채팅
+// TODO(QA): 실제 채널 핸들로 교체 필요 (카카오톡 채널 관리자센터 > 채널 URL). 예: http://pf.kakao.com/_XXXX/chat
+const KAKAO_CHANNEL_CHAT_URL = "http://pf.kakao.com/_maju/chat"
+
 type MeUser = {
   nickname: string | null
   name: string | null
@@ -98,7 +102,7 @@ export default function MyPage() {
           onClick={() => router.push("/my/store")}
           className="flex items-center gap-1.5 h-[34px] pl-3 pr-3.5 bg-[#fff5e5] rounded-full active:opacity-80"
         >
-          <StarIcon size={20} color="#FF7B2E" />
+          <StarIcon size={20} color="#FFB020" />
           <span className="text-[16px] font-bold text-[#1f1f1f] tracking-[-0.32px]">{user?.stars ?? 0}</span>
         </button>
       </div>
@@ -166,7 +170,7 @@ export default function MyPage() {
         />
         <ListCell
           label="문의하기"
-          onClick={() => { window.location.href = "mailto:support@maju.app" }}
+          onClick={() => { window.location.href = KAKAO_CHANNEL_CHAT_URL }}
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M4 4.5h12a1 1 0 011 1v7a1 1 0 01-1 1H8l-3 2.5v-2.5a1 1 0 01-1-1v-7a1 1 0 011-1z" stroke="#1f1f1f" strokeWidth="1.5" strokeLinejoin="round" />

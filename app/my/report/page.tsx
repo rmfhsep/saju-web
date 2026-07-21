@@ -6,13 +6,14 @@ import type { SajuReport } from "@/lib/prompts/sajuReport"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
+import { WarningIcon } from "@/components/ui/icons"
 
 const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
-// 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-회색
+// 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-노랑
 const LEVEL_BADGE: Record<string, string> = {
   HIGH: "text-[#ff334b] bg-[#feecec]",
   MID: "text-[#1a75ff] bg-[#e9f1ff]",
-  LOW: "text-[#949494] bg-[#f4f4f5]",
+  LOW: "text-[#e5920a] bg-[#fff3df]",
 }
 
 function formatBirthDisplay(bd: string, bt: string, calendarType: string): string {
@@ -142,11 +143,7 @@ function CautionCard({ items }: { items: SajuReport["섹션4_주의포인트"] }
         {items.map(item => (
           <div key={item.id} className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
-                <circle cx="10" cy="10" r="9" fill="#ff334b" />
-                <path d="M10 5V11" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
-                <circle cx="10" cy="14" r="1" fill="white" />
-              </svg>
+              <WarningIcon size={20} className="shrink-0" />
               <p className="flex-1 text-[15px] font-semibold text-[#1f1f1f] leading-[1.5] tracking-[-0.3px]">{item.제목}</p>
             </div>
             <p className="pl-7 text-[14px] font-normal text-[#3f3f3f] leading-[1.5] tracking-[-0.14px]">{item.설명}</p>

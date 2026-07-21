@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
 
 const DISALLOWED_RE = /[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]/g
 const MAX = 12
@@ -13,7 +11,6 @@ const MAX = 12
 export default function NicknameEditPage() {
   const router = useRouter()
   const [nickname, setNickname] = useState("")
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -22,7 +19,6 @@ export default function NicknameEditPage() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => { if (user?.nickname) setNickname(user.nickname) })
-      .finally(() => setLoading(false))
   }, [])
 
   const valid = nickname.trim().length > 0 && nickname.trim().length <= MAX
@@ -43,11 +39,13 @@ export default function NicknameEditPage() {
     }
   }
 
-  if (loading) return <Screen><EditHeader title="닉네임 수정" onBack={() => router.back()} /></Screen>
-
   return (
     <Screen>
-      <EditHeader title="닉네임 수정" onBack={() => router.back()} />
+      <EditHeader
+        title="닉네임 수정"
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: !valid || saving }}
+      />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
         <div>
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">닉네임을 입력해주세요.</h1>
@@ -63,12 +61,8 @@ export default function NicknameEditPage() {
             onChange={e => setNickname(e.target.value.replace(DISALLOWED_RE, "").slice(0, MAX))}
             className="w-full h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-[#9e9e9e]">{nickname.length}/{MAX}</span>
         </div>
       </div>
-      <PageFooter>
-        <CtaButton disabled={!valid} loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
     </Screen>
   )
 }

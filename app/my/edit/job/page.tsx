@@ -6,7 +6,7 @@ import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
-import RadioOption from "@/components/ui/radio-option"
+import { SearchIcon } from "@/components/ui/icons"
 import { JOBS, PROFESSIONALS } from "@/modules/profile/constants"
 
 const PROFESSIONAL_JOB_ID = "전문직"
@@ -34,7 +34,8 @@ export default function JobEditPage() {
 
   function selectJob(jobId: string) {
     setJob(jobId)
-    setJobDetail("")
+    // 기존에 저장된 직업을 다시 선택한 경우엔 입력값(jobDetail)을 유지해 보여준다
+    if (jobId !== job) setJobDetail("")
     setShowDetail(true)
   }
 
@@ -78,13 +79,29 @@ export default function JobEditPage() {
           </div>
         </div>
         {isProfessional && (
-          <div className="flex-1 scroll-area overflow-y-auto px-5 mt-2 flex flex-col gap-2">
+          <div className="flex-1 scroll-area overflow-y-auto px-5 mt-5">
             {filteredPros.length === 0 ? (
               <p className="text-[14px] text-[#777] leading-relaxed pt-4">검색 결과가 없어요.</p>
             ) : (
-              filteredPros.map(p => (
-                <RadioOption key={p} label={p} selected={jobDetail === p} onClick={() => setJobDetail(p)} />
-              ))
+              filteredPros.map(p => {
+                const selected = jobDetail === p
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setJobDetail(p)}
+                    className="w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-left"
+                  >
+                    <span className={`text-[15px] tracking-[-0.15px] font-medium ${selected ? "text-[#1f1f1f]" : "text-[#1f1f1f]"}`}>
+                      {p}
+                    </span>
+                    {selected && (
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M4 10.5l4.5 4.5L16 6" stroke="#1a75ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                )
+              })
             )}
           </div>
         )}
@@ -101,10 +118,7 @@ export default function JobEditPage() {
       <div className="px-5 pt-6 flex flex-col gap-4 shrink-0">
         <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">직업을 알려주세요.</h1>
         <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[4px] px-4">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="5.5" stroke="#9e9e9e" strokeWidth="1.4" />
-            <path d="M11 11L14 14" stroke="#9e9e9e" strokeWidth="1.4" strokeLinecap="round" />
-          </svg>
+          <SearchIcon size={20} />
           <input
             type="text"
             placeholder="업종 검색"
@@ -125,7 +139,7 @@ export default function JobEditPage() {
               key={j.id}
               onClick={() => selectJob(j.id)}
               className={`w-full flex items-center justify-between h-[53px] border-b border-[#f4f4f5] text-[15px] transition-colors ${
-                job === j.id ? "text-[#1a75ff] font-semibold" : "text-[#1f1f1f] font-medium"
+                job === j.id ? "text-[#1f1f1f] font-semibold" : "text-[#1f1f1f] font-medium"
               }`}
             >
               {j.id}

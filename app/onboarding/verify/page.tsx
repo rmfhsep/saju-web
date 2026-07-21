@@ -6,8 +6,9 @@ import { bridgeNavigate, bridgeOpenSms, navigateAndReplace } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
+import { CheckCircleIcon } from "@/components/ui/icons"
 
-type Step = "start" | "loading" | "password"
+type Step = "start" | "loading" | "terms" | "password" | "blocked"
 type Mode = "register" | "reset"
 
 function generateCode() {
@@ -58,21 +59,11 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
       }`}
     >
       {checked && (
-        <svg width="7.5" height="5" viewBox="0 0 7.5 5" fill="none">
-          <path d="M1 2.5L3 4.5L6.5 1" stroke="#1f1f1f" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+          <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )}
     </button>
-  )
-}
-
-function CircleCheck() {
-  return (
-    <div className="w-[24px] h-[24px] rounded-full bg-[#1a75ff] flex items-center justify-center shrink-0">
-      <svg width="7.5" height="5" viewBox="0 0 7.5 5" fill="none">
-        <path d="M1 2.5L3 4.5L6.5 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
   )
 }
 
@@ -123,6 +114,7 @@ function VerifyForm() {
     setCode(generateCode())
   }, [])
   const [polling, setPolling] = useState(false)
+  const [blockedUntil, setBlockedUntil] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const [password, setPassword] = useState("")
@@ -131,7 +123,6 @@ function VerifyForm() {
   const [showPwConfirm, setShowPwConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [registerError, setRegisterError] = useState("")
-  const [showTerms, setShowTerms] = useState(false)
   const [agreed, setAgreed] = useState<Record<TermKey, boolean>>({
     service: false, privacy: false, sensitive: false, marketing: false,
   })
@@ -183,12 +174,19 @@ function VerifyForm() {
           if (mode === "register") {
             const checkRes = await fetch(`/api/auth/check?phone=${rawPhone}`)
             const checkData = await checkRes.json()
+            // 탈퇴 후 30일 이내 재가입 차단
+            if (checkData.rejoinBlockedUntil) {
+              setBlockedUntil(checkData.rejoinBlockedUntil)
+              setStep("blocked")
+              return
+            }
             if (checkData.exists) {
               navigateAndReplace("Login", { phone: rawPhone })
               return
             }
           }
-          setStep("password")
+          // 신규 가입: 본인인증 → 서비스 이용 동의 → 비밀번호 설정 순서
+          setStep(mode === "register" ? "terms" : "password")
         }
       } catch { /* keep polling */ }
     }
@@ -197,9 +195,8 @@ function VerifyForm() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [polling])
 
-  async function handleAgreeAndFinish() {
-    if (!allRequired || submitting) return
-    setShowTerms(false)
+  async function handleRegister() {
+    if (!allRequired || !canFinish) return
     setSubmitting(true)
     setRegisterError("")
     try {
@@ -215,6 +212,9 @@ function VerifyForm() {
         bridgeNavigate("BirthInfo")
       } else if (data.error === "PHONE_ALREADY_REGISTERED") {
         navigateAndReplace("Login", { phone: rawPhone })
+      } else if (data.error === "REJOIN_BLOCKED") {
+        setBlockedUntil(data.availableAt ?? null)
+        setStep("blocked")
       } else {
         // 서버 오류 — 에러 메시지 표시
         setRegisterError("오류가 발생했어요. 잠시 후 다시 시도해주세요.")
@@ -252,7 +252,8 @@ function VerifyForm() {
 
   function handlePasswordCta() {
     if (!canFinish) return
-    if (mode === "register") setShowTerms(true)
+    // 신규 가입은 이전 단계에서 이미 이용 동의를 받았으므로 바로 회원가입 처리
+    if (mode === "register") handleRegister()
     else handleResetPassword()
   }
 
@@ -305,7 +306,7 @@ function VerifyForm() {
                     </svg>
                   </div>
                 </div>
-                <div className="absolute left-[157px] top-[62px] w-[146px]">
+                <div className="absolute left-[89px] top-[62px] w-[146px]">
                   <div className="bg-[#1a75ff] rounded-[4px] px-3 py-2 flex items-center justify-center min-h-[56px]">
                     <p className="text-[14px] text-white leading-[1.429] text-center">
                       입력 된 문자를 보내면<br /><span className="font-bold">본인인증</span>이 돼요.
@@ -326,7 +327,7 @@ function VerifyForm() {
         </div>
 
         <PageFooter>
-          <CtaButton disabled={!rawPhone} onClick={handleSendSms}>인증 코드 보내기</CtaButton>
+          <CtaButton variant="secondary" disabled={!rawPhone} onClick={handleSendSms}>인증 코드 보내기</CtaButton>
         </PageFooter>
       </Screen>
     )
@@ -359,71 +360,41 @@ function VerifyForm() {
     )
   }
 
-  // ── Step: password ────────────────────────────────────────────
-  return (
-    <Screen>
-      <div className="h-[44px]" />
-
-      <div className="flex-1 px-5 pt-[52px] flex flex-col gap-[48px] scroll-area overflow-y-auto pb-4">
-        <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
-          인증이 완료되었어요.<br />비밀번호를 설정해주세요.
-        </h1>
-
-        <div className="flex flex-col gap-[28px]">
-          {/* 계정 (readonly) */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">계정</label>
-            <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
-              <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{formatPhone(rawPhone)}</span>
-              <CircleCheck />
-            </div>
-          </div>
-
-          {/* 비밀번호 */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호</label>
-            <PasswordInput
-              value={password}
-              show={showPw}
-              onChange={setPassword}
-              onToggle={() => setShowPw(v => !v)}
-              placeholder="영문, 숫자 포함 8~12자 입력"
-              error={pwError}
-              success={pwTouched && pwValid ? "사용 가능한 비밀번호예요." : null}
-            />
-          </div>
-
-          {/* 비밀번호 확인 */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호 확인</label>
-            <PasswordInput
-              value={passwordConfirm}
-              show={showPwConfirm}
-              onChange={setPasswordConfirm}
-              onToggle={() => setShowPwConfirm(v => !v)}
-              placeholder="영문+숫자 조합으로 8~12자 입력"
-              error={pwConfirmTouched && !pwMatch ? "비밀번호가 일치하지 않습니다." : null}
-              success={pwMatch ? "비밀번호가 일치합니다." : null}
-            />
-          </div>
+  // ── Step: blocked (탈퇴 후 30일 이내 재가입 불가) ─────────────────
+  if (step === "blocked") {
+    const until = blockedUntil ? new Date(blockedUntil) : null
+    const daysLeft = until ? Math.max(1, Math.ceil((until.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 30
+    const dateLabel = until
+      ? `${until.getFullYear()}.${String(until.getMonth() + 1).padStart(2, "0")}.${String(until.getDate()).padStart(2, "0")}`
+      : ""
+    return (
+      <Screen>
+        <div className="h-[44px]" />
+        <div className="flex-1 px-5 pt-[52px] flex flex-col gap-3">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+            지금은 재가입할 수 없어요.
+          </h1>
+          <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">
+            탈퇴한 계정은 탈퇴일로부터 30일이 지난 뒤 다시 가입할 수 있어요.<br />
+            {dateLabel && <><span className="text-[#1f1f1f] font-medium">{dateLabel}</span>부터 재가입 가능해요. (약 {daysLeft}일 남음)</>}
+          </p>
         </div>
-      </div>
+        <PageFooter>
+          <CtaButton onClick={() => navigateAndReplace("Landing")}>확인</CtaButton>
+        </PageFooter>
+      </Screen>
+    )
+  }
 
-      <PageFooter>
-        {registerError && (
-          <p className="text-[12px] text-[#ff3b30] text-center mb-2">{registerError}</p>
-        )}
-        <CtaButton disabled={!canFinish} loading={submitting} onClick={handlePasswordCta}>
-          {submitting ? "처리 중..." : "완료"}
-        </CtaButton>
-      </PageFooter>
-
-      {/* 이용약관 Bottom Sheet — 신규 가입일 때만 노출 */}
-      {showTerms && mode === "register" && (
+  // ── Step: terms (본인인증 → 서비스 이용 동의 → 비밀번호) ──────────
+  if (step === "terms") {
+    return (
+      <Screen>
+        <div className="h-[44px]" />
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/61" onClick={() => setShowTerms(false)} />
-          <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6 items-center">
-            <div className="flex flex-col gap-7 w-[335px]">
+          <div className="absolute inset-0 bg-black/61" />
+          <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-7 px-5">
               <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px] text-center">
                 마주를 이용하려면 동의가 필요해요.
               </h2>
@@ -451,12 +422,73 @@ function VerifyForm() {
                 </div>
               </div>
             </div>
-            <div className="w-full px-5 pb-8">
-              <CtaButton disabled={!allRequired} onClick={handleAgreeAndFinish}>동의</CtaButton>
+            <div className="px-5 pb-8">
+              <CtaButton disabled={!allRequired} onClick={() => setStep("password")}>동의</CtaButton>
             </div>
           </div>
         </div>
-      )}
+      </Screen>
+    )
+  }
+
+  // ── Step: password ────────────────────────────────────────────
+  return (
+    <Screen>
+      <div className="h-[44px]" />
+
+      <div className="flex-1 px-5 pt-[52px] flex flex-col gap-[48px] scroll-area overflow-y-auto pb-4">
+        <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
+          인증이 완료되었어요.<br />비밀번호를 설정해주세요.
+        </h1>
+
+        <div className="flex flex-col gap-[28px]">
+          {/* 계정 (readonly) */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">계정</label>
+            <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
+              <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{formatPhone(rawPhone)}</span>
+              <CheckCircleIcon size={24} />
+            </div>
+          </div>
+
+          {/* 비밀번호 */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호</label>
+            <PasswordInput
+              value={password}
+              show={showPw}
+              onChange={setPassword}
+              onToggle={() => setShowPw(v => !v)}
+              placeholder="영문, 숫자 포함 8~12자 입력"
+              error={pwError}
+              success={pwTouched && pwValid ? "사용 가능한 비밀번호예요." : null}
+            />
+          </div>
+
+          {/* 비밀번호 확인 */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호 확인</label>
+            <PasswordInput
+              value={passwordConfirm}
+              show={showPwConfirm}
+              onChange={setPasswordConfirm}
+              onToggle={() => setShowPwConfirm(v => !v)}
+              placeholder="동일한 비밀번호 입력"
+              error={pwConfirmTouched && !pwMatch ? "비밀번호가 일치하지 않습니다." : null}
+              success={pwMatch ? "비밀번호가 일치합니다." : null}
+            />
+          </div>
+        </div>
+      </div>
+
+      <PageFooter>
+        {registerError && (
+          <p className="text-[12px] text-[#ff3b30] text-center mb-2">{registerError}</p>
+        )}
+        <CtaButton disabled={!canFinish} loading={submitting} onClick={handlePasswordCta}>
+          {submitting ? "처리 중..." : "완료"}
+        </CtaButton>
+      </PageFooter>
     </Screen>
   )
 }

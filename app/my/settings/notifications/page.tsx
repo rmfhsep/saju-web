@@ -13,7 +13,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean
       onClick={() => !disabled && onChange(!on)}
       disabled={disabled}
       className={`w-[44px] h-[26px] rounded-full p-[3px] flex items-center transition-colors disabled:opacity-60 ${
-        on ? "bg-[#1a75ff] justify-end" : "bg-[#e5e5e5] justify-start"
+        on ? "bg-[#90b7ff] justify-end" : "bg-[#dfdfdf] justify-start"
       }`}
     >
       <span className="w-5 h-5 rounded-full bg-white shadow-sm" />
@@ -116,7 +116,7 @@ export default function NotificationsPage() {
       </div>
 
       {toast && (
-        <div className="fixed left-1/2 -translate-x-1/2 bottom-[60px] z-50 px-5 py-3 bg-[#333]/90 text-white text-[13px] rounded-[8px] text-center">
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-[60px] z-50 max-w-[296px] w-max px-5 py-3 bg-black/74 text-white text-[14px] rounded-[6px] text-center">
           {toast}
         </div>
       )}

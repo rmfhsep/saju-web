@@ -9,7 +9,9 @@ import type { StepProps } from "../types"
 
 const MAX_PHOTOS = 5
 const LONG_PRESS_MS = 350
-const MOVE_CANCEL_PX = 8
+// 손가락을 가만히 눌러도 2~10px 정도의 미세한 흔들림이 생기므로,
+// 이 임계값이 너무 작으면 롱프레스 타이머가 시작 전에 취소되어 순서 변경이 아예 동작하지 않는다.
+const MOVE_CANCEL_PX = 14
 
 function PlusIcon() {
   return (
@@ -186,12 +188,13 @@ export default function StepPhotos({ data, onChange, onNext, onBack, step }: Ste
     if (idx >= data.photos.length) return
     activePointerId.current = e.pointerId
     pressStart.current = { x: e.clientX, y: e.clientY }
+    // 눌리는 즉시 포인터를 캡처해 이후 move/up 이벤트를 그리드가 확실히 받도록 함.
+    // (타이머 안에서 캡처하면 그 사이 이벤트가 다른 엘리먼트로 새어 롱프레스가 실패할 수 있음)
+    if (gridRef.current) {
+      try { gridRef.current.setPointerCapture(e.pointerId) } catch { /* noop */ }
+    }
     pressTimer.current = setTimeout(() => {
       setDragIndex(idx)
-      // 포인터 캡처 — 손가락이 그리드 밖으로 나가도 move/up 이벤트를 놓치지 않아 순서 변경이 매끄러워짐
-      if (gridRef.current && activePointerId.current != null) {
-        try { gridRef.current.setPointerCapture(activePointerId.current) } catch { /* noop */ }
-      }
     }, LONG_PRESS_MS)
   }
 

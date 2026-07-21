@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
 import RadioOption from "@/components/ui/radio-option"
 import {
   SMOKING_OPTIONS, DRINKING_OPTIONS, DATING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
@@ -25,7 +23,6 @@ export default function FieldEditPage() {
   const config = FIELD_CONFIG[params.field]
 
   const [value, setValue] = useState("")
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -35,7 +32,6 @@ export default function FieldEditPage() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => { if (user?.[params.field]) setValue(user[params.field]) })
-      .finally(() => setLoading(false))
   }, [config, params.field])
 
   if (!config) return null
@@ -56,11 +52,13 @@ export default function FieldEditPage() {
     }
   }
 
-  if (loading) return <Screen><EditHeader title={config.title} onBack={() => router.back()} /></Screen>
-
   return (
     <Screen>
-      <EditHeader title={config.title} onBack={() => router.back()} />
+      <EditHeader
+        title={config.title}
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: !value || saving }}
+      />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-5 scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-[10px]">
           {config.options.map(opt => (
@@ -68,9 +66,6 @@ export default function FieldEditPage() {
           ))}
         </div>
       </div>
-      <PageFooter>
-        <CtaButton disabled={!value} loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
     </Screen>
   )
 }

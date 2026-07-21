@@ -7,6 +7,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/Splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#1e1b4b"
     },
     "ios": {
@@ -35,7 +37,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/Splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#1e1b4b"
+        }
+      ],
       [
         "expo-contacts",
         {

@@ -4,12 +4,10 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
 
 const AMPM = ["오전", "오후"]
 const HOURS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-const MINUTES = ["00", "10", "20", "30", "40", "50"]
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
 const ITEM_H = 52
 
 function ScrollColumn({ items, selected, onChange }: {
@@ -127,7 +125,11 @@ export default function BirthEditPage() {
 
   return (
     <Screen>
-      <EditHeader title="출생 정보 수정" onBack={() => router.back()} />
+      <EditHeader
+        title="출생 정보 수정"
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: saving }}
+      />
       <div className={`flex-1 px-5 pt-4 flex flex-col gap-5 scroll-area pb-4 ${showTimePicker ? "overflow-hidden" : "overflow-y-auto"}`}>
         <p className="text-[14px] text-[#777] leading-normal">태어난 시간을 제외한 정보는 수정할 수 없어요.</p>
 
@@ -151,13 +153,13 @@ export default function BirthEditPage() {
           <label className="flex items-center gap-2 cursor-pointer w-fit">
             <div
               onClick={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
-              className={`w-[18px] h-[18px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
-                unknownTime ? "bg-[#0f0f10] border-[#0f0f10]" : "border-[#e1e2e4]"
+              className={`w-[20px] h-[20px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
+                unknownTime ? "bg-[#b6d0ff] border-[#b6d0ff]" : "border-[#e1e2e4]"
               }`}
             >
               {unknownTime && (
-                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                  <path d="M1 4L4 7L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                  <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </div>
@@ -165,10 +167,6 @@ export default function BirthEditPage() {
           </label>
         </div>
       </div>
-
-      <PageFooter>
-        <CtaButton loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
 
       {showTimePicker && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">

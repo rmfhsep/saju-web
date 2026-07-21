@@ -4,25 +4,9 @@ import { useEffect, useState } from "react"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
+import { CloseIcon, CloseCircleIcon } from "@/components/ui/icons"
 import StepHeader from "./StepHeader"
 import type { StepProps } from "../types"
-
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M1 1L13 13M13 1L1 13" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DeleteIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="8" fill="#d9d9d9" />
-      <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 const SKELETON_WIDTHS = [88, 104, 76, 96, 68, 112, 84]
 
@@ -38,7 +22,7 @@ function TagSkeleton() {
 
 function Toast({ message }: { message: string }) {
   return (
-    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 bg-black/[0.74] text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap z-20 tracking-[-0.14px]">
+    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 max-w-[296px] w-max text-center bg-black/74 text-white text-[14px] font-medium px-6 py-3 rounded-[6px] z-20 tracking-[-0.14px]">
       {message}
     </div>
   )
@@ -67,7 +51,8 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
     })
       .then(res => (res.ok ? res.json() : null))
       .then((suggestion: { love: string[]; life: string[] } | null) => {
-        if (suggestion) setSuggestedTags([...suggestion.love, ...suggestion.life])
+        // 나의 성향 태그는 8개까지만 노출 (직접 입력 태그는 별도 N개)
+        if (suggestion) setSuggestedTags([...suggestion.love, ...suggestion.life].slice(0, 8))
       })
       .catch(() => {})
       .finally(() => setLoadingTags(false))
@@ -180,7 +165,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
         <div className="fixed inset-0 z-50 bg-white flex flex-col" style={{ height: "var(--app-height, 100dvh)" }}>
           <div className="h-[52px] flex items-center gap-3 px-5 shrink-0">
             <button onClick={closeCustomModal} className="w-6 h-6 flex items-center justify-center">
-              <CloseIcon />
+              <CloseIcon size={20} />
             </button>
             <h2 className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">태그 직접 입력</h2>
           </div>
@@ -194,7 +179,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
                 onKeyDown={e => e.key === "Enter" && addCustom()}
                 placeholder="입력 후 엔터를 누르세요."
                 autoFocus
-                className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a75ff] tracking-[-0.32px]"
+                className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] tracking-[-0.32px]"
               />
               <p className="text-[12px] text-[#777]">최대 3개</p>
             </div>
@@ -205,7 +190,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
                   <span key={tag} className="h-9 pl-4 pr-3 rounded-[4px] bg-[#f7f7f8] text-[13px] font-medium text-[#777] flex items-center gap-1.5">
                     {tag}
                     <button onClick={() => removeCustomTag(tag)} className="w-4 h-4 flex items-center justify-center">
-                      <DeleteIcon />
+                      <CloseCircleIcon size={16} />
                     </button>
                   </span>
                 ))}

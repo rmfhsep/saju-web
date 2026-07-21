@@ -4,13 +4,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-import PageFooter from "@/components/ui/page-footer"
-import CtaButton from "@/components/ui/cta-button"
 
 export default function HeightEditPage() {
   const router = useRouter()
   const [height, setHeight] = useState("")
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -19,7 +16,6 @@ export default function HeightEditPage() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => { if (user?.height) setHeight(String(user.height)) })
-      .finally(() => setLoading(false))
   }, [])
 
   const valid = /^\d{3}$/.test(height) && +height >= 100 && +height <= 250
@@ -40,11 +36,13 @@ export default function HeightEditPage() {
     }
   }
 
-  if (loading) return <Screen><EditHeader title="키 수정" onBack={() => router.back()} /></Screen>
-
   return (
     <Screen>
-      <EditHeader title="키 수정" onBack={() => router.back()} />
+      <EditHeader
+        title="키 수정"
+        onBack={() => router.back()}
+        action={{ label: "저장", onClick: handleSave, disabled: !valid || saving }}
+      />
       <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
         <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">키를 알려주세요.</h1>
         <div className="flex items-center gap-3">
@@ -54,14 +52,11 @@ export default function HeightEditPage() {
             placeholder="숫자만 입력해주세요."
             value={height}
             onChange={e => setHeight(e.target.value.replace(/\D/g, "").slice(0, 3))}
-            className="flex-1 h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white"
+            className="flex-1 min-w-0 h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white"
           />
-          <span className="text-[15px] font-medium text-[#1f1f1f]">cm</span>
+          <span className="text-[20px] font-semibold text-[#1f1f1f] shrink-0">cm</span>
         </div>
       </div>
-      <PageFooter>
-        <CtaButton disabled={!valid} loading={saving} onClick={handleSave}>완료</CtaButton>
-      </PageFooter>
     </Screen>
   )
 }

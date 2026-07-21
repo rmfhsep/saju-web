@@ -1,5 +1,4 @@
 import Screen from "@/components/ui/screen"
-import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 
@@ -8,12 +7,11 @@ interface Props {
   onBack: () => void
 }
 
-export default function StepIntro({ onNext, onBack }: Props) {
+export default function StepIntro({ onNext }: Props) {
   return (
     <Screen>
-      <div className="h-[54px] flex items-center px-4">
-        <BackButton onClick={onBack} />
-      </div>
+      {/* 프로필 만들기 진입 시 뒤로가기 불가 — Top navigation 미노출 */}
+      <div className="safe-top shrink-0" />
       <div className="flex-1 px-5 flex flex-col items-center justify-center gap-6 scroll-area overflow-y-auto pb-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.svg" alt="" className="w-[72px] h-[72px]" />

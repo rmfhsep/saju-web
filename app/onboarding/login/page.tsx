@@ -118,7 +118,7 @@ function LoginForm() {
               value={phone}
               onChange={e => { setPhone(formatPhone(e.target.value)); setPhoneError("") }}
               className={`h-[48px] border rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                phoneError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
+                phoneError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#1a73e8]"
               }`}
             />
             {phoneError && <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{phoneError}</p>}
@@ -134,7 +134,7 @@ function LoginForm() {
                 value={password}
                 onChange={e => { setPassword(e.target.value.slice(0, 12)); setPwError("") }}
                 className={`w-full h-[48px] border rounded-[4px] px-4 pr-12 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                  pwError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
+                  pwError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#1a73e8]"
                 }`}
               />
               {password.length > 0 && <EyeToggle visible={showPw} onClick={() => setShowPw(v => !v)} />}

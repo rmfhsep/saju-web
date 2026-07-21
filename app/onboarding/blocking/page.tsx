@@ -11,6 +11,7 @@ import {
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
+import { CheckCircleIcon } from "@/components/ui/icons"
 
 type Phase = "intro" | "loading" | "done"
 
@@ -57,11 +58,7 @@ export default function BlockingPage() {
     return (
       <Screen>
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          <div className="w-[56px] h-[56px] rounded-full bg-[#b6d0ff] flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12.5L9.5 17L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <CheckCircleIcon size={56} />
           <div className="flex flex-col gap-2 items-start px-5 w-full text-center">
             <p className="font-bold text-[24px] leading-[1.4] tracking-[-0.48px] text-[#1f1f1f] w-full">
               지인 {blockedCount}명을 차단했어요.

@@ -8,7 +8,8 @@ import type { ProfileData } from "@/modules/profile/types"
 
 const MAX_PHOTOS = 5
 const LONG_PRESS_MS = 350
-const MOVE_CANCEL_PX = 8
+// 손가락 미세 흔들림(2~10px)에 롱프레스가 취소되지 않도록 임계값을 키움
+const MOVE_CANCEL_PX = 14
 
 const INFO_ROWS: { key: keyof ProfileData | "birth"; label: string; format?: (data: EditData) => string }[] = [
   { key: "birth", label: "출생 정보", format: d => d.birthDisplay },
@@ -52,7 +53,8 @@ export default function ProfileEditPage() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [activeSlot, setActiveSlot] = useState<number | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const [loadingSlots, setLoadingSlots] = useState<Set<number>>(new Set())
+  const uploading = loadingSlots.size > 0
   const [data, setData] = useState<EditData | null>(null)
 
   // 사진 롱프레스 드래그 순서 변경
@@ -106,7 +108,9 @@ export default function ProfileEditPage() {
     e.target.value = ""
     if (files.length === 0 || activeSlot === null || !data) return
 
-    setUploading(true)
+    // 업로드될 슬롯 인덱스를 미리 계산해 슬롯별 스피너 표시 (온보딩과 동일)
+    const count = Math.min(files.length, MAX_PHOTOS - activeSlot)
+    setLoadingSlots(new Set(Array.from({ length: count }, (_, k) => activeSlot + k)))
     try {
       const phone = localStorage.getItem("user_phone") ?? ""
       const formData = new FormData()
@@ -127,7 +131,7 @@ export default function ProfileEditPage() {
       }
       await savePhotos(next.slice(0, MAX_PHOTOS))
     } finally {
-      setUploading(false)
+      setLoadingSlots(new Set())
     }
   }
 
@@ -161,11 +165,12 @@ export default function ProfileEditPage() {
     if (!data || idx >= data.photos.length) return
     activePointerId.current = e.pointerId
     pressStart.current = { x: e.clientX, y: e.clientY }
+    // 눌리는 즉시 포인터 캡처 — 이후 move/up 이벤트를 그리드가 확실히 수신
+    if (gridRef.current) {
+      try { gridRef.current.setPointerCapture(e.pointerId) } catch { /* noop */ }
+    }
     pressTimer.current = setTimeout(() => {
       setDragIndex(idx)
-      if (gridRef.current && activePointerId.current != null) {
-        try { gridRef.current.setPointerCapture(activePointerId.current) } catch { /* noop */ }
-      }
     }, LONG_PRESS_MS)
   }
 
@@ -219,11 +224,11 @@ export default function ProfileEditPage() {
   return (
     <Screen>
       <EditHeader title="프로필 편집" onBack={() => router.back()} />
-      <div className="flex-1 scroll-area overflow-y-auto pb-10 flex flex-col gap-10">
+      <div className="flex-1 scroll-area overflow-y-auto pb-9 flex flex-col gap-10">
 
         {/* 프로필 사진 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] text-center">프로필 사진</h2>
+          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] px-5">프로필 사진</h2>
           <div
             ref={gridRef}
             className="flex flex-col gap-2 px-5"
@@ -237,6 +242,7 @@ export default function ProfileEditPage() {
                   key={i}
                   url={slots[i]}
                   required
+                  loading={loadingSlots.has(i)}
                   dragging={dragIndex === i}
                   onClick={() => openSlot(i)}
                   onDelete={() => deletePhoto(i)}
@@ -250,6 +256,7 @@ export default function ProfileEditPage() {
                 <EditPhotoSlot
                   key={i}
                   url={slots[i]}
+                  loading={loadingSlots.has(i)}
                   dragging={dragIndex === i}
                   onClick={() => openSlot(i)}
                   onDelete={() => deletePhoto(i)}
@@ -267,7 +274,7 @@ export default function ProfileEditPage() {
 
         {/* 자기 소개 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] text-center">자기 소개</h2>
+          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] px-5">자기 소개</h2>
           <div className="flex flex-col gap-4 px-5">
             {data.bioTags.map((tag, idx) => (
               <button
@@ -291,7 +298,7 @@ export default function ProfileEditPage() {
 
         {/* 내 정보 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] text-center">내 정보</h2>
+          <h2 className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] px-5">내 정보</h2>
           <div className="flex flex-col">
             {INFO_ROWS.map(row => (
               <button
@@ -318,9 +325,10 @@ export default function ProfileEditPage() {
   )
 }
 
-function EditPhotoSlot({ url, required, dragging, onClick, onDelete, onPointerDown, slotRef }: {
+function EditPhotoSlot({ url, required, loading, dragging, onClick, onDelete, onPointerDown, slotRef }: {
   url: string
   required?: boolean
+  loading?: boolean
   dragging?: boolean
   onClick: () => void
   onDelete: () => void
@@ -335,10 +343,15 @@ function EditPhotoSlot({ url, required, dragging, onClick, onDelete, onPointerDo
       className={`relative flex-1 transition-transform ${dragging ? "scale-105 opacity-80 z-10" : ""}`}
     >
       <button
-        onClick={onClick}
+        onClick={url || loading ? undefined : onClick}
         className="absolute inset-0 rounded-[8px] border-[1.5px] border-dashed border-[#dfdfdf] bg-white flex items-center justify-center overflow-hidden"
       >
-        {url ? (
+        {loading ? (
+          /* 업로드 중 슬롯별 스피너 — 온보딩과 동일 */
+          <div className="absolute inset-0 bg-[#f4f4f5] flex items-center justify-center rounded-[8px]">
+            <div className="w-6 h-6 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : url ? (
           <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">

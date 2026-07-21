@@ -52,7 +52,7 @@ export default function BlockingPage() {
   function handleAdd() {
     if (busy) return
     onContactsReceived((phones) => {
-      saveBlocking(phones).then(() => showToast("내 연락처에 있는 모든 목록을 차단했어요."))
+      saveBlocking(phones).then(() => showToast("연락처 목록을 모두 차단했어요."))
     })
     onContactsPermissionDenied(() => setShowPermission(true))
     bridgeRequestContacts()
@@ -177,7 +177,7 @@ export default function BlockingPage() {
       )}
 
       {toast && (
-        <div className="fixed left-1/2 -translate-x-1/2 bottom-[60px] z-50 px-5 py-3 bg-[#333]/90 text-white text-[13px] rounded-[8px] text-center max-w-[300px]">
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-[60px] z-50 max-w-[296px] w-max px-5 py-3 bg-black/74 text-white text-[13px] rounded-[8px] text-center">
           {toast}
         </div>
       )}

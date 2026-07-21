@@ -23,7 +23,7 @@ export default function StepBio({ data, onChange, onNext, onBack, step }: StepPr
   return (
     <Screen className="relative">
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-[36px] scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-3">
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             자기소개를 작성해주세요.

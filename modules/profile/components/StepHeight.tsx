@@ -10,7 +10,7 @@ export default function StepHeight({ data, onChange, onNext, onBack, step }: Ste
   return (
     <Screen>
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
         <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">키를 알려주세요.</h1>
         <div className="flex items-center gap-3">
           <input
@@ -19,9 +19,9 @@ export default function StepHeight({ data, onChange, onNext, onBack, step }: Ste
             placeholder="숫자만 입력해주세요."
             value={data.height}
             onChange={e => onChange({ height: e.target.value.replace(/\D/g, "").slice(0, 3) })}
-            className="w-[295px] h-[48px] border border-[#d8d8d8] rounded-[8px] px-4 text-[15px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#1a73e8] bg-white"
+            className="flex-1 min-w-0 h-[48px] border border-[#d8d8d8] rounded-[4px] px-4 text-[15px] text-[#0f0f10] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] bg-white"
           />
-          <span className="text-[15px] font-medium text-[#0f0f10]">cm</span>
+          <span className="text-[20px] font-semibold text-[#0f0f10] shrink-0">cm</span>
         </div>
       </div>
       <PageFooter>

@@ -24,6 +24,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "password must contain letters and numbers" }, { status: 400 })
     }
 
+    // 탈퇴 후 30일 이내 재가입 차단
+    const withdrawn = await prisma.withdrawnPhone.findUnique({ where: { phone } })
+    if (withdrawn) {
+      const until = withdrawn.withdrawnAt.getTime() + 30 * 24 * 60 * 60 * 1000
+      if (until > Date.now()) {
+        return NextResponse.json({ error: "REJOIN_BLOCKED", availableAt: new Date(until).toISOString() }, { status: 403 })
+      }
+      await prisma.withdrawnPhone.delete({ where: { phone } }).catch(() => {})
+    }
+
     const existing = await prisma.user.findUnique({ where: { phone } })
     if (existing) {
       if (existing.signupComplete) {
