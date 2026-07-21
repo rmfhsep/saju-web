@@ -24,14 +24,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "password must contain letters and numbers" }, { status: 400 })
     }
 
-    // 탈퇴 후 30일 이내 재가입 차단
-    const withdrawn = await prisma.withdrawnPhone.findUnique({ where: { phone } })
-    if (withdrawn) {
-      const until = withdrawn.withdrawnAt.getTime() + 30 * 24 * 60 * 60 * 1000
-      if (until > Date.now()) {
-        return NextResponse.json({ error: "REJOIN_BLOCKED", availableAt: new Date(until).toISOString() }, { status: 403 })
+    // 탈퇴 후 30일 이내 재가입 차단 (테이블 미생성 등 오류 시 차단 없이 진행)
+    try {
+      const withdrawn = await prisma.withdrawnPhone.findUnique({ where: { phone } })
+      if (withdrawn) {
+        const until = withdrawn.withdrawnAt.getTime() + 30 * 24 * 60 * 60 * 1000
+        if (until > Date.now()) {
+          return NextResponse.json({ error: "REJOIN_BLOCKED", availableAt: new Date(until).toISOString() }, { status: 403 })
+        }
+        await prisma.withdrawnPhone.delete({ where: { phone } }).catch(() => {})
       }
-      await prisma.withdrawnPhone.delete({ where: { phone } }).catch(() => {})
+    } catch (e) {
+      console.warn("[api/auth/register] withdrawnPhone check skipped:", e)
     }
 
     const existing = await prisma.user.findUnique({ where: { phone } })

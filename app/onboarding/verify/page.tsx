@@ -80,8 +80,8 @@ function PasswordInput({ value, show, onChange, onToggle, placeholder, error, su
     <div className="flex flex-col gap-2">
       <div
         className={`h-[48px] rounded-[4px] px-4 flex items-center justify-between bg-white ${
-          error ? "border border-[#ff3b30]"
-          : success ? "border-[1.5px] border-[#90b7ff]"
+          error ? "border border-[#ffb5b5]"
+          : success ? "border border-[#90b7ff]"
           : "border border-[#dbdcdf]"
         }`}
       >
@@ -134,7 +134,7 @@ function VerifyForm() {
   const pwValid = pwLengthOk && pwHasLetter && pwHasNumber
   const pwTouched = password.length > 0
   const pwError = pwTouched && !pwValid
-    ? (!pwLengthOk ? "8~12자로 입력해주세요." : "영문, 숫자를 모두 포함해야 해요.")
+    ? "영문, 숫자를 포함한 8~12자로 입력해주세요."
     : null
 
   const pwMatch = password === passwordConfirm && passwordConfirm.length > 0
@@ -309,13 +309,14 @@ function VerifyForm() {
                     </svg>
                   </div>
                 </div>
-                <div className="absolute left-[89px] top-[62px] w-[146px]">
+                {/* 툴팁 — 화살표가 초록 전송 버튼을 가리킴 (디자인 39:2836/39:2839 기준) */}
+                <div className="absolute left-[157px] top-[62px] w-[146px]">
                   <div className="bg-[#1a75ff] rounded-[4px] px-3 py-2 flex items-center justify-center min-h-[56px]">
                     <p className="text-[14px] text-white leading-[1.429] text-center">
                       입력 된 문자를 보내면<br /><span className="font-bold">본인인증</span>이 돼요.
                     </p>
                   </div>
-                  <div className="flex justify-center">
+                  <div className="flex pl-[89px]">
                     <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
                       <path d="M8 8L0 0h16L8 8z" fill="#1a75ff"/>
                     </svg>
@@ -340,13 +341,15 @@ function VerifyForm() {
   if (step === "loading") {
     return (
       <Screen>
-        <div className="h-[44px]" />
-        <div className="flex flex-col px-5 pt-[52px] gap-3">
-          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">인증 확인 중 ...</h1>
-          <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">잠시만 기다려주세요.</p>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="relative w-[148px] h-[148px] flex items-center justify-center">
+        <div className="relative flex-1">
+          {/* 타이틀 상단 고정 */}
+          <div className="absolute inset-x-0 top-[96px] px-5 flex flex-col gap-3">
+            <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">인증 확인 중 ...</h1>
+            <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">잠시만 기다려주세요.</p>
+          </div>
+          {/* 스피너 화면 전체 세로 중앙 */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-[148px] h-[148px] flex items-center justify-center">
             <svg className="absolute inset-0 animate-spin w-full h-full" viewBox="0 0 148 148" fill="none">
               <circle cx="74" cy="74" r="68" stroke="#efefef" strokeWidth="8"/>
               <path d="M74 6 A68 68 0 0 1 142 74" stroke="#90b7ff" strokeWidth="8" strokeLinecap="round"/>
@@ -357,6 +360,7 @@ function VerifyForm() {
                 <path d="M10 14l3 3 5-5" stroke="#b6d0ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
+          </div>
           </div>
         </div>
       </Screen>
@@ -400,9 +404,9 @@ function VerifyForm() {
         </h1>
 
         <div className="flex flex-col gap-[28px]">
-          {/* 계정 (readonly) */}
+          {/* 아이디 (readonly) */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">계정</label>
+            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">아이디</label>
             <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
               <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{formatPhone(rawPhone)}</span>
               <CheckCircleIcon size={24} />
@@ -411,7 +415,10 @@ function VerifyForm() {
 
           {/* 비밀번호 */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호</label>
+            <div className="flex items-center gap-1">
+              <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
+            </div>
             <PasswordInput
               value={password}
               show={showPw}
@@ -425,7 +432,10 @@ function VerifyForm() {
 
           {/* 비밀번호 확인 */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호 확인</label>
+            <div className="flex items-center gap-1">
+              <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">비밀번호 확인</label>
+              <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>
+            </div>
             <PasswordInput
               value={passwordConfirm}
               show={showPwConfirm}

@@ -13,12 +13,17 @@ export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyToken(token)
     // 탈퇴일 기록 — 동일 번호 30일 재가입 제한용 (User는 hard delete되므로 별도 테이블에 보관)
+    // 테이블 미생성 등 오류가 나도 탈퇴 자체는 진행되도록 방어
     if (payload.phone) {
-      await prisma.withdrawnPhone.upsert({
-        where: { phone: payload.phone },
-        create: { phone: payload.phone },
-        update: { withdrawnAt: new Date() },
-      })
+      try {
+        await prisma.withdrawnPhone.upsert({
+          where: { phone: payload.phone },
+          create: { phone: payload.phone },
+          update: { withdrawnAt: new Date() },
+        })
+      } catch (e) {
+        console.warn("[api/auth/delete] withdrawnPhone record skipped:", e)
+      }
     }
     await prisma.user.delete({ where: { id: payload.userId } })
     return NextResponse.json({ ok: true })

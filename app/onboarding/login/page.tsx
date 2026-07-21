@@ -72,7 +72,7 @@ function LoginForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        if (data.error === "USER_NOT_FOUND") setPhoneError("등록되지 않은 휴대폰 번호예요.")
+        if (data.error === "USER_NOT_FOUND") setPhoneError("가입되지 않은 번호예요.")
         else setPwError("비밀번호가 일치하지 않아요.")
         return
       }
@@ -108,17 +108,17 @@ function LoginForm() {
         </div>
 
         <div className="flex flex-col gap-[28px]">
-          {/* 계정 */}
+          {/* 휴대폰 번호 */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#1f1f1f]">계정</label>
+            <label className="text-[14px] font-semibold text-[#1f1f1f]">휴대폰 번호</label>
             <input
               type="tel"
               inputMode="numeric"
-              placeholder="휴대폰 번호를 입력해주세요."
+              placeholder="'-' 없이 숫자만 입력"
               value={phone}
               onChange={e => { setPhone(formatPhone(e.target.value)); setPhoneError("") }}
               className={`h-[48px] border rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                phoneError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#1a73e8]"
+                phoneError ? "border-[#ffb5b5]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
               }`}
             />
             {phoneError && <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{phoneError}</p>}
@@ -130,14 +130,14 @@ function LoginForm() {
             <div className="relative">
               <input
                 type={showPw ? "text" : "password"}
-                placeholder="영문, 숫자 포함 8~12자"
+                placeholder="영문, 숫자 포함 8~12자 입력"
                 value={password}
                 onChange={e => { setPassword(e.target.value.slice(0, 12)); setPwError("") }}
                 className={`w-full h-[48px] border rounded-[4px] px-4 pr-12 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
-                  pwError ? "border-[#ff3b30] focus:border-[#ff3b30]" : "border-[#dbdcdf] focus:border-[#1a73e8]"
+                  pwError ? "border-[#ffb5b5]" : "border-[#dbdcdf] focus:border-[#90b7ff]"
                 }`}
               />
-              {password.length > 0 && <EyeToggle visible={showPw} onClick={() => setShowPw(v => !v)} />}
+              <EyeToggle visible={showPw} onClick={() => setShowPw(v => !v)} />
             </div>
             {pwError && <p className="text-[12px] text-[#ff3b30] tracking-[-0.24px]">{pwError}</p>}
           </div>

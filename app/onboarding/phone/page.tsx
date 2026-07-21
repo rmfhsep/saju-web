@@ -60,9 +60,7 @@ export default function PhoneInputPage() {
               className={`w-full h-[48px] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none bg-white transition-colors ${
                 showError
                   ? "border border-[#ffb5b5]"
-                  : canSubmit
-                  ? "border border-[#dbdcdf]"
-                  : "border border-[#dbdcdf]"
+                  : "border border-[#dbdcdf] focus:border-[#90b7ff]"
               }`}
             />
             {showError && (
