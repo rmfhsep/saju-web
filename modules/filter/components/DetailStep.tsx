@@ -58,7 +58,7 @@ export default function DetailStep({ category, data, heightMin, heightMax, onCha
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-[14px] font-semibold text-[#1f1f1f]">범위 설정</span>
-              <span className="text-[14px] text-[#1a73e8] font-semibold">
+              <span className="text-[14px] text-[#1a75ff] font-semibold">
                 {data.heightMin}~{data.heightMax >= heightMax ? `${heightMax}+` : data.heightMax}cm
               </span>
             </div>

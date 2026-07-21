@@ -69,10 +69,7 @@ export default function BlockingPage() {
           </div>
         </div>
 
-        <PageFooter className="flex flex-col gap-4">
-          <p className="text-[12px] leading-[1.4] text-[#777] text-center w-full">
-            언제든 지인을 추가로 차단하거나, 차단을 해제할 수 있어요.
-          </p>
+        <PageFooter>
           <CtaButton onClick={() => bridgeNavigate("ProfileSetup")}>다음</CtaButton>
         </PageFooter>
       </Screen>
