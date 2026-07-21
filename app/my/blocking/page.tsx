@@ -78,10 +78,10 @@ export default function BlockingPage() {
 
       <div className="flex-1 scroll-area overflow-y-auto px-5 pt-1">
         <div className="flex flex-col gap-3">
-          <h1 className="text-[20px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.4px]">
+          <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             연락처에 있는 지인을 차단해요.
           </h1>
-          <p className="text-[14px] font-normal text-[#949494] leading-[1.5] tracking-[-0.14px]">
+          <p className="text-[15px] font-normal text-[#777] leading-normal tracking-[-0.3px]">
             연락처를 기반으로 지인을 차단할 수 있어요.<br />
             차단한 상대에게는 프로필이 노출되지 않아요.
           </p>

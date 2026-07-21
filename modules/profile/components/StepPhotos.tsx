@@ -65,7 +65,14 @@ function PhotoSlot({ url, required, loading, dragging, onOpen, onDelete, onPoint
     <div
       ref={slotRef}
       onPointerDown={url ? onPointerDown : undefined}
-      style={{ touchAction: url ? "none" : "auto" }}
+      style={{
+        touchAction: url ? "none" : "auto",
+        // iOS는 이미지 롱프레스 시 저장/복사 콜아웃 메뉴를 띄우는데, 이게 진행 중인 포인터 시퀀스를
+        // 가로채 순서 변경 롱프레스가 시작되자마자 취소된다. 콜아웃/네이티브 드래그를 막아야 동작한다.
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+      } as React.CSSProperties}
       className={`relative flex-1 aspect-square transition-transform ${dragging ? "scale-105 opacity-80 z-10" : ""}`}
     >
       <button
@@ -79,7 +86,14 @@ function PhotoSlot({ url, required, loading, dragging, onOpen, onDelete, onPoint
             <div className="w-6 h-6 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : url ? (
-          <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover rounded-[8px]" />
+          <img
+            src={url}
+            alt=""
+            draggable={false}
+            onDragStart={e => e.preventDefault()}
+            className="absolute inset-0 w-full h-full object-cover rounded-[8px] pointer-events-none"
+            style={{ WebkitUserDrag: "none" } as React.CSSProperties}
+          />
         ) : (
           <PlusIcon />
         )}

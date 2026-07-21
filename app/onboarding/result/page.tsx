@@ -79,11 +79,13 @@ function TemperamentCard({ section }: { section: SajuReport["섹션1_연애기�
       <div className="flex justify-between gap-1">
         {axes.map(a => <ScoreBar key={a.key} label={a.key} score={a.최종점수} />)}
       </div>
-      {/* 마이(report)와 동일하게 줄글로 통일 */}
-      <div className="bg-[#e9f1ff] rounded-[4px] p-3">
-        <p className="text-[14px] font-normal text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">
-          {axes.map(a => a.설명).join(" ")}
-        </p>
+      {/* 마이(report)와 동일하게 축별 유형 태그 + 설명을 각각 노출 (병합된 줄글 아님) */}
+      <div className="bg-[#e9f1ff] rounded-[4px] p-3 flex flex-col gap-1.5">
+        {axes.map(a => (
+          <p key={a.key} className="text-[14px] font-normal text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">
+            <span className="font-semibold">{a.태그}</span> — {a.설명}
+          </p>
+        ))}
       </div>
     </div>
   )
@@ -174,11 +176,13 @@ function CautionCard({ items }: { items: SajuReport["섹션4_주의포인트"] }
 }
 
 // 분석 대기 화면 — 스피너 대신 별 모으기 미니게임. 분석이 끝나면 '결과 보기' 활성화.
-function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
+// 게임은 최초 리포트 생성 시 1회만 노출한다(재생성 시 재도전 방지) — showGame=false면 안내 문구만 보여준다.
+function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, onReveal }: {
   name: string
   ready: boolean
+  showGame: boolean
   earnedStars: number
-  onEarn: (score: number) => void
+  onGameOver: (survivalSeconds: number) => void
   onReveal: () => void
 }) {
   return (
@@ -188,7 +192,7 @@ function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
           {ready ? "분석이 완료됐어요!" : <>{name}님의 연애운을<br />분석하고 있어요...</>}
         </h1>
         <p className="text-[15px] text-[#777] leading-normal tracking-[-0.3px]">
-          기다리는 동안 별을 모아보세요. 점수만큼 별이 적립돼요!
+          {showGame ? "기다리는 동안 별을 모아보세요. 오래 생존할수록 별이 더 적립돼요!" : "잠시만 기다려주세요."}
         </p>
       </div>
 
@@ -199,7 +203,7 @@ function AnalyzingGameScreen({ name, ready, earnedStars, onEarn, onReveal }: {
             <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
         )}
-        <RunnerGame height={220} maxPlays={3} onGameOver={onEarn} />
+        {showGame && <RunnerGame height={220} maxPlays={3} locked={ready} onGameOver={onGameOver} />}
       </div>
 
       <div className="px-5 pb-8 pt-4">
@@ -230,18 +234,30 @@ function ResultContent() {
   const [retryError, setRetryError] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [earnedStars, setEarnedStars] = useState(0)
+  // 최초 리포트 생성 시 1회만 게임을 노출 — 이미 지급받은 유저는 게임을 건너뛴다.
+  const [miniGamePlayed, setMiniGamePlayed] = useState<boolean | null>(null)
+  const [bestSeconds, setBestSeconds] = useState(0)
+  const [hasPlayed, setHasPlayed] = useState(false)
+  const [starsSubmitted, setStarsSubmitted] = useState(false)
 
-  async function awardStars(score: number) {
+  function handleGameOver(survivalSeconds: number) {
+    setHasPlayed(true)
+    setBestSeconds(prev => Math.max(prev, survivalSeconds))
+  }
+
+  // 3회 중 최고 생존시간 하나만 서버로 보내 별을 지급받는다(강제 종료·기회 소진 시 1회만 호출).
+  async function awardStars(seconds: number) {
     const token = localStorage.getItem("auth_token")
     if (!token) return
     try {
       const res = await fetch("/api/stars/add", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ score }),
+        body: JSON.stringify({ bestSeconds: seconds }),
       })
       const d = await res.json()
-      if (res.ok && d.earned) setEarnedStars(prev => prev + d.earned)
+      if (res.ok && d.earned) setEarnedStars(d.earned)
+      setMiniGamePlayed(true)
     } catch { /* ignore */ }
   }
 
@@ -272,6 +288,7 @@ function ResultContent() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => {
+        if (typeof user?.miniGamePlayed === "boolean") setMiniGamePlayed(user.miniGamePlayed)
         if (user?.sajuResult) {
           try {
             const parsed = JSON.parse(user.sajuResult)
@@ -292,6 +309,17 @@ function ResultContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const ready = !loading && !retrying
+
+  // 게임이 강제 종료(ready)되거나 3회 기회를 모두 썼을 때, 최고 생존시간 1개만 서버로 제출한다.
+  useEffect(() => {
+    if (starsSubmitted || miniGamePlayed !== false || !hasPlayed) return
+    if (!ready) return
+    setStarsSubmitted(true)
+    awardStars(bestSeconds)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, hasPlayed, bestSeconds, miniGamePlayed, starsSubmitted])
+
   const genderLabel = gender === "MALE" ? " (남성)" : gender === "FEMALE" ? " (여성)" : ""
   const isMale = gender === "MALE"
   const birthDisplay = formatBirthDisplay(bd, bt, calendarType)
@@ -300,9 +328,10 @@ function ResultContent() {
     return (
       <AnalyzingGameScreen
         name={name}
-        ready={!loading && !retrying}
+        ready={ready}
+        showGame={miniGamePlayed === false}
         earnedStars={earnedStars}
-        onEarn={awardStars}
+        onGameOver={handleGameOver}
         onReveal={() => setRevealed(true)}
       />
     )

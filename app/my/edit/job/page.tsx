@@ -25,7 +25,11 @@ export default function JobEditPage() {
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(user => {
-        if (user?.job) setJob(user.job)
+        if (user?.job) {
+          setJob(user.job)
+          // 이미 입력된 직업이 있으면 목록 화면을 거치지 않고 바로 보이도록 상세 단계로 진입
+          setShowDetail(true)
+        }
         if (user?.jobDetail) setJobDetail(user.jobDetail)
       })
   }, [])

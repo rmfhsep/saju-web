@@ -309,14 +309,14 @@ function VerifyForm() {
                     </svg>
                   </div>
                 </div>
-                {/* 툴팁 — 화살표가 초록 전송 버튼을 가리킴 (디자인 39:2836/39:2839 기준) */}
-                <div className="absolute left-[157px] top-[62px] w-[146px]">
+                {/* 툴팁 — 말풍선 + 화살표가 전송 버튼(중심 x=246) 정중앙을 가리키도록 배치 */}
+                <div className="absolute left-[173px] top-[62px] w-[146px]">
                   <div className="bg-[#1a75ff] rounded-[4px] px-3 py-2 flex items-center justify-center min-h-[56px]">
                     <p className="text-[14px] text-white leading-[1.429] text-center">
                       입력 된 문자를 보내면<br /><span className="font-bold">본인인증</span>이 돼요.
                     </p>
                   </div>
-                  <div className="flex pl-[89px]">
+                  <div className="flex pl-[65px]">
                     <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
                       <path d="M8 8L0 0h16L8 8z" fill="#1a75ff"/>
                     </svg>
@@ -458,7 +458,7 @@ function VerifyForm() {
         </CtaButton>
       </PageFooter>
 
-      {/* 서비스 이용 동의 바텀시트 — 회원가입 시 비밀번호 화면 위에 딤 처리되어 노출 (34-2261) */}
+      {/* 서비스 이용 동의 바텀시트 — 회원가입 시 비밀번호 화면 위에 딤 처리되어 노출 (Figma 34:2261) */}
       {showTerms && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/61" />

@@ -1,0 +1,767 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>QA</title><meta name="data-notion-page-icon" content="🛠️"/><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%9B%A0%EF%B8%8F%3C%2Ftext%3E%3C%2Fsvg%3E"/><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure,
+aside,
+details {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="39260e87-d2a4-809b-a0c1-fa227a2ecdc4" class="page sans" data-notion-page-icon="🛠️"><header><div class="page-header-icon undefined"><span class="icon" data-emoji="🛠️"></span></div><h1 class="page-title" dir="auto">QA</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div class="collection-content-wrapper"><table class="collection-content"><colgroup><col style="width:6.930126002290951%"/><col style="width:16.60939289805269%"/><col style="width:26.46048109965636%"/><col style="width:5.72737686139748%"/><col style="width:5.72737686139748%"/><col style="width:5.72737686139748%"/><col style="width:5.72737686139748%"/><col style="width:5.72737686139748%"/><col style="width:21.363115693012617%"/></colgroup><thead><tr><th><span class="icon property-icon"><img src="https://app.notion.com/icons/list_gray.svg" style="width:14px;height:14px;display:block"/></span>분류</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/description_gray.svg" style="width:14px;height:14px;display:block"/></span>기대 결과</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/font_gray.svg" style="width:14px;height:14px;display:block"/></span>수정 사항</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/photo-landscape_gray.svg" style="width:14px;height:14px;display:block"/></span>참고 화면</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/link_gray.svg" style="width:14px;height:14px;display:block"/></span>Figma URL</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/friends_gray.svg" style="width:14px;height:14px;display:block"/></span>담당자</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;display:block"/></span>우선 순위</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/burst_gray.svg" style="width:14px;height:14px;display:block"/></span>진행 상태</th><th><span class="icon property-icon"><img src="https://app.notion.com/icons/description_gray.svg" style="width:14px;height:14px;display:block"/></span>비고</th></tr></thead><tbody><tr id="39260e87-d2a4-8004-8045-c62a85b564da"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">전체 동의 프레임 전체 선택 시 on↔off 스위치</td><td class="cell-title"><a href="https://app.notion.com/p/on-off-touch-area-39260e87d2a480048045c62a85b564da?pvs=21" data-notion-page-id="39260e87-d2a4-8004-8045-c62a85b564da" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">on↔off 동작 touch area 프레임 전체로 변경</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=35-1943&amp;t=VZy1bKsGh1pSeo1l-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=35-1943&amp;t=VZy1bKsGh1pSeo1l-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value select-value-color-green"><div class="status-dot status-dot-color-green"></div>대응 완료</span></td><td class="cell-jwSF"></td></tr><tr id="39760e87-d2a4-806c-84b8-dd891f199edd"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">사주 리포트 올해 연애운 ‘보통’, ‘높음’ 뱃지 구분</td><td class="cell-title"><a href="https://app.notion.com/p/39760e87d2a4806c84b8dd891f199edd?pvs=21" data-notion-page-id="39760e87-d2a4-806c-84b8-dd891f199edd" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">뱃지 색상 구분(높음 - 빨강 / 보통 - 파랑 / 낮음 - 노랑)</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="QA/%EB%B1%83%EC%A7%80%20%EC%83%89%EC%83%81%20%EA%B5%AC%EB%B6%84(%EB%86%92%EC%9D%8C%20-%20%EB%B9%A8%EA%B0%95%20%EB%B3%B4%ED%86%B5%20-%20%ED%8C%8C%EB%9E%91%20%EB%82%AE%EC%9D%8C%20-%20%EB%85%B8%EB%9E%91)/abe9d7c2413c9256dd8929cb760d970a.jpg" class="icon user-icon"/>한혜민</span><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value select-value-color-blue"><div class="status-dot status-dot-color-blue"></div>진행 중</span></td><td class="cell-jwSF">UI 반영 완료</td></tr><tr id="39760e87-d2a4-808e-8d0a-c4f550a9c5c5"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">사진 등록 가이드 바텀시트 닫기 방식 2가지</td><td class="cell-title"><a href="https://app.notion.com/p/39760e87d2a4808e8d0ac4f550a9c5c5?pvs=21" data-notion-page-id="39760e87-d2a4-808e-8d0a-c4f550a9c5c5" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">바텀시트 아래로 스와이프해서 닫기 적용</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value select-value-color-purple"><div class="status-dot status-dot-color-purple"></div>검수 완료</span></td><td class="cell-jwSF"></td></tr><tr id="39760e87-d2a4-806e-be22-f88a991ce63e"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">사진 등록 area 전체 터치 영역으로</td><td class="cell-title"><a href="https://app.notion.com/p/area-39760e87d2a4806ebe22f88a991ce63e?pvs=21" data-notion-page-id="39760e87-d2a4-806e-be22-f88a991ce63e" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">사진 등록 area 터치 영역 확인 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value select-value-color-purple"><div class="status-dot status-dot-color-purple"></div>검수 완료</span></td><td class="cell-jwSF">어느 부분은 터치되고, 어느 부분은 터치가 안되는 경우가 있네요</td></tr><tr id="39760e87-d2a4-8063-bb8d-c913c0a142df"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/39760e87d2a48063bb8dc913c0a142df?pvs=21" data-notion-page-id="39760e87-d2a4-8063-bb8d-c913c0a142df" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">사진 롱프레스 순서 변경</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value select-value-color-purple"><div class="status-dot status-dot-color-purple"></div>검수 완료</span></td><td class="cell-jwSF">순서 변경이 순탄치 않습니다</td></tr><tr id="39f60e87-d2a4-8064-8f76-f4cf528544a6"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/39f60e87d2a480648f76f4cf528544a6?pvs=21" data-notion-page-id="39f60e87-d2a4-8064-8f76-f4cf528544a6" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">별 아이콘, 숫자 텍스트 컬러 가이드와 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=102-3978&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=102-3978&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="39f60e87-d2a4-8012-a637-cbb25d790176"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/39f60e87d2a48012a637cbb25d790176?pvs=21" data-notion-page-id="39f60e87-d2a4-8012-a637-cbb25d790176" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">리스트 내 아이콘 가이드와 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=120-647&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=120-647&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="39f60e87-d2a4-800b-9320-e14f13f2c04d"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">radio button, color, radius 4</td><td class="cell-title"><a href="https://app.notion.com/p/Selected-Button-39f60e87d2a4800b9320e14f13f2c04d?pvs=21" data-notion-page-id="39f60e87-d2a4-800b-9320-e14f13f2c04d" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Selected Button - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/Selected%20Button%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9392.png"><img style="width:20px;max-height:24px" src="QA/Selected%20Button%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9392.png" alt="IMG_9392.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-731&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-731&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="39f60e87-d2a4-806d-9b7f-ff1ae330101b"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/39f60e87d2a4806d9b7fff1ae330101b?pvs=21" data-notion-page-id="39f60e87-d2a4-806d-9b7f-ff1ae330101b" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">스플래시 변경 필요 </a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2539&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2539&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80e0-9e12-e99044e01eb6"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480e09e12e99044e01eb6?pvs=21" data-notion-page-id="3a060e87-d2a4-80e0-9e12-e99044e01eb6" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">앱 아이콘 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-1093&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-1093&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-800e-af1c-f357651bf4c0"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4800eaf1cf357651bf4c0?pvs=21" data-notion-page-id="3a060e87-d2a4-800e-af1c-f357651bf4c0" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">슬라이더 바 - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%8D%94%20%EB%B0%94%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9393.jpg"><img style="width:20px;max-height:24px" src="QA/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%8D%94%20%EB%B0%94%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9393.jpg" alt="IMG_9393.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=142-111&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=142-111&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-804f-80e1-f5291bdc4131"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">라디오 버튼일 경우 화면 진입 시 무조건 최상단 항목 선택되어있어야 함</td><td class="cell-title"><a href="https://app.notion.com/p/selected-3a060e87d2a4804f80e1f5291bdc4131?pvs=21" data-notion-page-id="3a060e87-d2a4-804f-80e1-f5291bdc4131" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">화면 진입 시 최상단 항목 selected 상태로 변경</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%99%94%EB%A9%B4%20%EC%A7%84%EC%9E%85%20%EC%8B%9C%20%EC%B5%9C%EC%83%81%EB%8B%A8%20%ED%95%AD%EB%AA%A9%20selected%20%EC%83%81%ED%83%9C%EB%A1%9C%20%EB%B3%80%EA%B2%BD/IMG_9394.jpg"><img style="width:20px;max-height:24px" src="QA/%ED%99%94%EB%A9%B4%20%EC%A7%84%EC%9E%85%20%EC%8B%9C%20%EC%B5%9C%EC%83%81%EB%8B%A8%20%ED%95%AD%EB%AA%A9%20selected%20%EC%83%81%ED%83%9C%EB%A1%9C%20%EB%B3%80%EA%B2%BD/IMG_9394.jpg" alt="IMG_9394.jpg"/></a></span></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-809d-bef4-e05df3dce199"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4809dbef4e05df3dce199?pvs=21" data-notion-page-id="3a060e87-d2a4-809d-bef4-e05df3dce199" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">라디오 버튼 - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-719&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-719&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-808b-a917-c9e7d57b3fb5"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">연애운 리포트 → 나의 연애 기질에서 그래프랑 숫자가 붙어있어야 함. 마이에서 진입했을 때는 정상적으로 노출 중</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4808ba917c9e7d57b3fb5?pvs=21" data-notion-page-id="3a060e87-d2a4-808b-a917-c9e7d57b3fb5" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">첨부 화면 참고</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0/IMG_9395.jpg"><img style="width:20px;max-height:24px" src="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0/IMG_9395.jpg" alt="IMG_9395.jpg"/></a></span><span style="margin-inline-end:6px"><a href="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0/IMG_9417.png"><img style="width:20px;max-height:24px" src="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0/IMG_9417.png" alt="IMG_9417.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-1021&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-1021&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-802d-8d07-ed8ca035f9b1"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">연애운 리포트 → 나의 연애 기질<br/>온보딩에서는 ‘내 유형 : 유형 설명’으로 나오고, <br/>마이에서는 줄글로 나옴. 확인 필요</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4802d8d07ed8ca035f9b1?pvs=21" data-notion-page-id="3a060e87-d2a4-802d-8d07-ed8ca035f9b1" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">유형별 설명인지, 줄글 설명인지 확인 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%9C%A0%ED%98%95%EB%B3%84%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80,%20%EC%A4%84%EA%B8%80%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9395.jpg"><img style="width:20px;max-height:24px" src="QA/%EC%9C%A0%ED%98%95%EB%B3%84%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80,%20%EC%A4%84%EA%B8%80%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9395.jpg" alt="IMG_9395.jpg"/></a></span><span style="margin-inline-end:6px"><a href="QA/%EC%9C%A0%ED%98%95%EB%B3%84%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80,%20%EC%A4%84%EA%B8%80%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9417.png"><img style="width:20px;max-height:24px" src="QA/%EC%9C%A0%ED%98%95%EB%B3%84%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80,%20%EC%A4%84%EA%B8%80%20%EC%84%A4%EB%AA%85%EC%9D%B8%EC%A7%80%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9417.png" alt="IMG_9417.PNG"/></a></span></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span><span class="user"><img src="https://lh3.googleusercontent.com/a-/AOh14GgcsW15Qy8h0nNqEMM0l923feHNi01sZVAI3L0T3w=s100" class="icon user-icon"/>예림</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">유형별 설명으로 통일 필요</td></tr><tr id="3a060e87-d2a4-809b-9f1a-ea87158d8920"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/title-sub-text-font-size-font-color-3a060e87d2a4809b9f1aea87158d8920?pvs=21" data-notion-page-id="3a060e87-d2a4-809b-9f1a-ea87158d8920" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">지인 차단 title, sub text : font size 및 font color 화면과 상이해보임</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%80%EC%9D%B8%20%EC%B0%A8%EB%8B%A8%20title,%20sub%20text%20font%20size%20%EB%B0%8F%20font%20color%20%ED%99%94%EB%A9%B4%EA%B3%BC%20%EC%83%81/IMG_9396.jpg"><img style="width:20px;max-height:24px" src="QA/%EC%A7%80%EC%9D%B8%20%EC%B0%A8%EB%8B%A8%20title,%20sub%20text%20font%20size%20%EB%B0%8F%20font%20color%20%ED%99%94%EB%A9%B4%EA%B3%BC%20%EC%83%81/IMG_9396.jpg" alt="IMG_9396.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=176-4917&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=176-4917&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8086-82e9-c1dc4053c674"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">알림 설정 → 기기 알림 리스트에서 [설정] 버튼 선택 시 ‘OS 알림 설정’으로 이동</td><td class="cell-title"><a href="https://app.notion.com/p/OS-3a060e87d2a4808682e9c1dc4053c674?pvs=21" data-notion-page-id="3a060e87-d2a4-8086-82e9-c1dc4053c674" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">[설정] 버튼 선택 시 OS 알림 설정 화면으로 이동</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80f7-835b-f124687a23c8"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480f7835bf124687a23c8?pvs=21" data-notion-page-id="3a060e87-d2a4-80f7-835b-f124687a23c8" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">토글 버튼 - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%86%A0%EA%B8%80%20%EB%B2%84%ED%8A%BC%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9397.jpg"><img style="width:20px;max-height:24px" src="QA/%ED%86%A0%EA%B8%80%20%EB%B2%84%ED%8A%BC%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9397.jpg" alt="IMG_9397.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=177-194&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=177-194&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8086-b20a-f72991150c88"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a48086b20af72991150c88?pvs=21" data-notion-page-id="3a060e87-d2a4-8086-b20a-f72991150c88" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">체크 박스 - 디자인 시스템과 동일하게 변경 필요 (내부 체크 아이콘이 작아보여요)</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=28-5111&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=28-5111&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8041-ba46-e928e829bbed"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">  1. 서브 타이틀 좌 정렬</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a48041ba46e928e829bbed?pvs=21" data-notion-page-id="3a060e87-d2a4-8041-ba46-e928e829bbed" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">첨부 화면 참고</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0%203a06-bbed/IMG_9398.png"><img style="width:20px;max-height:24px" src="QA/%EC%B2%A8%EB%B6%80%20%ED%99%94%EB%A9%B4%20%EC%B0%B8%EA%B3%A0%203a06-bbed/IMG_9398.png" alt="IMG_9398.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=156-449&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=156-449&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8046-a283-c3d41e40b065"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">top navigation과 서브 타이틀 간격 20</td><td class="cell-title"><a href="https://app.notion.com/p/20-3a060e87d2a48046a283c3d41e40b065?pvs=21" data-notion-page-id="3a060e87-d2a4-8046-a283-c3d41e40b065" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">전체적으로 간격 20 확인 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8056-81f6-c5502c0275fb"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">최하단 간격 36</td><td class="cell-title"><a href="https://app.notion.com/p/36-3a060e87d2a4805681f6c5502c0275fb?pvs=21" data-notion-page-id="3a060e87-d2a4-8056-81f6-c5502c0275fb" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">전체적으로 최하단 간격 36 확인 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A0%84%EC%B2%B4%EC%A0%81%EC%9C%BC%EB%A1%9C%20%EC%B5%9C%ED%95%98%EB%8B%A8%20%EA%B0%84%EA%B2%A9%2036%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9399.png"><img style="width:20px;max-height:24px" src="QA/%EC%A0%84%EC%B2%B4%EC%A0%81%EC%9C%BC%EB%A1%9C%20%EC%B5%9C%ED%95%98%EB%8B%A8%20%EA%B0%84%EA%B2%A9%2036%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9399.png" alt="IMG_9399.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=156-449&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=156-449&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80c1-9da4-d213b8092d19"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480c19da4d213b8092d19?pvs=21" data-notion-page-id="3a060e87-d2a4-80c1-9da4-d213b8092d19" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">선택한 태그 변경 아이콘 수정 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=158-3676&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=158-3676&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-804e-a446-c16484723039"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">text field vertical padding : 12</td><td class="cell-title"><a href="https://app.notion.com/p/text-field-3a060e87d2a4804ea446c16484723039?pvs=21" data-notion-page-id="3a060e87-d2a4-804e-a446-c16484723039" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">text field - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/text%20field%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9401.jpg"><img style="width:20px;max-height:24px" src="QA/text%20field%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9401.jpg" alt="IMG_9401.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=112-2043&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=112-2043&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8095-b104-dd033e9d1f45"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">자기 소개 수정 : text field 채워져있을 경우 태그 변경 아이콘 눌렀을 시 태그 변경 확인 modal 노출</td><td class="cell-title"><a href="https://app.notion.com/p/modal-3a060e87d2a48095b104dd033e9d1f45?pvs=21" data-notion-page-id="3a060e87-d2a4-8095-b104-dd033e9d1f45" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">태그 변경 확인 modal 화면 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=160-3631&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=160-3631&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80a3-83ce-f267094622a9"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">자기 소개 수정 : 나의 성향 태그 8개 + 직접 입력한 태그 N개만 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480a383cef267094622a9?pvs=21" data-notion-page-id="3a060e87-d2a4-80a3-83ce-f267094622a9" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">태그 노출 확인 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%83%9C%EA%B7%B8%20%EB%85%B8%EC%B6%9C%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9402.png"><img style="width:20px;max-height:24px" src="QA/%ED%83%9C%EA%B7%B8%20%EB%85%B8%EC%B6%9C%20%ED%99%95%EC%9D%B8%20%ED%95%84%EC%9A%94/IMG_9402.png" alt="IMG_9402.PNG"/></a></span></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8053-9cb3-dce80fef0a20"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">스무스한 롱프레스 사진 순서 변경.. </td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480539cb3dce80fef0a20?pvs=21" data-notion-page-id="3a060e87-d2a4-8053-9cb3-dce80fef0a20" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">롱프레스 사진 순서 변경</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">저만 여전히 순탄치 않은 걸까요… 동작이 안돼요</td></tr><tr id="3a060e87-d2a4-8004-9b6a-c2ed0a996122"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">toast max width : 296</td><td class="cell-title"><a href="https://app.notion.com/p/toast-1-3a060e87d2a480049b6ac2ed0a996122?pvs=21" data-notion-page-id="3a060e87-d2a4-8004-9b6a-c2ed0a996122" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">마이 → 지인차단 → 차단 추가 시 toast 1줄로 노출</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EB%A7%88%EC%9D%B4%20%E2%86%92%20%EC%A7%80%EC%9D%B8%EC%B0%A8%EB%8B%A8%20%E2%86%92%20%EC%B0%A8%EB%8B%A8%20%EC%B6%94%EA%B0%80%20%EC%8B%9C%20toast%201%EC%A4%84%EB%A1%9C%20%EB%85%B8%EC%B6%9C/IMG_9403.png"><img style="width:20px;max-height:24px" src="QA/%EB%A7%88%EC%9D%B4%20%E2%86%92%20%EC%A7%80%EC%9D%B8%EC%B0%A8%EB%8B%A8%20%E2%86%92%20%EC%B0%A8%EB%8B%A8%20%EC%B6%94%EA%B0%80%20%EC%8B%9C%20toast%201%EC%A4%84%EB%A1%9C%20%EB%85%B8%EC%B6%9C/IMG_9403.png" alt="IMG_9403.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=88-194&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=88-194&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80cf-8f06-ce7034c5085a"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">문의하기 선택 시 카카오톡 비즈니스 채널 문의로 이동</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480cf8f06ce7034c5085a?pvs=21" data-notion-page-id="3a060e87-d2a4-80cf-8f06-ce7034c5085a" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">이동 경로 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8051-b1e7-ff6a8ae853f2"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">list selected : 텍스트 gray 850 </td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a48051b1e7ff6a8ae853f2?pvs=21" data-notion-page-id="3a060e87-d2a4-8051-b1e7-ff6a8ae853f2" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9405.png"><img style="width:20px;max-height:24px" src="QA/%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9405.png" alt="IMG_9405.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=76-5802&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=76-5802&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80d5-85fd-c4521b4206e5"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480d585fdc4521b4206e5?pvs=21" data-notion-page-id="3a060e87-d2a4-80d5-85fd-c4521b4206e5" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">직업 수정 진입 시 입력한 직업 보이도록 수정 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%81%EC%97%85%20%EC%88%98%EC%A0%95%20%EC%A7%84%EC%9E%85%20%EC%8B%9C%20%EC%9E%85%EB%A0%A5%ED%95%9C%20%EC%A7%81%EC%97%85%20%EB%B3%B4%EC%9D%B4%EB%8F%84%EB%A1%9D%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9406.png"><img style="width:20px;max-height:24px" src="QA/%EC%A7%81%EC%97%85%20%EC%88%98%EC%A0%95%20%EC%A7%84%EC%9E%85%20%EC%8B%9C%20%EC%9E%85%EB%A0%A5%ED%95%9C%20%EC%A7%81%EC%97%85%20%EB%B3%B4%EC%9D%B4%EB%8F%84%EB%A1%9D%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9406.png" alt="IMG_9406.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=176-561&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=176-561&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8051-89ab-ddc4805f2a2a"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">  1. 타이틀 텍스트 변경 없음 : 직업을 알려주세요.<br/>  2. 직업 리스트 : 라디오 버튼 X, list cell</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4805189abddc4805f2a2a?pvs=21" data-notion-page-id="3a060e87-d2a4-8051-89ab-ddc4805f2a2a" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">직업 선택 플로우 화면 전반적으로 수정 필요, 확인 다시 부탁드립니다</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%81%EC%97%85%20%EC%84%A0%ED%83%9D%20%ED%94%8C%EB%A1%9C%EC%9A%B0%20%ED%99%94%EB%A9%B4%20%EC%A0%84%EB%B0%98%EC%A0%81%EC%9C%BC%EB%A1%9C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94,%20%ED%99%95%EC%9D%B8%20%EB%8B%A4%EC%8B%9C%20%EB%B6%80%ED%83%81%EB%93%9C%EB%A6%BD%EB%8B%88%EB%8B%A4/IMG_9407.png"><img style="width:20px;max-height:24px" src="QA/%EC%A7%81%EC%97%85%20%EC%84%A0%ED%83%9D%20%ED%94%8C%EB%A1%9C%EC%9A%B0%20%ED%99%94%EB%A9%B4%20%EC%A0%84%EB%B0%98%EC%A0%81%EC%9C%BC%EB%A1%9C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94,%20%ED%99%95%EC%9D%B8%20%EB%8B%A4%EC%8B%9C%20%EB%B6%80%ED%83%81%EB%93%9C%EB%A6%BD%EB%8B%88%EB%8B%A4/IMG_9407.png" alt="IMG_9407.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2483&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2483&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80f0-bfb1-f71b1d50fcee"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">프로필 수정 → 내 정보 수정 진입 시 CTA로 저장 X, top navigation에 text button으로 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480f0bfb1f71b1d50fcee?pvs=21" data-notion-page-id="3a060e87-d2a4-80f0-bfb1-f71b1d50fcee" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">버튼 유형 및 위치, 레이블 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=161-3761&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=161-3761&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8083-adaa-eb21e33c5a73"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/1-3a060e87d2a48083adaaeb21e33c5a73?pvs=21" data-notion-page-id="3a060e87-d2a4-8083-adaa-eb21e33c5a73" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">프로필 수정 → 내 정보 수정 진입 시 1초 정도 로딩이 있는데 화면 바로 뜰 수 있게 개선 가능할까요? </a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80ac-91a7-cb4340a3d335"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">아이콘 디자인, 아이콘 사이즈, 텍스트 컬러, 텍스트 사이즈 등</td><td class="cell-title"><a href="https://app.notion.com/p/Bottom-navigation-3a060e87d2a480ac91a7cb4340a3d335?pvs=21" data-notion-page-id="3a060e87-d2a4-80ac-91a7-cb4340a3d335" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Bottom navigation - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=152-145&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=152-145&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80ce-8b9a-f1af5efc48ef"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">탈퇴한 회원 30일 이내 재가입 시도 시 30일 간 재가입 불가 화면 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480ce8b9af1af5efc48ef?pvs=21" data-notion-page-id="3a060e87-d2a4-80ce-8b9a-f1af5efc48ef" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">제목 없음</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="QA/%EB%B1%83%EC%A7%80%20%EC%83%89%EC%83%81%20%EA%B5%AC%EB%B6%84(%EB%86%92%EC%9D%8C%20-%20%EB%B9%A8%EA%B0%95%20%EB%B3%B4%ED%86%B5%20-%20%ED%8C%8C%EB%9E%91%20%EB%82%AE%EC%9D%8C%20-%20%EB%85%B8%EB%9E%91)/abe9d7c2413c9256dd8929cb760d970a.jpg" class="icon user-icon"/>한혜민</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8011-8775-ecda55ab8168"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">CTA : secondary button</td><td class="cell-title"><a href="https://app.notion.com/p/CTA-Color-3a060e87d2a480118775ecda55ab8168?pvs=21" data-notion-page-id="3a060e87-d2a4-8011-8775-ecda55ab8168" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">안내 이미지 내 툴팁 위치 수정, CTA Color 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%95%88%EB%82%B4%20%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EB%82%B4%20%ED%88%B4%ED%8C%81%20%EC%9C%84%EC%B9%98%20%EC%88%98%EC%A0%95,%20CTA%20Color%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9408.png"><img style="width:20px;max-height:24px" src="QA/%EC%95%88%EB%82%B4%20%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EB%82%B4%20%ED%88%B4%ED%8C%81%20%EC%9C%84%EC%B9%98%20%EC%88%98%EC%A0%95,%20CTA%20Color%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9408.png" alt="IMG_9408.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2456&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2456&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">이미지 내에 툴팁 위치를 버튼 가운데로 변경해주실 수 있을까요</td></tr><tr id="3a060e87-d2a4-80da-815a-cc8c6058ced5"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480da815acc8c6058ced5?pvs=21" data-notion-page-id="3a060e87-d2a4-80da-815a-cc8c6058ced5" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">로딩 아이콘 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2387&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2387&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80cb-b705-f9265808aab9"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">본인인증 완료 후 서비스 이용 동의 Bottomsheet 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480cbb705f9265808aab9?pvs=21" data-notion-page-id="3a060e87-d2a4-80cb-b705-f9265808aab9" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">‘휴대폰 번호 인증 → 서비스 이용 동의 → 비밀번호 설정’ 플로우 확인 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a-/AOh14GgcsW15Qy8h0nNqEMM0l923feHNi01sZVAI3L0T3w=s100" class="icon user-icon"/>예림</span><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">‘휴대폰 번호 인증 → 서비스 이용 동의 → 비밀번호 설정’ 플로우로 알고 있는데 <br/>현재 ‘휴대폰 번호 인증 → 비밀번호 설정 → 서비스 이용 동의’ 플로우로 적용되어있습니다. 확인 부탁드려요</td></tr><tr id="3a060e87-d2a4-8028-994b-d2e9bd30efb3"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a48028994bd2e9bd30efb3?pvs=21" data-notion-page-id="3a060e87-d2a4-8028-994b-d2e9bd30efb3" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">비밀번호 설정 화면 : 계정 확인 아이콘 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%20%EC%84%A4%EC%A0%95%20%ED%99%94%EB%A9%B4%20%EA%B3%84%EC%A0%95%20%ED%99%95%EC%9D%B8%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9410.png"><img style="width:20px;max-height:24px" src="QA/%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%20%EC%84%A4%EC%A0%95%20%ED%99%94%EB%A9%B4%20%EA%B3%84%EC%A0%95%20%ED%99%95%EC%9D%B8%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9410.png" alt="IMG_9410.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-626&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-626&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-801b-8b2f-e015d8b91536"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">비밀번호 확인 place holder : 동일한 비밀번호 입력</td><td class="cell-title"><a href="https://app.notion.com/p/Place-holder-3a060e87d2a4801b8b2fe015d8b91536?pvs=21" data-notion-page-id="3a060e87-d2a4-801b-8b2f-e015d8b91536" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Place holder 수정</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/Place%20holder%20%EC%88%98%EC%A0%95/IMG_9410.png"><img style="width:20px;max-height:24px" src="QA/Place%20holder%20%EC%88%98%EC%A0%95/IMG_9410.png" alt="IMG_9410.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2060&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2060&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-803f-ace5-ff93912f7215"><td class="cell-|\^h"><span class="selected-value select-value-color-red">로그인/회원가입</span></td><td class="cell-ACbl">Bottom sheet 내 padding 20 동일</td><td class="cell-title"><a href="https://app.notion.com/p/bottom-sheet-padding-20-3a060e87d2a4803face5ff93912f7215?pvs=21" data-notion-page-id="3a060e87-d2a4-803f-ace5-ff93912f7215" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">서비스 이용동의 bottom sheet padding 20으로 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%84%9C%EB%B9%84%EC%8A%A4%20%EC%9D%B4%EC%9A%A9%EB%8F%99%EC%9D%98%20bottom%20sheet%20padding%2020%EC%9C%BC%EB%A1%9C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9411.png"><img style="width:20px;max-height:24px" src="QA/%EC%84%9C%EB%B9%84%EC%8A%A4%20%EC%9D%B4%EC%9A%A9%EB%8F%99%EC%9D%98%20bottom%20sheet%20padding%2020%EC%9C%BC%EB%A1%9C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9411.png" alt="IMG_9411.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=34-2261&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=34-2261&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8048-bae4-cf580d8a3877"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">출생 정보 입력 진입 시 뒤로가기 불가</td><td class="cell-title"><a href="https://app.notion.com/p/Top-navigation-3a060e87d2a48048bae4cf580d8a3877?pvs=21" data-notion-page-id="3a060e87-d2a4-8048-bae4-cf580d8a3877" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Top navigation 미노출</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/Top%20navigation%20%EB%AF%B8%EB%85%B8%EC%B6%9C/IMG_9412.png"><img style="width:20px;max-height:24px" src="QA/Top%20navigation%20%EB%AF%B8%EB%85%B8%EC%B6%9C/IMG_9412.png" alt="IMG_9412.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2163&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2163&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8057-b681-dda15457cfb2"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">Text field focused color : blue</td><td class="cell-title"><a href="https://app.notion.com/p/text-field-3a060e87d2a48057b681dda15457cfb2?pvs=21" data-notion-page-id="3a060e87-d2a4-8057-b681-dda15457cfb2" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">text field 상태 별 디자인 확인 후 수정 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/text%20field%20%EC%83%81%ED%83%9C%20%EB%B3%84%20%EB%94%94%EC%9E%90%EC%9D%B8%20%ED%99%95%EC%9D%B8%20%ED%9B%84%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9413.png"><img style="width:20px;max-height:24px" src="QA/text%20field%20%EC%83%81%ED%83%9C%20%EB%B3%84%20%EB%94%94%EC%9E%90%EC%9D%B8%20%ED%99%95%EC%9D%B8%20%ED%9B%84%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9413.png" alt="IMG_9413.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-830&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=17-830&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80e2-b1c5-c329eb28e978"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/Selected-Button-3a060e87d2a480e2b1c5c329eb28e978?pvs=21" data-notion-page-id="3a060e87-d2a4-80e2-b1c5-c329eb28e978" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Selected Button - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/Selected%20Button%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94%203a06-e978/IMG_9415.png"><img style="width:20px;max-height:24px" src="QA/Selected%20Button%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94%203a06-e978/IMG_9415.png" alt="IMG_9415.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-731&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=30-731&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8036-ab97-c8cc5c79c0be"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/check-box-3a060e87d2a48036ab97c8cc5c79c0be?pvs=21" data-notion-page-id="3a060e87-d2a4-8036-ab97-c8cc5c79c0be" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">태어난 시간 [모름] check box 선택 시 - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%83%9C%EC%96%B4%EB%82%9C%20%EC%8B%9C%EA%B0%84%20%5B%EB%AA%A8%EB%A6%84%5D%20check%20box%20%EC%84%A0%ED%83%9D%20%EC%8B%9C%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9416.jpg"><img style="width:20px;max-height:24px" src="QA/%ED%83%9C%EC%96%B4%EB%82%9C%20%EC%8B%9C%EA%B0%84%20%5B%EB%AA%A8%EB%A6%84%5D%20check%20box%20%EC%84%A0%ED%83%9D%20%EC%8B%9C%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%20%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9416.jpg" alt="IMG_9416.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=28-5111&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=28-5111&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8040-ad9b-fe1be11e1870"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">출생 시간 선택 wheel 분 단위 : 1분 단위 </td><td class="cell-title"><a href="https://app.notion.com/p/10-1-3a060e87d2a48040ad9bfe1be11e1870?pvs=21" data-notion-page-id="3a060e87-d2a4-8040-ad9b-fe1be11e1870" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">현재 10분 단위를 1분 단위로 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%98%84%EC%9E%AC%2010%EB%B6%84%20%EB%8B%A8%EC%9C%84%EB%A5%BC%201%EB%B6%84%20%EB%8B%A8%EC%9C%84%EB%A1%9C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9414.png"><img style="width:20px;max-height:24px" src="QA/%ED%98%84%EC%9E%AC%2010%EB%B6%84%20%EB%8B%A8%EC%9C%84%EB%A5%BC%201%EB%B6%84%20%EB%8B%A8%EC%9C%84%EB%A1%9C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9414.png" alt="IMG_9414.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2569&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-2569&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8014-b991-c1ac823c3926"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a48014b991c1ac823c3926?pvs=21" data-notion-page-id="3a060e87-d2a4-8014-b991-c1ac823c3926" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">게임으로 별 적립하는 정책 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://app.notion.com/p/bienvenuea/37c60e87d2a4805f909fdd6d2deb1fc7?source=copy_link" class="url-value">https://app.notion.com/p/bienvenuea/37c60e87d2a4805f909fdd6d2deb1fc7?source=copy_link</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a-/AOh14GgcsW15Qy8h0nNqEMM0l923feHNi01sZVAI3L0T3w=s100" class="icon user-icon"/>예림</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value select-value-color-blue"><div class="status-dot status-dot-color-blue"></div>진행 중</span></td><td class="cell-jwSF"><span class="user">@후후니</span> 정책 정리해두었습니다.</td></tr><tr id="3a060e87-d2a4-806a-b632-c8d760a2efe0"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/bg-color-3a060e87d2a4806ab632c8d760a2efe0?pvs=21" data-notion-page-id="3a060e87-d2a4-806a-b632-c8d760a2efe0" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">연애운 리포트 : 주의 포인트 bg color, 주의 아이콘 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%97%B0%EC%95%A0%EC%9A%B4%20%EB%A6%AC%ED%8F%AC%ED%8A%B8%20%EC%A3%BC%EC%9D%98%20%ED%8F%AC%EC%9D%B8%ED%8A%B8%20bg%20color,%20%EC%A3%BC%EC%9D%98%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9418.png"><img style="width:20px;max-height:24px" src="QA/%EC%97%B0%EC%95%A0%EC%9A%B4%20%EB%A6%AC%ED%8F%AC%ED%8A%B8%20%EC%A3%BC%EC%9D%98%20%ED%8F%AC%EC%9D%B8%ED%8A%B8%20bg%20color,%20%EC%A3%BC%EC%9D%98%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9418.png" alt="IMG_9418.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-1021&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=1-1021&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80cf-acb9-f879bc4029ef"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/check-3a060e87d2a480cfacb9f879bc4029ef?pvs=21" data-notion-page-id="3a060e87-d2a4-80cf-acb9-f879bc4029ef" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">지인 차단 : 완료 시 check 아이콘 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%80%EC%9D%B8%20%EC%B0%A8%EB%8B%A8%20%EC%99%84%EB%A3%8C%20%EC%8B%9C%20check%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9419.png"><img style="width:20px;max-height:24px" src="QA/%EC%A7%80%EC%9D%B8%20%EC%B0%A8%EB%8B%A8%20%EC%99%84%EB%A3%8C%20%EC%8B%9C%20check%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9419.png" alt="IMG_9419.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=74-63&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=74-63&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80a2-8304-eaa61966d18b"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">프로필 만들기 진입 시 뒤로가기 불가</td><td class="cell-title"><a href="https://app.notion.com/p/Top-navigation-3a060e87d2a480a28304eaa61966d18b?pvs=21" data-notion-page-id="3a060e87-d2a4-80a2-8304-eaa61966d18b" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">Top navigation 미노출</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/Top%20navigation%20%EB%AF%B8%EB%85%B8%EC%B6%9C%203a06-d18b/IMG_9420.png"><img style="width:20px;max-height:24px" src="QA/Top%20navigation%20%EB%AF%B8%EB%85%B8%EC%B6%9C%203a06-d18b/IMG_9420.png" alt="IMG_9420.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1241&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1241&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80e5-ac4e-ec69a2a28165"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">아이콘/텍스트 시각 보정 적용</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480e5ac4eec69a2a28165?pvs=21" data-notion-page-id="3a060e87-d2a4-80e5-ac4e-ec69a2a28165" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">아이콘/텍스트 위치 확인 및 수정 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%95%84%EC%9D%B4%EC%BD%98%20%ED%85%8D%EC%8A%A4%ED%8A%B8%20%EC%9C%84%EC%B9%98%20%ED%99%95%EC%9D%B8%20%EB%B0%8F%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9420.png"><img style="width:20px;max-height:24px" src="QA/%EC%95%84%EC%9D%B4%EC%BD%98%20%ED%85%8D%EC%8A%A4%ED%8A%B8%20%EC%9C%84%EC%B9%98%20%ED%99%95%EC%9D%B8%20%EB%B0%8F%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9420.png" alt="IMG_9420.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1241&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1241&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">중앙 정렬이 너무 아래로 떨어져 보여서 약간.. 거슬려요..</td></tr><tr id="3a060e87-d2a4-8051-8de8-ed4b755d2630"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">닉네임 입력 text field 숫자 카운트 미노출</td><td class="cell-title"><a href="https://app.notion.com/p/text-field-12-3a060e87d2a480518de8ed4b755d2630?pvs=21" data-notion-page-id="3a060e87-d2a4-8051-8de8-ed4b755d2630" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">닉네임 입력 시 text field 숫자 카운트 삭제, 12자 초과 시 입력 불가 동작만 </a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EB%8B%89%EB%84%A4%EC%9E%84%20%EC%9E%85%EB%A0%A5%20%EC%8B%9C%20text%20field%20%EC%88%AB%EC%9E%90%20%EC%B9%B4%EC%9A%B4%ED%8A%B8%20%EC%82%AD%EC%A0%9C,%2012%EC%9E%90%20%EC%B4%88%EA%B3%BC%20%EC%8B%9C%20%EC%9E%85%EB%A0%A5%20%EB%B6%88%EA%B0%80%20%EB%8F%99%EC%9E%91%EB%A7%8C/IMG_9422.png"><img style="width:20px;max-height:24px" src="QA/%EB%8B%89%EB%84%A4%EC%9E%84%20%EC%9E%85%EB%A0%A5%20%EC%8B%9C%20text%20field%20%EC%88%AB%EC%9E%90%20%EC%B9%B4%EC%9A%B4%ED%8A%B8%20%EC%82%AD%EC%A0%9C,%2012%EC%9E%90%20%EC%B4%88%EA%B3%BC%20%EC%8B%9C%20%EC%9E%85%EB%A0%A5%20%EB%B6%88%EA%B0%80%20%EB%8F%99%EC%9E%91%EB%A7%8C/IMG_9422.png" alt="IMG_9422.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2163&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2163&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80b7-9b7c-ea39c4b08c15"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">CTA disable color : bg - gray 250, text - white</td><td class="cell-title"><a href="https://app.notion.com/p/CTA-disable-bg-text-color-3a060e87d2a480b79b7cea39c4b08c15?pvs=21" data-notion-page-id="3a060e87-d2a4-80b7-9b7c-ea39c4b08c15" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">CTA disable 상태 시 bg, text color - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=14-237&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=14-237&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-blue">major</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80b3-b129-fd9ac7ad3531"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">거주지 입력 화면 진입 시 전체 시군구 목록 디폴트 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480b3b129fd9ac7ad3531?pvs=21" data-notion-page-id="3a060e87-d2a4-80b3-b129-fd9ac7ad3531" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">전체 시군구 목록 노출 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A0%84%EC%B2%B4%20%EC%8B%9C%EA%B5%B0%EA%B5%AC%20%EB%AA%A9%EB%A1%9D%20%EB%85%B8%EC%B6%9C%20%ED%95%84%EC%9A%94/IMG_9423.png"><img style="width:20px;max-height:24px" src="QA/%EC%A0%84%EC%B2%B4%20%EC%8B%9C%EA%B5%B0%EA%B5%AC%20%EB%AA%A9%EB%A1%9D%20%EB%85%B8%EC%B6%9C%20%ED%95%84%EC%9A%94/IMG_9423.png" alt="IMG_9423.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1308&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=5-1308&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80f0-a55c-c10473f2feac"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span></td><td class="cell-ACbl">Search field radius : 4</td><td class="cell-title"><a href="https://app.notion.com/p/search-field-3a060e87d2a480f0a55cc10473f2feac?pvs=21" data-notion-page-id="3a060e87-d2a4-80f0-a55c-c10473f2feac" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">search field - 디자인 시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=76-230&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=76-230&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-801b-a1f6-ed2067183e23"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">거주지 선택 시 구단위까지 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4801ba1f6ed2067183e23?pvs=21" data-notion-page-id="3a060e87-d2a4-801b-a1f6-ed2067183e23" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">행정구역 데이터베이스 최신 업데이트 확인 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-red">critical</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF">2026년 2월에 화성시에서 구 단위로 행정 구역 체제를 변경했는데, 거주지 검색 시에 화성시까지만 나와서 데이터베이스 최신 업데이트 확인이 필요할 것 같습니다.</td></tr><tr id="3a060e87-d2a4-8023-b7a3-fd18947293f1"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">Search field ↔ 직업군 리스트 간격 20</td><td class="cell-title"><a href="https://app.notion.com/p/search-field-20-3a060e87d2a48023b7a3fd18947293f1?pvs=21" data-notion-page-id="3a060e87-d2a4-8023-b7a3-fd18947293f1" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">직업 설정 : search field와 직업군 리스트 간격 20으로 수정 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%81%EC%97%85%20%EC%84%A4%EC%A0%95%20search%20field%EC%99%80%20%EC%A7%81%EC%97%85%EA%B5%B0%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%EA%B0%84%EA%B2%A9%2020%EC%9C%BC%EB%A1%9C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9425.jpg"><img style="width:20px;max-height:24px" src="QA/%EC%A7%81%EC%97%85%20%EC%84%A4%EC%A0%95%20search%20field%EC%99%80%20%EC%A7%81%EC%97%85%EA%B5%B0%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%EA%B0%84%EA%B2%A9%2020%EC%9C%BC%EB%A1%9C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9425.jpg" alt="IMG_9425.jpg"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2483&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-2483&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80bc-94df-f874a4cf240c"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">  1. 키 입력 시 text field 영역 너비 fill<br/>  2. CM 텍스트 사이즈 20, semibold</td><td class="cell-title"><a href="https://app.notion.com/p/text-field-UI-Guide-3a060e87d2a480bc94dff874a4cf240c?pvs=21" data-notion-page-id="3a060e87-d2a4-80bc-94df-f874a4cf240c" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">키 입력 text field - UI Guide와 동일하게 수정 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%ED%82%A4%20%EC%9E%85%EB%A0%A5%20text%20field%20-%20UI%20Guide%EC%99%80%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9426.png"><img style="width:20px;max-height:24px" src="QA/%ED%82%A4%20%EC%9E%85%EB%A0%A5%20text%20field%20-%20UI%20Guide%EC%99%80%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EC%88%98%EC%A0%95%20%ED%95%84%EC%9A%94/IMG_9426.png" alt="IMG_9426.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-3693&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-3693&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-8072-9a9e-ee5c1c06f522"><td class="cell-|\^h"><span class="selected-value select-value-color-green">공통</span><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl">프로필 설정 시 Title ↔ 입력 영역 간격 : 40</td><td class="cell-title"><a href="https://app.notion.com/p/Title-40-3a060e87d2a480729a9eee5c1c06f522?pvs=21" data-notion-page-id="3a060e87-d2a4-8072-9a9e-ee5c1c06f522" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">프로필 설정 시 Title ↔ 입력 영역 간격 : 40으로 전체 변경 필요</a></td><td class="cell-arSg"></td><td class="cell-~jhn"><a href="https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-4603&amp;t=XDxFO6Gf0qFtFlwG-4" class="url-value">https://www.figma.com/design/vlvxCpPrzmzg1Qu58nSn9C/-%EB%A7%88%EC%A3%BC--UI-Guide?node-id=10-4603&amp;t=XDxFO6Gf0qFtFlwG-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-80a4-9ebc-f3e0a2917fdc"><td class="cell-|\^h"><span class="selected-value select-value-color-purple">마이</span></td><td class="cell-ACbl">프로필 사진 업로드 시 첨부한 참고 화면과 동일한 로딩 노출</td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a480a49ebcf3e0a2917fdc?pvs=21" data-notion-page-id="3a060e87-d2a4-80a4-9ebc-f3e0a2917fdc" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">마이에서 프로필 사진 업로드 후 로딩 시 온보딩 로딩과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EB%A7%88%EC%9D%B4%EC%97%90%EC%84%9C%20%ED%94%84%EB%A1%9C%ED%95%84%20%EC%82%AC%EC%A7%84%20%EC%97%85%EB%A1%9C%EB%93%9C%20%ED%9B%84%20%EB%A1%9C%EB%94%A9%20%EC%8B%9C%20%EC%98%A8%EB%B3%B4%EB%94%A9%20%EB%A1%9C%EB%94%A9%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9427.png"><img style="width:20px;max-height:24px" src="QA/%EB%A7%88%EC%9D%B4%EC%97%90%EC%84%9C%20%ED%94%84%EB%A1%9C%ED%95%84%20%EC%82%AC%EC%A7%84%20%EC%97%85%EB%A1%9C%EB%93%9C%20%ED%9B%84%20%EB%A1%9C%EB%94%A9%20%EC%8B%9C%20%EC%98%A8%EB%B3%B4%EB%94%A9%20%EB%A1%9C%EB%94%A9%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9427.png" alt="IMG_9427.PNG"/></a></span></td><td class="cell-~jhn"></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr><tr id="3a060e87-d2a4-808e-b29b-da1699639091"><td class="cell-|\^h"><span class="selected-value select-value-color-yellow">온보딩</span></td><td class="cell-ACbl"></td><td class="cell-title"><a href="https://app.notion.com/p/3a060e87d2a4808eb29bda1699639091?pvs=21" data-notion-page-id="3a060e87-d2a4-808e-b29b-da1699639091" data-notion-space-id="543a5498-08d3-46a3-a732-5a099ea589e6">직접 입력 태그 삭제 아이콘 버튼 - 디자인시스템과 동일하게 변경 필요</a></td><td class="cell-arSg"><span style="margin-inline-end:6px"><a href="QA/%EC%A7%81%EC%A0%91%20%EC%9E%85%EB%A0%A5%20%ED%83%9C%EA%B7%B8%20%EC%82%AD%EC%A0%9C%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B2%84%ED%8A%BC%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9429.png"><img style="width:20px;max-height:24px" src="QA/%EC%A7%81%EC%A0%91%20%EC%9E%85%EB%A0%A5%20%ED%83%9C%EA%B7%B8%20%EC%82%AD%EC%A0%9C%20%EC%95%84%EC%9D%B4%EC%BD%98%20%EB%B2%84%ED%8A%BC%20-%20%EB%94%94%EC%9E%90%EC%9D%B8%EC%8B%9C%EC%8A%A4%ED%85%9C%EA%B3%BC%20%EB%8F%99%EC%9D%BC%ED%95%98%EA%B2%8C%20%EB%B3%80%EA%B2%BD%20%ED%95%84%EC%9A%94/IMG_9429.png" alt="IMG_9429.PNG"/></a></span></td><td class="cell-~jhn"><a href="https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=111-109&amp;t=1ky69HO8l0KxmBCO-4" class="url-value">https://www.figma.com/design/9DoHHEt9sBj6aBA7VFnVWK/-%EB%A7%88%EC%A3%BC--Design-System?node-id=111-109&amp;t=1ky69HO8l0KxmBCO-4</a></td><td class="cell-tWq&lt;"><span class="user"><img src="https://lh3.googleusercontent.com/a/AATXAJzLtJ3Uv9HLG7p-cezha4W9_0e2rExl1kHW8ias=s100" class="icon user-icon"/>후후니</span></td><td class="cell-\jc`"><span class="selected-value select-value-color-yellow">minor</span></td><td class="cell-FyAk"><span class="status-value"><div class="status-dot"></div>대기중</span></td><td class="cell-jwSF"></td></tr></tbody></table></div><br/><br/></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

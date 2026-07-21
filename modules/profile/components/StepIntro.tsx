@@ -12,7 +12,8 @@ export default function StepIntro({ onNext }: Props) {
     <Screen>
       {/* 프로필 만들기 진입 시 뒤로가기 불가 — Top navigation 미노출 */}
       <div className="safe-top shrink-0" />
-      <div className="flex-1 px-5 flex flex-col items-center justify-center gap-6 scroll-area overflow-y-auto pb-4">
+      {/* footer 영역이 header보다 훨씬 커서 justify-center만으로는 시각 중심이 아래로 처짐 — pb로 살짝 보정 */}
+      <div className="flex-1 px-5 flex flex-col items-center justify-center gap-6 scroll-area overflow-y-auto pb-16">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.svg" alt="" className="w-[72px] h-[72px]" />
         <div className="flex flex-col gap-3 text-center">

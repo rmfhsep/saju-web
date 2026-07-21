@@ -5,32 +5,38 @@ import { useEffect, useRef, useState } from "react"
 /**
  * 오리지널 엔드리스 러너 미니게임 (캔버스).
  * - 하단 '점프' 버튼(또는 스페이스)으로 점프해 장애물을 넘고, 시간이 지날수록 빨라진다.
- * - 충돌하면 게임 오버 → onGameOver(score) 호출. 최대 maxPlays판까지 플레이 가능.
+ * - 충돌하면 게임 오버 → onGameOver(생존초)  호출. 별 지급 정책이 생존시간 구간 기준이라 점수는 초 단위로 집계한다.
+ * - 최대 maxPlays판까지 플레이 가능.
  * 캐릭터/장애물/코드는 특정 저작물을 복제하지 않은 자체 구현이며, 캐릭터는 귀여운 로봇 모양이다.
  */
 export default function RunnerGame({
   height = 220,
   maxPlays = 3,
+  locked = false,
   onGameOver,
   className,
 }: {
   height?: number
   maxPlays?: number
-  onGameOver?: (score: number) => void
+  /** true가 되면 진행 중인 판을 즉시 종료하고 재시작을 막는다 (리포트 로딩 완료 시 강제 종료용). */
+  locked?: boolean
+  onGameOver?: (survivalSeconds: number) => void
   className?: string
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [gameOver, setGameOver] = useState(false)
-  const [finalScore, setFinalScore] = useState(0)
+  const [finalSeconds, setFinalSeconds] = useState(0)
   const [playsUsed, setPlaysUsed] = useState(0)
 
   const onGameOverRef = useRef(onGameOver)
   onGameOverRef.current = onGameOver
   const jumpRef = useRef<() => void>(() => {})
   const resetRef = useRef<() => void>(() => {})
+  const lockedRef = useRef(locked)
+  lockedRef.current = locked
 
-  const exhausted = playsUsed >= maxPlays
+  const exhausted = playsUsed >= maxPlays || locked
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -68,7 +74,8 @@ export default function RunnerGame({
     let obstacles: Obstacle[] = []
     let distToNext = 320
     let speed = 5.2
-    let score = 0
+    let startedAt = 0 // rAF 타임스탬프 기준 생존시간 측정 시작점
+    let elapsedSec = 0
     let over = false
     let raf = 0
     let last = 0
@@ -81,7 +88,8 @@ export default function RunnerGame({
       obstacles = []
       distToNext = 320
       speed = 5.2
-      score = 0
+      startedAt = 0
+      elapsedSec = 0
       over = false
       last = 0
       setGameOver(false)
@@ -155,11 +163,13 @@ export default function RunnerGame({
 
     function loop(t: number) {
       if (!last) last = t
+      if (!startedAt) startedAt = t
       const dtf = Math.min((t - last) / 16.67, 2.5)
       last = t
+      elapsedSec = (t - startedAt) / 1000
+      if (lockedRef.current) over = true
 
       speed += 0.0015 * dtf
-      score += speed * dtf * 0.25
       vy += GRAVITY * dtf
       playerY += vy * dtf
       if (playerY >= groundY - PLAYER_SIZE) {
@@ -205,14 +215,13 @@ export default function RunnerGame({
       ctx!.fillStyle = "#949494"
       ctx!.font = "600 13px Pretendard, sans-serif"
       ctx!.textAlign = "right"
-      ctx!.fillText(String(Math.floor(score)).padStart(5, "0"), cssW - 6, 20)
+      ctx!.fillText(`${elapsedSec.toFixed(1)}s`, cssW - 6, 20)
 
       if (over) {
-        const s = Math.floor(score)
-        setFinalScore(s)
+        setFinalSeconds(elapsedSec)
         setGameOver(true)
         setPlaysUsed(p => p + 1)
-        onGameOverRef.current?.(s)
+        onGameOverRef.current?.(elapsedSec)
         return
       }
       raf = requestAnimationFrame(loop)
@@ -245,9 +254,9 @@ export default function RunnerGame({
         </p>
         {gameOver && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/70">
-            <p className="text-[15px] font-semibold text-[#1f1f1f]">게임 오버 · {finalScore}점</p>
+            <p className="text-[15px] font-semibold text-[#1f1f1f]">게임 오버 · {finalSeconds.toFixed(1)}초 생존</p>
             <p className="text-[13px] text-[#777]">
-              {exhausted ? "3판 모두 사용했어요" : `남은 기회 ${maxPlays - playsUsed}/${maxPlays}`}
+              {locked ? "분석이 완료돼 게임이 종료됐어요" : exhausted ? "3판 모두 사용했어요" : `남은 기회 ${maxPlays - playsUsed}/${maxPlays}`}
             </p>
           </div>
         )}

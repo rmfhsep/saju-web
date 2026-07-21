@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { effectiveTrialStars } from "@/lib/stars"
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("Authorization")
@@ -54,6 +55,9 @@ export async function GET(req: NextRequest) {
         serviceNotify: true,
         pushEnabled: true,
         stars: true,
+        trialStars: true,
+        trialStarsExpireAt: true,
+        miniGamePlayed: true,
       },
     })
 
@@ -61,7 +65,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "user not found" }, { status: 401 })
     }
 
-    return NextResponse.json(user)
+    const trial = effectiveTrialStars(user.trialStars, user.trialStarsExpireAt)
+    if (trial !== user.trialStars) {
+      // 만료된 체험용 별 정리 (다음 조회부터는 DB 값도 0)
+      await prisma.user.update({ where: { id: user.id }, data: { trialStars: 0, trialStarsExpireAt: null } }).catch(() => {})
+    }
+
+    // 마이/스토어 화면은 stars 하나만 읽으므로, 만료 전 체험용 별을 합산해 노출한다.
+    return NextResponse.json({ ...user, stars: user.stars + trial, trialStars: trial })
   } catch {
     return NextResponse.json({ error: "invalid token" }, { status: 401 })
   }

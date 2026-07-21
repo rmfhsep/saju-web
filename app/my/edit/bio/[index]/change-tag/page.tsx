@@ -15,7 +15,8 @@ export default function ChangeBioTagPage() {
 
   const [bioTags, setBioTags] = useState<string[]>([])
   const [bio, setBio] = useState<Record<string, string>>({})
-  const [pool, setPool] = useState<string[]>(DEFAULT_TAGS)
+  // 나의 성향 태그는 8개까지만 노출(온보딩과 동일한 규칙) — 직접 입력한 태그는 별도로 붙는다.
+  const [suggested, setSuggested] = useState<string[]>(DEFAULT_TAGS)
   const [selected, setSelected] = useState("")
   const [showConfirm, setShowConfirm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -34,8 +35,7 @@ export default function ChangeBioTagPage() {
         if (user.recommendedTags) {
           try {
             const rec = JSON.parse(user.recommendedTags)
-            const merged = Array.from(new Set([...DEFAULT_TAGS, ...(rec.love ?? []), ...(rec.life ?? [])]))
-            setPool(merged)
+            setSuggested([...(rec.love ?? []), ...(rec.life ?? [])].slice(0, 8))
           } catch { /* keep default pool */ }
         }
       })
@@ -43,6 +43,9 @@ export default function ChangeBioTagPage() {
 
   const currentTag = bioTags[index]
   const otherTags = bioTags.filter((_, i) => i !== index)
+  // 추천 8개 + 사용자가 이미 보유한(직접 입력했던) 커스텀 태그만 추가로 노출
+  const customTags = bioTags.filter(t => !suggested.includes(t))
+  const pool = [...suggested, ...customTags]
 
   async function handleConfirm() {
     if (!selected || selected === currentTag || saving) return

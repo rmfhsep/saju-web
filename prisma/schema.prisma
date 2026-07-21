@@ -7,41 +7,41 @@ datasource db {
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  phone            String   @unique
+  id               Int     @id @default(autoincrement())
+  phone            String  @unique
   passwordHash     String
   name             String?
   gender           String?
   calendarType     String?
   birthDate        String?
   birthTime        String?
-  birthTimeUnknown Boolean  @default(false)
+  birthTimeUnknown Boolean @default(false)
 
-  termsAgreed      Boolean  @default(false)
-  marketingAgreed  Boolean  @default(false)
-  signupComplete   Boolean  @default(false)
+  termsAgreed     Boolean @default(false)
+  marketingAgreed Boolean @default(false)
+  signupComplete  Boolean @default(false)
 
-  sajuResult       String?
+  sajuResult String?
 
-  nickname         String?
-  location         String?
-  job              String?
-  jobDetail        String?
-  height           Int?
-  smoking          String?
-  drinking         String?
-  datingPurpose    String?
-  politics         String?
-  religion         String?
-  income           String?
-  photos           String?
-  bioTags          String?
-  bio              String?
-  recommendedTags  String?
+  nickname        String?
+  location        String?
+  job             String?
+  jobDetail       String?
+  height          Int?
+  smoking         String?
+  drinking        String?
+  datingPurpose   String?
+  politics        String?
+  religion        String?
+  income          String?
+  photos          String?
+  bioTags         String?
+  bio             String?
+  recommendedTags String?
 
-  blockedPhones    String?
-  blockedCount     Int      @default(0)
-  profileComplete  Boolean  @default(false)
+  blockedPhones   String?
+  blockedCount    Int     @default(0)
+  profileComplete Boolean @default(false)
 
   preferredFilterType String?
   preferredHeightMin  Int?
@@ -50,17 +50,23 @@ model User {
   preferredDrinking   String?
   preferredPolitics   String?
   preferredReligion   String?
-  filterComplete      Boolean  @default(false)
+  filterComplete      Boolean @default(false)
 
   // 알림 설정
-  serviceNotify    Boolean  @default(true)   // 서비스(혜택/이벤트) 알림 수신
-  pushEnabled      Boolean  @default(false)  // 기기 푸시 권한 허용 여부 (추후 네이티브가 갱신)
+  serviceNotify Boolean @default(true) // 서비스(혜택/이벤트) 알림 수신
+  pushEnabled   Boolean @default(false) // 기기 푸시 권한 허용 여부 (추후 네이티브가 갱신)
 
-  // 별(포인트) 잔액 — 스토어 구매/미니게임 적립 등으로 사용
-  stars            Int      @default(0)
+  // 별(포인트) 잔액 — 스토어 구매 등으로 지급, 유효기간 없음
+  stars Int @default(0)
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  // 온보딩 미니게임 체험용 별 — 좋아요/추가추천에만 사용 가능, 지급일로부터 7일 후 만료
+  trialStars         Int       @default(0)
+  trialStarsExpireAt DateTime?
+  // 최초 리포트 생성 시 1회만 미니게임을 노출하기 위한 플래그 (재생성 시 재도전 방지)
+  miniGamePlayed     Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 탈퇴 회원 재가입 제한 — 탈퇴일로부터 30일간 동일 번호 재가입 불가

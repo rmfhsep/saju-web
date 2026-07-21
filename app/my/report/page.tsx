@@ -54,7 +54,6 @@ function TemperamentCard({ section }: { section: SajuReport["섹션1_연애기�
     { key: "주도성", ...section.주도성 },
     { key: "집착도", ...section.집착도 },
   ]
-  const summary = axes.map(a => a.설명).join(" ")
   return (
     <div className="bg-white border border-[#e8e8e8] rounded-[4px] p-4 flex flex-col gap-5">
       <p className="text-[17px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.34px]">나의 연애 기질</p>
@@ -66,8 +65,13 @@ function TemperamentCard({ section }: { section: SajuReport["섹션1_연애기�
           {axes.map(a => <span key={a.key} className="w-[52px]">{a.key}</span>)}
         </div>
       </div>
-      <div className="bg-[#e9f1ff] rounded-[4px] p-3">
-        <p className="text-[14px] font-normal text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">{summary}</p>
+      {/* 축별 유형 태그 + 설명을 각각 노출 (병합된 줄글 아님) */}
+      <div className="bg-[#e9f1ff] rounded-[4px] p-3 flex flex-col gap-1.5">
+        {axes.map(a => (
+          <p key={a.key} className="text-[14px] font-normal text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">
+            <span className="font-semibold">{a.태그}</span> — {a.설명}
+          </p>
+        ))}
       </div>
     </div>
   )
