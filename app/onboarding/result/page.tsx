@@ -203,7 +203,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
             <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
         )}
-        {showGame && <RunnerGame height={220} maxPlays={3} locked={ready} onGameOver={onGameOver} />}
+        {showGame && <RunnerGame height={220} maxPlays={3} onGameOver={onGameOver} />}
       </div>
 
       <div className="px-5 pb-8 pt-4">
@@ -311,14 +311,15 @@ function ResultContent() {
 
   const ready = !loading && !retrying
 
-  // 게임이 강제 종료(ready)되거나 3회 기회를 모두 썼을 때, 최고 생존시간 1개만 서버로 제출한다.
-  useEffect(() => {
-    if (starsSubmitted || miniGamePlayed !== false || !hasPlayed) return
-    if (!ready) return
-    setStarsSubmitted(true)
-    awardStars(bestSeconds)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, hasPlayed, bestSeconds, miniGamePlayed, starsSubmitted])
+  // 분석은 백그라운드에서 진행되고 게임은 항상 3판 다 즐길 수 있다 — 결과 보기를 누르는 시점에
+  // (그때까지의) 최고 생존시간 1개만 서버로 제출한다.
+  async function handleReveal() {
+    if (!starsSubmitted && miniGamePlayed === false && hasPlayed) {
+      setStarsSubmitted(true)
+      await awardStars(bestSeconds)
+    }
+    setRevealed(true)
+  }
 
   const genderLabel = gender === "MALE" ? " (남성)" : gender === "FEMALE" ? " (여성)" : ""
   const isMale = gender === "MALE"
@@ -332,7 +333,7 @@ function ResultContent() {
         showGame={miniGamePlayed === false}
         earnedStars={earnedStars}
         onGameOver={handleGameOver}
-        onReveal={() => setRevealed(true)}
+        onReveal={handleReveal}
       />
     )
   }

@@ -12,14 +12,11 @@ import { useEffect, useRef, useState } from "react"
 export default function RunnerGame({
   height = 220,
   maxPlays = 3,
-  locked = false,
   onGameOver,
   className,
 }: {
   height?: number
   maxPlays?: number
-  /** true가 되면 진행 중인 판을 즉시 종료하고 재시작을 막는다 (리포트 로딩 완료 시 강제 종료용). */
-  locked?: boolean
   onGameOver?: (survivalSeconds: number) => void
   className?: string
 }) {
@@ -33,10 +30,8 @@ export default function RunnerGame({
   onGameOverRef.current = onGameOver
   const jumpRef = useRef<() => void>(() => {})
   const resetRef = useRef<() => void>(() => {})
-  const lockedRef = useRef(locked)
-  lockedRef.current = locked
 
-  const exhausted = playsUsed >= maxPlays || locked
+  const exhausted = playsUsed >= maxPlays
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -167,7 +162,6 @@ export default function RunnerGame({
       const dtf = Math.min((t - last) / 16.67, 2.5)
       last = t
       elapsedSec = (t - startedAt) / 1000
-      if (lockedRef.current) over = true
 
       speed += 0.0015 * dtf
       vy += GRAVITY * dtf
@@ -256,7 +250,7 @@ export default function RunnerGame({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/70">
             <p className="text-[15px] font-semibold text-[#1f1f1f]">게임 오버 · {finalSeconds.toFixed(1)}초 생존</p>
             <p className="text-[13px] text-[#777]">
-              {locked ? "분석이 완료돼 게임이 종료됐어요" : exhausted ? "3판 모두 사용했어요" : `남은 기회 ${maxPlays - playsUsed}/${maxPlays}`}
+              {exhausted ? "3판 모두 사용했어요" : `남은 기회 ${maxPlays - playsUsed}/${maxPlays}`}
             </p>
           </div>
         )}
