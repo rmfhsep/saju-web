@@ -1,47 +1,42 @@
-import React, { useEffect } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-import LogoSvg from '../components/LogoSvg';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Image } from 'react-native';
 
 interface Props {
   onFinish: () => void;
 }
 
+// 디자인 시안(assets/Splash.png)을 전체 화면으로 노출
 export default function SplashScreen({ onFinish }: Props) {
-  const opacity = new Animated.Value(0);
-  const scale = new Animated.Value(0.85);
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scale, {
-        toValue: 1,
-        tension: 60,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setTimeout(onFinish, 600);
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(onFinish, 700);
     });
-  }, []);
+  }, [onFinish, opacity]);
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={{ opacity, transform: [{ scale }] }}>
-        <LogoSvg size={140} />
-      </Animated.View>
-    </View>
+    <Animated.View style={[styles.container, { opacity }]}>
+      <Image
+        source={require('../../assets/Splash.png')}
+        style={styles.image}
+        resizeMode="cover"
+      />
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#1e1b4b',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
 });

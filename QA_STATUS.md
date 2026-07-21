@@ -13,8 +13,8 @@ QA 시트 항목을 그대로 옮기고, 대응 결과와 완료 여부를 표�
 | 6 | 마이 | minor | | 별 아이콘, 숫자 텍스트 컬러 가이드와 동일하게 변경 필요 | ✅ | 별 골드 `#FFB020`(주황→골드), 숫자 `#1F1F1F` |
 | 7 | 마이 | minor | | 리스트 내 아이콘 가이드와 동일하게 변경 필요 | 🟡 | 주요 아이콘 DS화, 마이 홈 리스트 커스텀 아이콘 일부 잔존 |
 | 8 | 공통 | major | radio button, color, radius 4 | Selected Button - 디자인 시스템과 동일하게 변경 필요 | ✅ | RadioOption radius 4, `#E9F1FF/#B6D0FF`, radio `#1F1F1F` |
-| 9 | 공통 | minor | | 스플래시 변경 필요 | 🟡 | `Splash.png` 적용(app.json). 네이티브는 `expo prebuild` 필요 |
-| 10 | 공통 | minor | | 앱 아이콘 변경 필요 | ✅ | icon.png+iOS AppIcon 알파 제거(opaque) → 글래스모피즘 해결 |
+| 9 | 공통 | minor | | 스플래시 변경 필요 | ✅ | `src/screens/SplashScreen.tsx`가 `assets/Splash.png` 전체화면 노출로 교체(커스텀 JS 스플래시라 app.json 아닌 이 컴포넌트가 실제 표시) |
+| 10 | 공통 | minor | | 앱 아이콘 변경 필요 | ✅ | icon.png + iOS AppIcon-1024 알파 제거(opaque, 파일 선명 검증). 잔상은 빌드/아이콘 캐시 → 앱 삭제 후 재빌드 필요 |
 | 11 | 공통 | minor | | 슬라이더 바 - 디자인 시스템과 동일하게 변경 필요 | ✅ | track `#F4F4F5`, fill/thumb `#90B7FF` |
 | 12 | 공통 | major | 라디오 버튼일 경우 화면 진입 시 무조건 최상단 항목 선택 | 화면 진입 시 최상단 항목 selected 상태로 변경 | ✅ | StepRadio 마운트 시 첫 항목 자동 선택 |
 | 13 | 공통 | minor | | 라디오 버튼 - 디자인 시스템과 동일하게 변경 필요 | ✅ | 라디오 `#1F1F1F` 링/닷 |
@@ -41,9 +41,9 @@ QA 시트 항목을 그대로 옮기고, 대응 결과와 완료 여부를 표�
 | 34 | 공통 | major | | 내 정보 수정 진입 시 1초 로딩, 화면 바로 뜨게 개선 | ✅ | 로딩 게이트 제거, 즉시 렌더 |
 | 35 | 공통 | major | 아이콘/사이즈/텍스트 컬러/사이즈 | Bottom navigation - 디자인 시스템과 동일하게 변경 필요 | ✅ | 추천=home, active `#1F1F1F`+pill, inactive `#949494`, active 채움 |
 | 36 | 로그인/회원가입 | critical | 탈퇴 회원 30일 이내 재가입 시 재가입 불가 화면 노출 | | 🟡 | WithdrawnPhone 모델+차단화면 구현. **`prisma db push` 필요** |
-| 37 | 로그인/회원가입 | minor | CTA : secondary button | 안내 이미지 내 툴팁 위치 수정, CTA Color 변경 필요 | ✅ | CtaButton `variant="secondary"` + 툴팁 버튼 중앙 이동 |
-| 38 | 로그인/회원가입 | minor | | 로딩 아이콘 변경 필요 | 🟡 | shield 스피너 사용중, 에셋 정밀 일치 시 교체 |
-| 39 | 로그인/회원가입 | critical | 본인인증 완료 후 서비스 이용 동의 Bottomsheet 노출 | 인증 → 서비스 이용 동의 → 비밀번호 설정 플로우 확인 | ✅ | `terms` step 신설, 동의 후 비밀번호 |
+| 37 | 로그인/회원가입 | minor | CTA : secondary button | 안내 이미지 내 툴팁 위치 수정, CTA Color 변경 필요 | ✅ | 인증코드 보내기 = secondary **톤온톤(bg #E9F1FF, 파란 글자)** 로 수정 + 툴팁 위치 조정 |
+| 38 | 로그인/회원가입 | minor | | 로딩 아이콘 변경 필요 | ✅ | 인증 확인 로딩 = shield_check 아이콘(디자인 1:2420과 동일) |
+| 39 | 로그인/회원가입 | critical | 본인인증 완료 후 서비스 이용 동의 Bottomsheet 노출 | 인증 → 서비스 이용 동의 → 비밀번호 설정 플로우 확인 | ✅ | 회원가입만 비밀번호 화면 위 **딤+바텀시트**로 동의(뒤 화면 보임), 재로그인은 약관 없이 바로 비밀번호 |
 | 40 | 로그인/회원가입 | minor | | 비밀번호 설정 화면 : 계정 확인 아이콘 변경 필요 | ✅ | DS `CheckCircleIcon`으로 교체 |
 | 41 | 로그인/회원가입 | major | 비밀번호 확인 place holder : 동일한 비밀번호 입력 | Place holder 수정 | ✅ | "동일한 비밀번호 입력" |
 | 42 | 로그인/회원가입 | minor | Bottom sheet 내 padding 20 동일 | 서비스 이용동의 bottom sheet padding 20으로 변경 | ✅ | `px-5`(20) |

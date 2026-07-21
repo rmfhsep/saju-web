@@ -8,7 +8,7 @@ import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import { CheckCircleIcon } from "@/components/ui/icons"
 
-type Step = "start" | "loading" | "terms" | "password" | "blocked"
+type Step = "start" | "loading" | "password" | "blocked"
 type Mode = "register" | "reset"
 
 function generateCode() {
@@ -123,6 +123,7 @@ function VerifyForm() {
   const [showPwConfirm, setShowPwConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [registerError, setRegisterError] = useState("")
+  const [showTerms, setShowTerms] = useState(false)  // 비밀번호 화면 위 약관 동의 바텀시트(회원가입 전용)
   const [agreed, setAgreed] = useState<Record<TermKey, boolean>>({
     service: false, privacy: false, sensitive: false, marketing: false,
   })
@@ -185,8 +186,10 @@ function VerifyForm() {
               return
             }
           }
-          // 신규 가입: 본인인증 → 서비스 이용 동의 → 비밀번호 설정 순서
-          setStep(mode === "register" ? "terms" : "password")
+          // 신규 가입: 비밀번호 화면으로 이동하며 그 위에 약관 동의 바텀시트 노출.
+          // 재로그인(reset): 약관 없이 바로 비밀번호.
+          setStep("password")
+          if (mode === "register") setShowTerms(true)
         }
       } catch { /* keep polling */ }
     }
@@ -386,51 +389,6 @@ function VerifyForm() {
     )
   }
 
-  // ── Step: terms (본인인증 → 서비스 이용 동의 → 비밀번호) ──────────
-  if (step === "terms") {
-    return (
-      <Screen>
-        <div className="h-[44px]" />
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/61" />
-          <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6">
-            <div className="flex flex-col gap-7 px-5">
-              <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px] text-center">
-                마주를 이용하려면 동의가 필요해요.
-              </h2>
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-5">
-                  {TERMS.map(term => (
-                    <div key={term.key} onClick={() => toggleTerm(term.key)} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
-                      <div className="flex items-center gap-1">
-                        <span className="text-[15px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.3px]">
-                          <span className="underline underline-offset-auto">{term.label}</span>
-                          {term.suffix}
-                        </span>
-                        {term.required && <span className="text-[12px] text-[#1a75ff] leading-[1.4]">필수</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div
-                  onClick={toggleAll}
-                  className={`rounded-[4px] p-4 flex items-center gap-2 cursor-pointer ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}
-                >
-                  <Checkbox checked={allChecked} onChange={toggleAll} />
-                  <span className="text-[16px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.32px]">전체 동의</span>
-                </div>
-              </div>
-            </div>
-            <div className="px-5 pb-8">
-              <CtaButton disabled={!allRequired} onClick={() => setStep("password")}>동의</CtaButton>
-            </div>
-          </div>
-        </div>
-      </Screen>
-    )
-  }
-
   // ── Step: password ────────────────────────────────────────────
   return (
     <Screen>
@@ -489,6 +447,46 @@ function VerifyForm() {
           {submitting ? "처리 중..." : "완료"}
         </CtaButton>
       </PageFooter>
+
+      {/* 서비스 이용 동의 바텀시트 — 회원가입 시 비밀번호 화면 위에 딤 처리되어 노출 (34-2261) */}
+      {showTerms && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/61" />
+          <div className="relative bg-white rounded-t-[28px] pt-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-7 px-5">
+              <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px] text-center">
+                마주를 이용하려면 동의가 필요해요.
+              </h2>
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
+                  {TERMS.map(term => (
+                    <div key={term.key} onClick={() => toggleTerm(term.key)} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox checked={agreed[term.key]} onChange={() => toggleTerm(term.key)} />
+                      <div className="flex items-center gap-1">
+                        <span className="text-[15px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.3px]">
+                          <span className="underline underline-offset-auto">{term.label}</span>
+                          {term.suffix}
+                        </span>
+                        {term.required && <span className="text-[12px] text-[#1a75ff] leading-[1.4]">필수</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div
+                  onClick={toggleAll}
+                  className={`rounded-[4px] p-4 flex items-center gap-2 cursor-pointer ${allChecked ? "bg-[#e9f1ff]" : "bg-[#f7f7f8]"}`}
+                >
+                  <Checkbox checked={allChecked} onChange={toggleAll} />
+                  <span className="text-[16px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.32px]">전체 동의</span>
+                </div>
+              </div>
+            </div>
+            <div className="px-5 pb-8">
+              <CtaButton disabled={!allRequired} onClick={() => setShowTerms(false)}>동의</CtaButton>
+            </div>
+          </div>
+        </div>
+      )}
     </Screen>
   )
 }
