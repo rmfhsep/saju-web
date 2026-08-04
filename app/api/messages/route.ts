@@ -2,14 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { sendPushNotification } from "@/lib/push"
+import { spendEffectiveStars, effectiveTrialStars, InsufficientStarsError } from "@/lib/stars"
 
 const MESSAGE_COST = 3
-
-class InsufficientStarsError extends Error {
-  constructor(public stars: number) {
-    super("insufficient stars")
-  }
-}
 
 /**
  * 메시지 보내기 — 상대와의 첫 메시지는 별 3개 소모, 이미 대화가 시작된 사이면 무료.
@@ -20,8 +15,14 @@ export async function POST(req: NextRequest) {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
   if (!token) return NextResponse.json({ error: "no token" }, { status: 401 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
+
+  try {
     const body = await req.json().catch(() => ({}))
     const toUserId = Number(body?.toUserId)
     const text = typeof body?.body === "string" ? body.body.trim().slice(0, 500) : ""
@@ -47,19 +48,17 @@ export async function POST(req: NextRequest) {
     let stars: number
     try {
       const result = await prisma.$transaction(async tx => {
-        if (cost > 0) {
-          const spent = await tx.user.updateMany({
-            where: { id: payload.userId, stars: { gte: cost } },
-            data: { stars: { decrement: cost } },
-          })
-          if (spent.count === 0) {
-            const cur = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-            throw new InsufficientStarsError(cur?.stars ?? 0)
-          }
-        }
+        const spent = cost > 0
+          ? await spendEffectiveStars(tx, payload.userId, cost)
+          : await (async () => {
+              const cur = await tx.user.findUnique({
+                where: { id: payload.userId },
+                select: { stars: true, trialStars: true, trialStarsExpireAt: true },
+              })
+              return { stars: (cur?.stars ?? 0) + effectiveTrialStars(cur?.trialStars ?? 0, cur?.trialStarsExpireAt ?? null) }
+            })()
         const msg = await tx.message.create({ data: { fromUserId: payload.userId, toUserId, body: text } })
-        const me = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-        return { msg, stars: me?.stars ?? 0 }
+        return { msg, stars: spent.stars }
       })
       message = result.msg
       stars = result.stars
@@ -75,8 +74,9 @@ export async function POST(req: NextRequest) {
     sendPushNotification(toUserId, { title: `${fromLabel}님의 메시지`, body: text }).catch(() => {})
 
     return NextResponse.json({ ok: true, message, cost, stars })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/messages POST] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }
 
@@ -88,9 +88,14 @@ export async function GET(req: NextRequest) {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
   if (!token) return NextResponse.json({ error: "no token" }, { status: 401 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
 
+  try {
     const messages = await prisma.message.findMany({
       where: { OR: [{ fromUserId: payload.userId }, { toUserId: payload.userId }] },
       orderBy: { createdAt: "desc" },

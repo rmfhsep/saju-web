@@ -14,9 +14,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const targetId = parseInt(id, 10)
   if (!Number.isFinite(targetId)) return NextResponse.json({ error: "invalid id" }, { status: 400 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
 
+  try {
     const [user, like, conversation] = await Promise.all([
       prisma.user.findUnique({
         where: { id: targetId, profileComplete: true },
@@ -57,7 +62,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!user) return NextResponse.json({ error: "user not found" }, { status: 404 })
 
     return NextResponse.json({ ...user, likedByMe: !!like, hasConversation: !!conversation })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/users/:id] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }

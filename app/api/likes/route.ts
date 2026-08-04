@@ -3,13 +3,18 @@ import { Prisma } from "@prisma/client"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { sendPushNotification } from "@/lib/push"
+import { effectiveTrialStars, spendEffectiveStars, InsufficientStarsError } from "@/lib/stars"
 
 const LIKE_COST = 1
 
-class InsufficientStarsError extends Error {
-  constructor(public stars: number) {
-    super("insufficient stars")
-  }
+/** 실제 stars + 만료 전 trialStars 합산 (auth/me 등 다른 화면에 노출되는 잔액과 동일 기준). */
+async function getCombinedStars(userId: number): Promise<number> {
+  const cur = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stars: true, trialStars: true, trialStarsExpireAt: true },
+  })
+  if (!cur) return 0
+  return cur.stars + effectiveTrialStars(cur.trialStars, cur.trialStarsExpireAt)
 }
 
 /**
@@ -21,8 +26,14 @@ export async function POST(req: NextRequest) {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
   if (!token) return NextResponse.json({ error: "no token" }, { status: 401 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
+
+  try {
     const body = await req.json().catch(() => ({}))
     const toUserId = Number(body?.toUserId)
     if (!Number.isFinite(toUserId) || toUserId === payload.userId) {
@@ -33,8 +44,7 @@ export async function POST(req: NextRequest) {
       where: { fromUserId_toUserId: { fromUserId: payload.userId, toUserId } },
     })
     if (existing) {
-      const cur = await prisma.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-      return NextResponse.json({ ok: true, alreadyLiked: true, stars: cur?.stars ?? 0 })
+      return NextResponse.json({ ok: true, alreadyLiked: true, stars: await getCombinedStars(payload.userId) })
     }
 
     // 별 차감 + 호감 기록 생성을 하나의 트랜잭션으로 묶어, 동시에 같은 요청이
@@ -42,17 +52,9 @@ export async function POST(req: NextRequest) {
     let stars: number
     try {
       stars = await prisma.$transaction(async tx => {
-        const spent = await tx.user.updateMany({
-          where: { id: payload.userId, stars: { gte: LIKE_COST } },
-          data: { stars: { decrement: LIKE_COST } },
-        })
-        if (spent.count === 0) {
-          const cur = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-          throw new InsufficientStarsError(cur?.stars ?? 0)
-        }
+        const spent = await spendEffectiveStars(tx, payload.userId, LIKE_COST)
         await tx.like.create({ data: { fromUserId: payload.userId, toUserId } })
-        const me = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-        return me?.stars ?? 0
+        return spent.stars
       })
     } catch (err) {
       if (err instanceof InsufficientStarsError) {
@@ -61,8 +63,7 @@ export async function POST(req: NextRequest) {
       // 동시 요청 두 개가 경합해 같은 상대에게 호감 기록을 동시에 만들려던 경우 —
       // 차감분은 트랜잭션 롤백으로 안전하게 되돌아가 있다.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-        const cur = await prisma.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-        return NextResponse.json({ ok: true, alreadyLiked: true, stars: cur?.stars ?? 0 })
+        return NextResponse.json({ ok: true, alreadyLiked: true, stars: await getCombinedStars(payload.userId) })
       }
       throw err
     }
@@ -72,8 +73,9 @@ export async function POST(req: NextRequest) {
     sendPushNotification(toUserId, { title: "새로운 호감", body: `${fromLabel}님이 회원님에게 호감을 보냈어요.` }).catch(() => {})
 
     return NextResponse.json({ ok: true, stars })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/likes POST] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }
 
@@ -85,9 +87,14 @@ export async function GET(req: NextRequest) {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
   if (!token) return NextResponse.json({ error: "no token" }, { status: 401 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
 
+  try {
     const likes = await prisma.like.findMany({
       where: { toUserId: payload.userId },
       orderBy: { createdAt: "desc" },
@@ -109,7 +116,8 @@ export async function GET(req: NextRequest) {
       .filter(Boolean)
 
     return NextResponse.json({ likes: result })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/likes GET] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }

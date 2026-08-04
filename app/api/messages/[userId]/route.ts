@@ -14,9 +14,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
   const otherId = parseInt(userId, 10)
   if (!Number.isFinite(otherId)) return NextResponse.json({ error: "invalid id" }, { status: 400 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
 
+  try {
     const [other, messages] = await Promise.all([
       prisma.user.findUnique({
         where: { id: otherId },
@@ -44,7 +49,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
         fromMe: m.fromUserId === payload.userId,
       })),
     })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/messages/:userId] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }

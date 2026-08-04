@@ -11,11 +11,17 @@ export async function POST(req: NextRequest) {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
   if (!token) return NextResponse.json({ error: "no token" }, { status: 401 })
 
+  let payload: { userId: number; phone: string }
   try {
-    const payload = await verifyToken(token)
+    payload = await verifyToken(token)
+  } catch {
+    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  }
+
+  try {
     const body = await req.json().catch(() => ({}))
     const pushToken = typeof body?.token === "string" ? body.token : null
-    if (!pushToken) return NextResponse.json({ error: "invalid token" }, { status: 400 })
+    if (!pushToken) return NextResponse.json({ error: "missing token" }, { status: 400 })
 
     await prisma.user.update({
       where: { id: payload.userId },
@@ -23,7 +29,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 })
+  } catch (err) {
+    console.error("[api/push/register-token] failed:", err)
+    return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })
   }
 }
