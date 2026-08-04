@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   BackHandler,
   Linking,
   Platform,
@@ -23,12 +22,16 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 /** 실제로 WebView를 미리 마운트해서 캐싱할 탭들 */
 const CACHED_TABS: { key: TabKey; path: string }[] = [
   { key: 'recommend', path: '/' },
+  { key: 'like', path: '/likes' },
+  { key: 'message', path: '/messages' },
   { key: 'my', path: '/my' },
 ];
 
 function pathToTab(url: string): TabKey | null {
   const path = url.replace(WEB_URL, '').split('?')[0] || '/';
   if (path === '/') return 'recommend';
+  if (path.startsWith('/likes')) return 'like';
+  if (path.startsWith('/messages')) return 'message';
   if (path.startsWith('/my')) return 'my';
   return null;
 }
@@ -40,10 +43,10 @@ export default function HomeScreen() {
   const webViewRefs = useRef<Partial<Record<TabKey, WebView | null>>>({});
 
   const [activeTab, setActiveTab] = useState<TabKey>('recommend');
-  // 하단 탭바(GNB) 노출 여부 — 웹이 라우트별로 setTabBar 메시지로 제어(메인 /·/my 에서만 노출)
+  // 하단 탭바(GNB) 노출 여부 — 웹이 라우트별로 setTabBar 메시지로 제어(4개 메인 탭 루트에서만 노출)
   const [tabBarVisible, setTabBarVisible] = useState(true);
   const [loadingTabs, setLoadingTabs] = useState<Set<TabKey>>(
-    new Set(['recommend', 'my']),
+    new Set(CACHED_TABS.map(t => t.key)),
   );
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>();
   const { top: topInset } = useSafeAreaInsets();
@@ -213,11 +216,6 @@ export default function HomeScreen() {
   }
 
   function handleTabPress(tab: TabKey) {
-    const isCached = CACHED_TABS.some(t => t.key === tab);
-    if (!isCached) {
-      Alert.alert('준비 중이에요', '곧 만나볼 수 있어요.');
-      return;
-    }
     setActiveTab(tab);
   }
 
