@@ -16,7 +16,7 @@
       "bundleIdentifier": "com.ulruru.sajuagent",
       "googleServicesFile": "./GoogleService-Info.plist",
       "entitlements": {
-        "aps-environment": "development"
+        "aps-environment": "production"
       },
       "infoPlist": {
         "NSAppTransportSecurity": {
@@ -36,10 +36,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": [
-        "INTERNET",
-        "POST_NOTIFICATIONS"
-      ],
+      "permissions": ["INTERNET", "POST_NOTIFICATIONS"],
       "usesCleartextTraffic": true
     },
     "web": {
@@ -70,7 +67,8 @@
             "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
           }
         }
-      ]
+      ],
+      "./plugins/withFirebaseStaticFramework"
     ]
   }
 }

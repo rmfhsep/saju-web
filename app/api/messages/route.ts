@@ -5,6 +5,12 @@ import { sendPushNotification } from "@/lib/push"
 
 const MESSAGE_COST = 3
 
+class InsufficientStarsError extends Error {
+  constructor(public stars: number) {
+    super("insufficient stars")
+  }
+}
+
 /**
  * 메시지 보내기 — 상대와의 첫 메시지는 별 3개 소모, 이미 대화가 시작된 사이면 무료.
  * body: { toUserId: number, body: string }
@@ -35,26 +41,40 @@ export async function POST(req: NextRequest) {
     })
     const cost = hasConversation ? 0 : MESSAGE_COST
 
-    if (cost > 0) {
-      const spent = await prisma.user.updateMany({
-        where: { id: payload.userId, stars: { gte: cost } },
-        data: { stars: { decrement: cost } },
+    // 별 차감 + 메시지 생성을 하나의 트랜잭션으로 묶어, 메시지 생성이 실패해도
+    // 이미 차감된 별이 남지 않고 자동으로 롤백되게 한다.
+    let message: Awaited<ReturnType<typeof prisma.message.create>>
+    let stars: number
+    try {
+      const result = await prisma.$transaction(async tx => {
+        if (cost > 0) {
+          const spent = await tx.user.updateMany({
+            where: { id: payload.userId, stars: { gte: cost } },
+            data: { stars: { decrement: cost } },
+          })
+          if (spent.count === 0) {
+            const cur = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
+            throw new InsufficientStarsError(cur?.stars ?? 0)
+          }
+        }
+        const msg = await tx.message.create({ data: { fromUserId: payload.userId, toUserId, body: text } })
+        const me = await tx.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
+        return { msg, stars: me?.stars ?? 0 }
       })
-      if (spent.count === 0) {
-        const cur = await prisma.user.findUnique({ where: { id: payload.userId }, select: { stars: true } })
-        return NextResponse.json({ error: "insufficient stars", stars: cur?.stars ?? 0 }, { status: 409 })
+      message = result.msg
+      stars = result.stars
+    } catch (err) {
+      if (err instanceof InsufficientStarsError) {
+        return NextResponse.json({ error: "insufficient stars", stars: err.stars }, { status: 409 })
       }
+      throw err
     }
 
-    const message = await prisma.message.create({
-      data: { fromUserId: payload.userId, toUserId, body: text },
-    })
-    const me = await prisma.user.findUnique({ where: { id: payload.userId }, select: { stars: true, nickname: true, name: true } })
-
+    const me = await prisma.user.findUnique({ where: { id: payload.userId }, select: { nickname: true, name: true } })
     const fromLabel = me?.nickname || me?.name || "누군가"
     sendPushNotification(toUserId, { title: `${fromLabel}님의 메시지`, body: text }).catch(() => {})
 
-    return NextResponse.json({ ok: true, message, cost, stars: me?.stars ?? 0 })
+    return NextResponse.json({ ok: true, message, cost, stars })
   } catch {
     return NextResponse.json({ error: "invalid token" }, { status: 401 })
   }

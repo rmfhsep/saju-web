@@ -64,8 +64,6 @@ function RecoCard({
           />
         )}
       </div>
-      {/* 미리보기 흐림 처리 (매칭 전 프라이버시 블러) */}
-      <div className="absolute inset-0 backdrop-blur-[10px] bg-[rgba(31,31,31,0.52)]" />
 
       <div className="absolute left-5 right-5 bottom-[28px] flex flex-col gap-2">
         <div className="flex items-center gap-1 text-[20px] font-semibold text-white tracking-[-0.4px]">
@@ -185,8 +183,7 @@ export default function HomePage() {
           <div className="flex-1 flex flex-col gap-1 text-[15px] tracking-[-0.3px]">
             <p className="font-bold text-[#1f1f1f]">오늘의 연애운</p>
             <p className="font-normal leading-[1.5] text-[#1f1f1f]">
-              오늘은 흐름이 살짝 느려요. 잠깐 쉬어가며 나만의 시간을
-              가져보세요.
+              오늘은 흐름이 살짝 느려요. 잠깐 쉬어가며 나만의 시간을 가져보세요.
             </p>
           </div>
         </div>

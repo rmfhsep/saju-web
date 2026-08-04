@@ -127,20 +127,14 @@ export function MoreDotsIcon({ size = 24, className }: IconProps) {
 
 /** 플로팅 버튼 내부 흰색 하트 아이콘 */
 export function FlirtingHeartIcon({ size = 36, className }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 26.55 23.0683" fill="none" className={className}>
-      <path d="M19.0023 0.675C17.1698 0.675 15.5035 1.93814 14.282 3.42678C13.7789 4.03978 12.7711 4.03978 12.268 3.42678C11.0465 1.93814 9.38019 0.675 7.54773 0.675C3.76773 0.675 0.675 3.95763 0.675 7.96974C0.675 14.3193 10.3824 20.7625 12.7561 22.243C13.0763 22.4428 13.4743 22.4434 13.7951 22.2447C16.1707 20.7734 25.875 14.3716 25.875 7.96974C25.875 3.95763 22.7823 0.675 19.0023 0.675Z" fill="white" stroke="white" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/flirting.svg" width={size} height={size} alt="" className={className} />
 }
 
 /** 플로팅 버튼 내부 흰색 메시지 아이콘 */
 export function FlirtingMessageIcon({ size = 36, className }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 23.8479 23.85" fill="none" className={className}>
-      <path d="M22.323 16.2225C22.8707 14.8984 23.1729 13.447 23.1729 11.925C23.1729 5.7118 18.1365 0.675 11.9239 0.675C5.71132 0.675 0.675 5.7118 0.675 11.925C0.675 18.1382 5.71132 23.175 11.9239 23.175C13.7911 23.175 15.552 22.72 17.1018 21.9149C17.3144 21.8045 17.5594 21.7699 17.7918 21.828L22.5257 23.0116C22.8358 23.0891 23.1256 22.8278 23.0804 22.5114L22.2553 16.7354C22.2305 16.5616 22.2559 16.3847 22.323 16.2225Z" fill="white" stroke="white" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/flirting-1.svg" width={size} height={size} alt="" className={className} />
 }
 
 /** 프로필 사진 캐러셀 하단 인디케이터 점 */

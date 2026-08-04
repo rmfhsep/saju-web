@@ -3,7 +3,7 @@ import * as SplashScreenExpo from 'expo-splash-screen';
 // import * as ScreenCapture from 'expo-screen-capture';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 
@@ -38,13 +38,13 @@ export default function App() {
   if (!appReady) return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
 
   if (!splashDone) return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <SplashScreen onFinish={onSplashFinish} />
     </SafeAreaProvider>
   );
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <AppNavigator />
     </SafeAreaProvider>
   );

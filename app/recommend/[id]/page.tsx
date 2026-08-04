@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
@@ -83,6 +83,7 @@ function StarCostRow({ cost, balance }: { cost: number; balance: number }) {
 export default function ProfileDetailPage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   const [target, setTarget] = useState<TargetUser | null>(null)
   const [myStars, setMyStars] = useState(0)
@@ -97,6 +98,9 @@ export default function ProfileDetailPage() {
   const [messageText, setMessageText] = useState("")
   const [messageBusy, setMessageBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  // 연타/중복 터치로 같은 요청이 겹쳐 나가는 걸 막는 동기 가드 (state는 리렌더 전까지 반영이 늦다)
+  const likeInFlightRef = useRef(false)
+  const messageInFlightRef = useRef(false)
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
@@ -118,13 +122,26 @@ export default function ProfileDetailPage() {
       .then(d => { if (d?.stars != null) setMyStars(d.stars) })
   }, [params.id])
 
+  // 모달/바텀시트가 떠 있는 동안, 그 위에서 드래그해도 뒤쪽 스크롤 영역이 같이
+  // 스크롤되지 않도록 잠근다 (iOS WebView에서 fixed 오버레이 위 터치가 뒤로 새는 문제).
+  useEffect(() => {
+    const el = scrollAreaRef.current
+    if (!el) return
+    if (showLikeConfirm || showMessageSheet) {
+      el.style.overflow = "hidden"
+    } else {
+      el.style.overflow = ""
+    }
+  }, [showLikeConfirm, showMessageSheet])
+
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
   }
 
   async function handleConfirmLike() {
-    if (likeBusy || !target) return
+    if (likeInFlightRef.current || !target) return
+    likeInFlightRef.current = true
     setLikeBusy(true)
     const token = localStorage.getItem("auth_token")
     try {
@@ -144,6 +161,7 @@ export default function ProfileDetailPage() {
       setLiked(true)
       showToast(`${displayName}님에게 호감을 보냈어요.`)
     } finally {
+      likeInFlightRef.current = false
       setLikeBusy(false)
     }
   }
@@ -158,7 +176,8 @@ export default function ProfileDetailPage() {
   }
 
   async function handleSendMessage() {
-    if (messageBusy || !messageText.trim() || !target) return
+    if (messageInFlightRef.current || !messageText.trim() || !target) return
+    messageInFlightRef.current = true
     setMessageBusy(true)
     const token = localStorage.getItem("auth_token")
     try {
@@ -178,6 +197,7 @@ export default function ProfileDetailPage() {
       setShowMessageSheet(false)
       router.push(`/messages/${target.id}`)
     } finally {
+      messageInFlightRef.current = false
       setMessageBusy(false)
     }
   }
@@ -229,7 +249,7 @@ export default function ProfileDetailPage() {
         </button>
       </div>
 
-      <div className="flex-1 scroll-area overflow-y-auto pb-[140px]">
+      <div ref={scrollAreaRef} className="flex-1 scroll-area overflow-y-auto pb-[140px]">
         <div className="relative w-full h-[500px] bg-[#f4f4f5] shrink-0">
           {photos.length > 0 ? (
             <div
@@ -319,7 +339,7 @@ export default function ProfileDetailPage() {
       </div>
 
       {showLikeConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-8" style={{ touchAction: "none" }}>
           <div className="absolute inset-0 bg-black/61" onClick={() => setShowLikeConfirm(false)} />
           <div className="relative bg-white rounded-[8px] p-5 w-[312px] flex flex-col gap-6">
             <div className="flex flex-col gap-2">
@@ -343,7 +363,7 @@ export default function ProfileDetailPage() {
       )}
 
       {showMessageSheet && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ touchAction: "none" }}>
           <div className="absolute inset-0 bg-black/61" onClick={() => setShowMessageSheet(false)} />
           <div className="relative bg-white rounded-t-[28px] w-full max-w-[430px] pt-3 flex flex-col items-center gap-6">
             <div className="w-11 h-1 rounded-full bg-[#dfdfdf]" />
