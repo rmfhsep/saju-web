@@ -17,12 +17,26 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[] | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/messages", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => setConversations(d?.conversations ?? []))
-      .catch(() => setConversations([]))
+    const fetchConversations = () => {
+      const token = localStorage.getItem("auth_token")
+      if (!token) return
+      fetch("/api/messages", { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => setConversations(d?.conversations ?? []))
+        .catch(() => setConversations([]))
+    }
+
+    fetchConversations()
+
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") fetchConversations()
+    }
+    window.addEventListener("focus", fetchConversations)
+    document.addEventListener("visibilitychange", handleVisible)
+    return () => {
+      window.removeEventListener("focus", fetchConversations)
+      document.removeEventListener("visibilitychange", handleVisible)
+    }
   }, [])
 
   return (

@@ -97,6 +97,7 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [recos, setRecos] = useState<Reco[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recosLoading, setRecosLoading] = useState(true);
 
   useEffect(() => {
     async function check() {
@@ -133,7 +134,8 @@ export default function HomePage() {
           .then((d) => {
             if (d?.users) setRecos((d.users as Reco[]).slice(0, 2));
           })
-          .catch(() => {});
+          .catch(() => {})
+          .finally(() => setRecosLoading(false));
       } catch {
         bridgeNavigate("Landing");
       } finally {
@@ -188,7 +190,19 @@ export default function HomePage() {
           </div>
         </div>
 
-        {recos.length > 0 ? (
+        {recosLoading ? (
+          <div
+            className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse"
+              />
+            ))}
+          </div>
+        ) : recos.length > 0 ? (
           <div
             className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
             style={{ scrollbarWidth: "none" }}
