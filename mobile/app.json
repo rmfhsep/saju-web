@@ -14,15 +14,21 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ulruru.sajuagent",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "entitlements": {
+        "aps-environment": "development"
+      },
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "android": {
       "package": "com.ulruru.sajuagent",
+      "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#1e1b4b",
@@ -30,7 +36,10 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["INTERNET"],
+      "permissions": [
+        "INTERNET",
+        "POST_NOTIFICATIONS"
+      ],
       "usesCleartextTraffic": true
     },
     "web": {
@@ -49,6 +58,17 @@
         "expo-contacts",
         {
           "contactsPermission": "지인을 차단하기 위해 연락처 접근 권한이 필요해요."
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
+          }
         }
       ]
     ]

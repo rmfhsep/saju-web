@@ -101,8 +101,8 @@ export default function MyPage() {
           onClick={() => router.push("/my/store")}
           className="flex items-center gap-1.5 h-[34px] pl-3 pr-3.5 bg-[#fff5e5] rounded-full active:opacity-80"
         >
-          <StarIcon size={20} color="#FF7B2E" />
-          <span className="text-[16px] font-semibold text-[#FF7B2E] tracking-[-0.32px]">{user?.stars ?? 0}</span>
+          <StarIcon size={20} color="#FFA100" />
+          <span className="text-[16px] font-bold text-[#1f1f1f] tracking-[-0.32px]">{user?.stars ?? 0}</span>
         </button>
       </div>
 

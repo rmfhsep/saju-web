@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { bridgeSetTabBar } from "@/lib/bridge"
 
 // GNB(하단 탭바)가 보여야 하는 메인 탭 루트. 이 외 모든 하위 페이지에서는 숨긴다.
-const TAB_ROOTS = new Set(["/", "/my"])
+const TAB_ROOTS = new Set(["/", "/likes", "/messages", "/my"])
 
 /**
  * 라우트가 바뀔 때마다 네이티브에 탭바 표시/숨김을 알린다.

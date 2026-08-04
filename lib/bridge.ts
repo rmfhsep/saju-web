@@ -110,6 +110,16 @@ export function bridgeSetTabBar(visible: boolean) {
   }
 }
 
+/**
+ * Register a handler for the FCM device token pushed from native once it
+ * registers for push notifications (e.g. after the user grants permission).
+ * Native responds by calling window.__onPushTokenReceived(token: string).
+ */
+export function onPushTokenReceived(callback: (token: string) => void) {
+  if (typeof window === 'undefined') return
+  ;(window as Window & { __onPushTokenReceived?: (token: string) => void }).__onPushTokenReceived = callback
+}
+
 /** Open the native SMS app with recipient and body pre-filled. */
 export function bridgeOpenSms(phone: string, body: string) {
   const rn = getRN()

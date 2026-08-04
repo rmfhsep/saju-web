@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
         profileComplete: true,
         id: { not: payload.userId },
       },
-      select: { id: true, nickname: true, name: true, photos: true },
+      select: { id: true, nickname: true, name: true, photos: true, birthDate: true, bioTags: true },
       orderBy: { createdAt: "desc" },
       take: 2,
     })

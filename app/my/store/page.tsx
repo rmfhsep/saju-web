@@ -39,7 +39,7 @@ export default function StorePage() {
             className="w-full bg-[#fff5e5] rounded-[8px] h-[66px] px-5 flex items-center justify-between active:opacity-90"
           >
             <div className="flex items-center gap-2">
-              <StarIcon size={24} color="#FFB020" />
+              <StarIcon size={24} color="#FFA100" />
               <span className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">보유 별</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 3.5L10.5 8L6 12.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -57,7 +57,7 @@ export default function StorePage() {
                 className="w-full bg-white rounded-[8px] px-4 py-5 flex items-center justify-between shadow-[0px_2px_6px_rgba(0,0,0,0.08)] active:opacity-90"
               >
                 <div className="flex items-center gap-2">
-                  <StarIcon size={20} color="#FFB020" />
+                  <StarIcon size={20} color="#FFA100" />
                   <span className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">{pkg.count}개</span>
                 </div>
                 <span className="text-[16px] font-bold text-[#ff9f00] tracking-[-0.32px]">{formatWon(pkg.price)}</span>

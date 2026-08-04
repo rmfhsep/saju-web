@@ -1,87 +1,101 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 
 export const APP_BOTTOM_NAV_HEIGHT = 85
 
-type Tab = { key: string; label: string; href?: string; icon: (active: boolean) => React.ReactNode }
+type Tab = { key: string; label: string; href: string; icon: (active: boolean, avatar: string | null) => React.ReactNode }
+
+/** 채워진 집 모양 — 활성 배경(#efefef) 위에 얹히는 문 틈은 배경과 같은 색으로 지운다. */
+function HomeIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20.5" height="20.5" viewBox="0 0 20.5 20.5" fill="none">
+      <path
+        d="M0.75 7.5225C0.75 7.13258 0.948461 6.76678 1.2826 6.54081L9.51594 0.972904C9.95542 0.675698 10.5446 0.675699 10.9841 0.972904L19.2174 6.54081C19.5515 6.76678 19.75 7.13258 19.75 7.5225V17.9431C19.75 18.941 18.8993 19.75 17.85 19.75H2.65C1.60066 19.75 0.75 18.941 0.75 17.9431V7.5225Z"
+        fill="#1f1f1f"
+        stroke="#1f1f1f"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M4.75 17.5H15.75" stroke={active ? "#efefef" : "#fff"} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 const TABS: Tab[] = [
   {
     key: "recommend", label: "추천", href: "/",
-    icon: active => (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 8.2L10 3l7 5.2V16a1 1 0 0 1-1 1h-3.2v-4.3H7.2V17H4a1 1 0 0 1-1-1V8.2z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
+    icon: active => <HomeIcon active={active} />,
+  },
+  {
+    key: "like", label: "호감", href: "/likes",
+    icon: () => (
+      <svg width="20.5" height="18" viewBox="0 0 22.5 19.5986" fill="none">
+        <path d="M16.0227 0.75C14.5254 0.75 13.1612 1.34357 12.149 2.34069C11.6782 2.80443 10.8218 2.80443 10.351 2.34069C9.33879 1.34357 7.97461 0.75 6.47727 0.75C3.32727 0.75 0.75 3.48553 0.75 6.82895C0.75 12.1202 8.83954 17.4896 10.8175 18.7234C11.0844 18.8898 11.4161 18.8903 11.6834 18.7248C13.6631 17.4987 21.75 12.1638 21.75 6.82895C21.75 3.48553 19.1727 0.75 16.0227 0.75Z" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
-    key: "like", label: "호감",
-    icon: active => (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 17s-6.5-4-6.5-8.7C3.5 5.5 5.4 4 7.4 4c1 0 2 .5 2.6 1.4C10.6 4.5 11.6 4 12.6 4c2 0 3.9 1.5 3.9 4.3C16.5 13 10 17 10 17z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
-      </svg>
-    ),
-  },
-  {
-    key: "message", label: "메시지",
-    icon: active => (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 4h14a1 1 0 011 1v9a1 1 0 01-1 1H7l-4 3v-3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinejoin="round" fill={active ? "#1f1f1f" : "none"} />
+    key: "message", label: "메시지", href: "/messages",
+    icon: () => (
+      <svg width="19.5" height="20" viewBox="0 0 21.4981 21.5" fill="none">
+        <path d="M19.9926 14.57C20.4795 13.3931 20.7481 12.1029 20.7481 10.75C20.7481 5.22715 16.2714 0.75 10.7491 0.75C5.22673 0.75 0.75 5.22715 0.75 10.75C0.75 16.2728 5.22673 20.75 10.7491 20.75C12.4087 20.75 13.974 20.3456 15.3516 19.63C15.5406 19.5318 15.7584 19.501 15.9649 19.5527L19.5477 20.4484C20.1218 20.592 20.6584 20.108 20.5747 19.5222L19.9325 15.0259C19.9104 14.8714 19.933 14.7142 19.9926 14.57Z" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     key: "my", label: "내 정보", href: "/my",
-    icon: active => (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="6.5" r="3.5" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" />
-        <path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke={active ? "#1f1f1f" : "#949494"} strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
+    icon: (_active, avatar) =>
+      avatar ? (
+        <img src={avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="6.5" r="3.5" stroke="#1f1f1f" strokeWidth="1.5" />
+          <path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      ),
   },
 ]
 
 export default function AppBottomNav() {
   const router = useRouter()
   const pathname = usePathname()
-  const [toast, setToast] = useState<string | null>(null)
+  const [avatar, setAvatar] = useState<string | null>(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token")
+    if (!token) return
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const photos: string[] = d?.photos ? JSON.parse(d.photos) : []
+        if (photos[0]) setAvatar(photos[0])
+      })
+      .catch(() => {})
+  }, [])
 
   // 앱(React Native WebView) 안에서는 네이티브 Liquid Glass 탭바가 대신 표시되므로
   // 웹 쪽 CSS 탭바는 렌더링하지 않는다 (상위 페이지의 하단 여백 reservation은 유지됨).
   const inNativeApp = typeof window !== "undefined" && !!(window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView
   if (inNativeApp) return null
 
-  function handleTap(tab: Tab) {
-    if (!tab.href) {
-      setToast(`${tab.label} 기능은 준비 중이에요.`)
-      setTimeout(() => setToast(null), 1500)
-      return
-    }
-    router.push(tab.href)
-  }
-
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-col items-center" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      {toast && (
-        <div className="mb-2 px-4 py-2 bg-[#1f1f1f]/90 text-white text-[13px] rounded-full whitespace-nowrap">
-          {toast}
-        </div>
-      )}
       <div className="w-full max-w-[430px] px-[25px] pt-4 pb-5">
         <div className="flex items-stretch justify-center bg-white/65 backdrop-blur-xl rounded-[296px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
           {TABS.map(tab => {
-            const active = tab.href ? pathname === tab.href : false
+            const active = pathname === tab.href
             return (
               <button
                 key={tab.key}
-                onClick={() => handleTap(tab)}
+                onClick={() => router.push(tab.href)}
                 className="flex-1 flex flex-col items-center justify-center gap-[2px] py-[10px] relative"
               >
                 {active && <span className="absolute inset-x-0 -inset-y-[2px] rounded-full bg-[#efefef] -z-10" />}
-                {tab.icon(active)}
-                <span className={`text-[9px] font-medium leading-[1.3] ${active ? "text-[#1f1f1f]" : "text-[#949494]"}`}>{tab.label}</span>
+                {tab.icon(active, avatar)}
+                <span className="text-[9px] font-medium leading-[1.3] text-[#1f1f1f]">{tab.label}</span>
               </button>
             )
           })}

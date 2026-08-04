@@ -17,6 +17,7 @@ import LiquidTabBar, { TabKey } from '../components/LiquidTabBar';
 import { Contact, ContactField, requestPermissionsAsync } from 'expo-contacts';
 import { WEB_URL } from '../config/env';
 import { SCREEN_PATHS, buildUrl } from '../lib/webBridge';
+import { registerForPushNotifications, subscribeToTokenRefresh } from '../lib/push';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 /** 실제로 WebView를 미리 마운트해서 캐싱할 탭들 */
@@ -46,6 +47,13 @@ export default function HomeScreen() {
   );
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>();
   const { top: topInset } = useSafeAreaInsets();
+  const pushRegisteredRef = useRef(false);
+
+  // 토큰이 앱 사용 중 갱신되면 다시 웹으로 전달 (recommend 탭 WebView 기준)
+  useEffect(() => {
+    const unsubscribe = subscribeToTokenRefresh(() => webViewRefs.current.recommend ?? null);
+    return unsubscribe;
+  }, []);
 
   // TODO: 오픈 전에 expo-screen-capture 재설치 후 캡쳐 방지 코드 추가
   // npm install expo-screen-capture → import * as ScreenCapture from 'expo-screen-capture'
@@ -134,6 +142,11 @@ export default function HomeScreen() {
         }
         if (data.type === 'authToken' && data.token) {
           fetchProfilePhoto(data.token);
+          // 로그인 상태가 확인된 시점에 한 번만 푸시 알림 권한을 요청하고 토큰을 등록
+          if (!pushRegisteredRef.current) {
+            pushRegisteredRef.current = true;
+            registerForPushNotifications(webViewRefs.current.recommend ?? null);
+          }
           return;
         }
         if (data.type === 'setTabBar') {

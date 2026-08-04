@@ -5,6 +5,9 @@ import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
+import StarIcon from "@/components/ui/star-icon";
+import { calcAge } from "@/lib/age";
+import { useRouter } from "next/navigation";
 
 type User = {
   id: number;
@@ -13,6 +16,7 @@ type User = {
   nickname: string | null;
   gender: string | null;
   profileComplete: boolean;
+  stars: number;
 };
 
 type Reco = {
@@ -20,6 +24,8 @@ type Reco = {
   nickname: string | null;
   name: string | null;
   photos: string | null;
+  birthDate: string | null;
+  bioTags: string | null;
 };
 
 const CARD_GRADIENTS = [
@@ -27,33 +33,69 @@ const CARD_GRADIENTS = [
   "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
 ];
 
-function RecoCard({ reco, gradient }: { reco: Reco; gradient: string }) {
+function RecoCard({
+  reco,
+  gradient,
+  onClick,
+}: {
+  reco: Reco;
+  gradient: string;
+  onClick: () => void;
+}) {
   const photos: string[] = reco.photos ? JSON.parse(reco.photos) : [];
+  const tags: string[] = reco.bioTags ? JSON.parse(reco.bioTags) : [];
   const displayName = reco.nickname || reco.name || "";
+  const age = calcAge(reco.birthDate);
+
   return (
     <div
-      className="snap-center shrink-0 w-[300px] h-[400px] rounded-[16px] relative overflow-hidden bg-[#f4f4f5]"
-      style={photos[0] ? undefined : { background: gradient }}
+      onClick={onClick}
+      className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden bg-[#f4f4f5] cursor-pointer"
     >
-      {photos[0] && (
-        <img
-          src={photos[0]}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-      {/* 하단 그라데이션 + 닉네임 */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-5">
-        <span className="text-[22px] font-semibold text-white tracking-[-0.44px]">
-          {displayName}
-        </span>
+      <div
+        className="absolute inset-0"
+        style={photos[0] ? undefined : { background: gradient }}
+      >
+        {photos[0] && (
+          <img
+            src={photos[0]}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+      </div>
+      {/* 미리보기 흐림 처리 (매칭 전 프라이버시 블러) */}
+      <div className="absolute inset-0 backdrop-blur-[10px] bg-[rgba(31,31,31,0.52)]" />
+
+      <div className="absolute left-5 right-5 bottom-[28px] flex flex-col gap-2">
+        <div className="flex items-center gap-1 text-[20px] font-semibold text-white tracking-[-0.4px]">
+          <span>{displayName}</span>
+          {age != null && (
+            <>
+              <span>/</span>
+              <span>{age}살</span>
+            </>
+          )}
+        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="h-6 flex items-center px-2 py-[3px] rounded-[4px] bg-[#cbdeff] text-[12px] font-medium text-[#1f1f1f] whitespace-nowrap"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [recos, setRecos] = useState<Reco[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,17 +161,35 @@ export default function HomePage() {
       className="flex flex-col min-h-screen bg-white"
       style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}
     >
-      <div className="px-5 pt-14 pb-6">
-        <p className="text-[14px] text-[#6b6b6b]">안녕하세요</p>
-        <h1 className="text-[28px] font-bold text-[#0f0f10] mt-1">
-          {user.nickname ?? user.name ?? user.phone}님 👋
+      {/* 헤더 */}
+      <div className="h-[52px] flex items-center gap-4 px-5 py-3.5 shrink-0">
+        <h1 className="flex-1 text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
+          추천
         </h1>
+        <div className="flex items-center gap-1 px-3 py-1 rounded-[40px] bg-[#fff5e5] shrink-0">
+          <StarIcon size={20} />
+          <span className="text-[16px] font-semibold text-[#ff7b2e] tracking-[-0.32px]">
+            {user.stars}
+          </span>
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col gap-4">
-        <h2 className="px-5 text-[18px] font-bold text-[#0f0f10] tracking-[-0.36px]">
-          오늘의 추천
-        </h2>
+      <div className="flex-1 flex flex-col gap-5 pt-2">
+        {/* 오늘의 연애운 배너 (하드코딩) */}
+        <div className="mx-5 flex items-center gap-3 px-4 py-3 rounded-[4px] border border-[#ceffca] bg-[#f3fff2]">
+          <img
+            src="/icons/luck-clover.png"
+            alt=""
+            className="w-[52px] h-[52px] shrink-0 object-contain"
+          />
+          <div className="flex-1 flex flex-col gap-1 text-[15px] tracking-[-0.3px]">
+            <p className="font-bold text-[#1f1f1f]">오늘의 연애운</p>
+            <p className="font-normal leading-[1.5] text-[#1f1f1f]">
+              오늘은 흐름이 살짝 느려요. 잠깐 쉬어가며 나만의 시간을
+              가져보세요.
+            </p>
+          </div>
+        </div>
 
         {recos.length > 0 ? (
           <div
@@ -141,16 +201,15 @@ export default function HomePage() {
                 key={reco.id}
                 reco={reco}
                 gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
+                onClick={() => router.push(`/recommend/${reco.id}`)}
               />
             ))}
           </div>
         ) : (
-          <div className="mx-5 bg-[#f4f4f5] rounded-[12px] p-6 flex flex-col items-center gap-1">
+          <div className="mx-5 h-[400px] bg-[#f4f4f5] rounded-[8px] flex flex-col items-center justify-center gap-4">
+            <img src="/logo.svg" alt="" className="w-[72px] h-[72px]" />
             <p className="text-[15px] font-semibold text-[#1f1f1f]">
-              아직 소개할 인연이 없어요
-            </p>
-            <p className="text-[13px] text-[#777]">
-              새로운 인연이 생기면 알려드릴게요.
+              오늘은 추천 인연이 없어요
             </p>
           </div>
         )}

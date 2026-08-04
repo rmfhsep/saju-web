@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import TabBarController from "@/components/ui/tabbar-controller"
+import PushTokenListener from "@/components/ui/push-token-listener"
 
 export const metadata: Metadata = {
   title: "연애 사주",
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
 
         <TabBarController />
+        <PushTokenListener />
         <div className="relative w-full max-w-[768px] min-h-screen">
           {children}
         </div>

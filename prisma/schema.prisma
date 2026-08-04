@@ -53,24 +53,48 @@ model User {
   filterComplete      Boolean @default(false)
 
   // 알림 설정
-  serviceNotify Boolean @default(true) // 서비스(혜택/이벤트) 알림 수신
-  pushEnabled   Boolean @default(false) // 기기 푸시 권한 허용 여부 (추후 네이티브가 갱신)
+  serviceNotify    Boolean  @default(true)   // 서비스(혜택/이벤트) 알림 수신
+  pushEnabled      Boolean  @default(false)  // 기기 푸시 권한 허용 여부 (추후 네이티브가 갱신)
+  pushToken        String?                   // 네이티브 앱이 등록한 푸시 디바이스 토큰 (FCM/APNs 등)
 
   // 별(포인트) 잔액 — 스토어 구매 등으로 지급, 유효기간 없음
   stars Int @default(0)
 
-  // 온보딩 미니게임 체험용 별 — 좋아요/추가추천에만 사용 가능, 지급일로부터 7일 후 만료
+  // DB에는 존재하지만 현재 코드에서는 쓰이지 않는 컬럼 — 기존 데이터 보존을 위해 스키마에 유지
   trialStars         Int       @default(0)
   trialStarsExpireAt DateTime?
-  // 최초 리포트 생성 시 1회만 미니게임을 노출하기 위한 플래그 (재생성 시 재도전 방지)
   miniGamePlayed     Boolean   @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 // 탈퇴 회원 재가입 제한 — 탈퇴일로부터 30일간 동일 번호 재가입 불가
 model WithdrawnPhone {
   phone       String   @id
   withdrawnAt DateTime @default(now())
+}
+
+// 호감(좋아요) — 별 1개 소모, 같은 상대에게 중복 전송 불가
+model Like {
+  id         Int      @id @default(autoincrement())
+  fromUserId Int
+  toUserId   Int
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+}
+
+// 메시지 — 두 유저 사이 첫 메시지는 별 3개 소모, 이후 답장은 무료
+model Message {
+  id         Int       @id @default(autoincrement())
+  fromUserId Int
+  toUserId   Int
+  body       String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([fromUserId, toUserId])
+  @@index([toUserId, fromUserId])
 }

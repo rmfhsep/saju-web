@@ -199,7 +199,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
       <div className="flex-1 flex flex-col justify-center gap-4 px-5">
         {earnedStars > 0 && (
           <div className="self-center flex items-center gap-1.5 h-[34px] px-3.5 bg-[#fff5e5] rounded-full">
-            <StarIcon size={20} color="#FFB020" />
+            <StarIcon size={20} color="#FFA100" />
             <span className="text-[15px] font-bold text-[#1f1f1f]">+{earnedStars}</span>
           </div>
         )}
