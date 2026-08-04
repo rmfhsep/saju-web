@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/Splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#1e1b4b"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ulruru.sajuagent",
@@ -48,7 +43,11 @@
         {
           "image": "./assets/Splash.png",
           "resizeMode": "cover",
-          "backgroundColor": "#1e1b4b"
+          "backgroundColor": "#1e1b4b",
+          "enableFullScreenImage_legacy": true,
+          "ios": {
+            "enableFullScreenImage_legacy": true
+          }
         }
       ],
       [
