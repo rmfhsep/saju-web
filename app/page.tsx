@@ -105,6 +105,10 @@ function RecoCard({
           />
         )}
       </div>
+      <div
+        className="absolute inset-0 rounded-[8px]"
+        style={{ background: "rgba(31, 31, 31, 0.52)", backdropFilter: "blur(10px)" }}
+      />
 
       <div className="absolute left-5 right-5 bottom-[28px] flex flex-col gap-2">
         <div className="flex items-center gap-1 text-[20px] font-semibold text-white tracking-[-0.4px]">

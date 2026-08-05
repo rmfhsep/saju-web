@@ -7,18 +7,20 @@ import type { SajuReport } from "@/lib/prompts/sajuReport"
 import RunnerGame from "@/components/ui/runner-game"
 import StarIcon from "@/components/ui/star-icon"
 import { WarningIcon } from "@/components/ui/icons"
+import { calcAge } from "@/lib/age"
 
-const MALE_PROFILES = [
-  {
-    name: "미미미", age: "31살",
-    tags: ["천천히 가까워지는", "감정표현 풍부", "깔끔한 스타일 선호"],
-    grad: "linear-gradient(160deg, #b5b0d6 0%, #8b7aa8 100%)",
-  },
-  {
-    name: "통레조", age: "27살",
-    tags: ["천천히 가까워지는", "감정표현 풍부", "깔끔한 스타일 선호"],
-    grad: "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
-  },
+type Reco = {
+  id: number
+  nickname: string | null
+  name: string | null
+  photos: string | null
+  birthDate: string | null
+  bioTags: string | null
+}
+
+const CARD_GRADIENTS = [
+  "linear-gradient(160deg, #b5b0d6 0%, #8b7aa8 100%)",
+  "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
 ]
 
 function formatBirthDisplay(bd: string, bt: string, calendarType: string): string {
@@ -239,6 +241,8 @@ function ResultContent() {
   const [bestSeconds, setBestSeconds] = useState(0)
   const [hasPlayed, setHasPlayed] = useState(false)
   const [starsSubmitted, setStarsSubmitted] = useState(false)
+  const [maleRecos, setMaleRecos] = useState<Reco[]>([])
+  const [maleRecosLoading, setMaleRecosLoading] = useState(true)
 
   function handleGameOver(survivalSeconds: number) {
     setHasPlayed(true)
@@ -308,6 +312,18 @@ function ResultContent() {
       .finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 남성 유저에게 보여줄 추천 프로필 카드 — 홈 화면과 동일한 추천 로직을 재사용한다.
+  useEffect(() => {
+    if (gender !== "MALE") { setMaleRecosLoading(false); return }
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    if (!token) { setMaleRecosLoading(false); return }
+    fetch("/api/users/discover", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => setMaleRecos(((d?.users as Reco[] | undefined) ?? []).slice(0, 2)))
+      .catch(() => setMaleRecos([]))
+      .finally(() => setMaleRecosLoading(false))
+  }, [gender])
 
   const ready = !loading && !retrying
 
@@ -414,35 +430,61 @@ function ResultContent() {
             {/* 추천 프로필 캐러셀 + CTA */}
             <div className="flex flex-col gap-3">
               <div className="overflow-x-auto flex gap-3 pb-1 -mx-5 px-5" style={{ scrollbarWidth: "none" }}>
-                {MALE_PROFILES.map((p) => (
-                  <div
-                    key={p.name}
-                    className="shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden"
-                    style={{ background: p.grad }}
-                  >
+                {maleRecosLoading ? (
+                  [0, 1].map(i => (
                     <div
-                      className="absolute inset-0 rounded-[8px]"
-                      style={{ background: "rgba(31,31,31,0.52)", backdropFilter: "blur(10px)" }}
+                      key={i}
+                      className="shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.name}</span>
-                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">/</span>
-                        <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{p.age}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {p.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[12px] font-medium text-[#1f1f1f] bg-[#cbdeff] rounded-[4px] px-2 py-[3px] leading-[1.4]"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  ))
+                ) : maleRecos.length === 0 ? (
+                  <div className="shrink-0 w-full h-[200px] rounded-[8px] bg-[#f4f4f5] flex items-center justify-center">
+                    <p className="text-[14px] text-[#777]">아직 추천할 프로필이 없어요.</p>
                   </div>
-                ))}
+                ) : (
+                  maleRecos.map((reco, i) => {
+                    const photos: string[] = reco.photos ? JSON.parse(reco.photos) : []
+                    const tags: string[] = reco.bioTags ? JSON.parse(reco.bioTags) : []
+                    const displayName = reco.nickname || reco.name || ""
+                    const age = calcAge(reco.birthDate)
+                    return (
+                      <div
+                        key={reco.id}
+                        className="shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden"
+                        style={photos[0] ? undefined : { background: CARD_GRADIENTS[i % CARD_GRADIENTS.length] }}
+                      >
+                        {photos[0] && (
+                          <img src={photos[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        )}
+                        <div
+                          className="absolute inset-0 rounded-[8px]"
+                          style={{ background: "rgba(31,31,31,0.52)", backdropFilter: "blur(10px)" }}
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{displayName}</span>
+                            {age != null && (
+                              <>
+                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">/</span>
+                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{age}살</span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[12px] font-medium text-[#1f1f1f] bg-[#cbdeff] rounded-[4px] px-2 py-[3px] leading-[1.4]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
 
               <button
