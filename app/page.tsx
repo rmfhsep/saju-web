@@ -33,6 +33,47 @@ const CARD_GRADIENTS = [
   "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
 ];
 
+const MORE_INTRO_COST = 10;
+
+function EmptyTodayCard() {
+  return (
+    <div className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f7f7f8] flex flex-col items-center justify-center gap-4">
+      <img src="/icons/logo-solid-72.svg" alt="" className="w-[72px] h-[72px]" />
+      <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
+        오늘은 추천 인연이 없어요.
+      </p>
+    </div>
+  );
+}
+
+function MoreIntroCard({
+  busy,
+  onClick,
+}: {
+  busy: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#e9f1ff] relative flex flex-col items-center pt-[92px] gap-4">
+      <img src="/icons/more-intro-star.svg" alt="" className="w-[88px] h-[88px]" />
+      <div className="flex flex-col items-center gap-0.5 text-[15px] text-center tracking-[-0.3px] text-[#1f1f1f]">
+        <p className="font-bold">더 소개 받기</p>
+        <p className="font-normal whitespace-nowrap">
+          별 {MORE_INTRO_COST}개로 새로운 인연을 더 만나보세요.
+        </p>
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onClick}
+        className="absolute bottom-5 left-5 right-5 h-10 rounded-[4px] bg-[#2a2a2a] text-white text-[14px] font-semibold tracking-[-0.14px] disabled:opacity-60"
+      >
+        {busy ? "불러오는 중…" : "3명 더 소개 받기"}
+      </button>
+    </div>
+  );
+}
+
 function RecoCard({
   reco,
   gradient,
@@ -96,8 +137,45 @@ export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [recos, setRecos] = useState<Reco[]>([]);
+  const [noNewToday, setNoNewToday] = useState(false);
   const [loading, setLoading] = useState(true);
   const [recosLoading, setRecosLoading] = useState(true);
+  const [moreBusy, setMoreBusy] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  }
+
+  async function handleMoreIntro() {
+    if (moreBusy) return;
+    setMoreBusy(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/api/users/discover/more", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "no more candidates") {
+          showToast("더 이상 추천해줄 이성이 없어요.");
+        } else if (data.error === "insufficient stars") {
+          showToast("별이 부족해요.");
+        } else {
+          showToast("잠시 후 다시 시도해주세요.");
+        }
+        return;
+      }
+      setRecos(data.users ?? []);
+      setUser((prev) => (prev ? { ...prev, stars: data.stars } : prev));
+    } catch {
+      showToast("잠시 후 다시 시도해주세요.");
+    } finally {
+      setMoreBusy(false);
+    }
+  }
 
   useEffect(() => {
     async function check() {
@@ -126,13 +204,14 @@ export default function HomePage() {
 
         setUser(data);
 
-        // 이성 유저 추천 (최대 2명)
+        // 이성 유저 추천 (누적 목록 — 24시간마다 새 추천 배치 추가)
         fetch("/api/users/discover", {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((r) => (r.ok ? r.json() : null))
           .then((d) => {
-            if (d?.users) setRecos((d.users as Reco[]).slice(0, 2));
+            if (d?.users) setRecos(d.users as Reco[]);
+            setNoNewToday(!!d?.noNewToday);
           })
           .catch(() => {})
           .finally(() => setRecosLoading(false));
@@ -202,11 +281,12 @@ export default function HomePage() {
               />
             ))}
           </div>
-        ) : recos.length > 0 ? (
+        ) : (
           <div
             className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
             style={{ scrollbarWidth: "none" }}
           >
+            {noNewToday && <EmptyTodayCard />}
             {recos.map((reco, i) => (
               <RecoCard
                 key={reco.id}
@@ -215,16 +295,16 @@ export default function HomePage() {
                 onClick={() => router.push(`/recommend/${reco.id}`)}
               />
             ))}
-          </div>
-        ) : (
-          <div className="mx-5 h-[400px] bg-[#f4f4f5] rounded-[8px] flex flex-col items-center justify-center gap-4">
-            <img src="/logo.svg" alt="" className="w-[72px] h-[72px]" />
-            <p className="text-[15px] font-semibold text-[#1f1f1f]">
-              오늘은 추천 인연이 없어요
-            </p>
+            <MoreIntroCard busy={moreBusy} onClick={handleMoreIntro} />
           </div>
         )}
       </div>
+
+      {toast && (
+        <div className="fixed left-1/2 -translate-x-1/2 z-[60] bg-black/74 text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap max-w-[296px] text-center" style={{ bottom: `calc(env(safe-area-inset-bottom) + ${APP_BOTTOM_NAV_HEIGHT + 16}px)` }}>
+          {toast}
+        </div>
+      )}
 
       <AppBottomNav />
     </div>

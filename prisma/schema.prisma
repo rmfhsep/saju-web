@@ -60,10 +60,13 @@ model User {
   // 별(포인트) 잔액 — 스토어 구매 등으로 지급, 유효기간 없음
   stars Int @default(0)
 
-  // DB에는 존재하지만 현재 코드에서는 쓰이지 않는 컬럼 — 기존 데이터 보존을 위해 스키마에 유지
+  // 온보딩 미니게임 지급 별 (7일 만료) — lib/stars.ts 참고
   trialStars         Int       @default(0)
   trialStarsExpireAt DateTime?
   miniGamePlayed     Boolean   @default(false)
+
+  // 추천(오늘의 추천) 24시간 배치 마지막 확인 시각 — 매번 새로 계산하지 않고 이걸로 24h 경과 여부만 체크
+  lastRecoCheckAt DateTime?
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -97,4 +100,15 @@ model Message {
 
   @@index([fromUserId, toUserId])
   @@index([toUserId, fromUserId])
+}
+
+// 유저별 추천(오늘의 추천) 이력 — 누적 저장, 같은 상대 중복 추천 방지에도 사용
+model Recommendation {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  recommendedId Int
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, recommendedId])
+  @@index([userId])
 }

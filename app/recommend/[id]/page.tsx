@@ -167,11 +167,7 @@ export default function ProfileDetailPage() {
   }
 
   function handleMessageTap() {
-    if (!target) return
-    if (hasConversation) {
-      router.push(`/messages/${target.id}`)
-      return
-    }
+    if (!target || hasConversation) return
     setShowMessageSheet(true)
   }
 
@@ -195,7 +191,8 @@ export default function ProfileDetailPage() {
       setMyStars(data.stars)
       setHasConversation(true)
       setShowMessageSheet(false)
-      router.push(`/messages/${target.id}`)
+      setMessageText("")
+      showToast(`${displayName}님에게 메시지를 보냈어요.`)
     } finally {
       messageInFlightRef.current = false
       setMessageBusy(false)
@@ -331,8 +328,10 @@ export default function ProfileDetailPage() {
         </button>
         <button
           type="button"
+          disabled={hasConversation}
           onClick={handleMessageTap}
-          className="w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-[0_4px_5px_rgba(0,0,0,0.28)] bg-[#37383c]"
+          className="w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-[0_4px_5px_rgba(0,0,0,0.28)]"
+          style={{ backgroundColor: hasConversation ? "#e8e8e8" : "#37383c" }}
         >
           <FlirtingMessageIcon size={36} />
         </button>
