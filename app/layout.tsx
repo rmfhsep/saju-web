@@ -50,15 +50,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
       </head>
       <body
-        className="min-h-screen flex justify-center"
-        style={{ background: "white" }}
+        className="flex justify-center overflow-hidden"
+        style={{ background: "white", height: "var(--app-height, 100dvh)" }}
       >
         {/* 배경 오브 */}
-        
+
 
         <TabBarController />
         <PushTokenListener />
-        <div className="relative w-full max-w-[768px] min-h-screen">
+        <div className="relative w-full max-w-[768px]" style={{ height: "var(--app-height, 100dvh)" }}>
           {children}
         </div>
       </body>

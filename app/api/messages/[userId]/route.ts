@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { broadcastMessagesRead } from "@/lib/realtime"
 
 /**
  * 특정 상대와의 메시지 스레드 전체 조회 (시간순).
@@ -22,23 +23,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
   }
 
   try {
-    const [other, messages] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: otherId },
-        select: { id: true, nickname: true, name: true, photos: true },
-      }),
-      prisma.message.findMany({
-        where: {
-          OR: [
-            { fromUserId: payload.userId, toUserId: otherId },
-            { fromUserId: otherId, toUserId: payload.userId },
-          ],
-        },
-        orderBy: { createdAt: "asc" },
-      }),
-    ])
-
+    const other = await prisma.user.findUnique({
+      where: { id: otherId },
+      select: { id: true, nickname: true, name: true, photos: true },
+    })
     if (!other) return NextResponse.json({ error: "user not found" }, { status: 404 })
+
+    // 상대가 보낸 안 읽은 메시지를 지금 읽음 처리한다 (스레드를 열람 = 읽었다는 뜻).
+    const readAt = new Date()
+    const { count } = await prisma.message.updateMany({
+      where: { fromUserId: otherId, toUserId: payload.userId, readAt: null },
+      data: { readAt },
+    })
+    if (count > 0) {
+      broadcastMessagesRead(payload.userId, otherId, readAt.toISOString()).catch(() => {})
+    }
+
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { fromUserId: payload.userId, toUserId: otherId },
+          { fromUserId: otherId, toUserId: payload.userId },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+    })
 
     return NextResponse.json({
       user: other,
@@ -47,6 +56,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
         body: m.body,
         createdAt: m.createdAt,
         fromMe: m.fromUserId === payload.userId,
+        readAt: m.readAt,
       })),
     })
   } catch (err) {

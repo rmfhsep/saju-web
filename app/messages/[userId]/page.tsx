@@ -14,6 +14,7 @@ type ThreadMessage = {
   body: string
   createdAt: string
   fromMe: boolean
+  readAt: string | null
   status?: "sending" | "failed"
 }
 type ThreadUser = { id: number; nickname: string | null; name: string | null; photos: string | null }
@@ -72,7 +73,16 @@ export default function MessageThreadPage() {
       .on("broadcast", { event: "new-message" }, ({ payload }) => {
         const msg = payload as { id: number; body: string; createdAt: string; fromUserId: number; toUserId: number }
         if (msg.fromUserId !== counterpartId) return
-        setMessages(prev => (prev.some(m => m.id === msg.id) ? prev : [...prev, { id: msg.id, body: msg.body, createdAt: msg.createdAt, fromMe: false }]))
+        setMessages(prev =>
+          prev.some(m => m.id === msg.id)
+            ? prev
+            : [...prev, { id: msg.id, body: msg.body, createdAt: msg.createdAt, fromMe: false, readAt: null }],
+        )
+      })
+      .on("broadcast", { event: "messages-read" }, ({ payload }) => {
+        const { readerId, readAt } = payload as { readerId: number; readAt: string }
+        if (readerId !== counterpartId) return
+        setMessages(prev => prev.map(m => (m.fromMe && !m.readAt ? { ...m, readAt } : m)))
       })
       .subscribe()
 
@@ -100,7 +110,7 @@ export default function MessageThreadPage() {
       setMessages(prev =>
         prev.map(m =>
           m.id === tempId
-            ? { id: data.message.id, body: data.message.body, createdAt: data.message.createdAt, fromMe: true }
+            ? { id: data.message.id, body: data.message.body, createdAt: data.message.createdAt, fromMe: true, readAt: null }
             : m,
         ),
       )
@@ -116,7 +126,7 @@ export default function MessageThreadPage() {
     const body = text.trim()
     if (!body || sending) return
     const tempId = `temp-${Date.now()}`
-    setMessages(prev => [...prev, { id: tempId, body, createdAt: new Date().toISOString(), fromMe: true, status: "sending" }])
+    setMessages(prev => [...prev, { id: tempId, body, createdAt: new Date().toISOString(), fromMe: true, readAt: null, status: "sending" }])
     setText("")
     sendMessage(body, tempId)
   }
@@ -150,12 +160,17 @@ export default function MessageThreadPage() {
         ) : (
           messages.map(m => (
             <div key={m.id} className={`flex flex-col ${m.fromMe ? "items-end" : "items-start"}`}>
-              <div
-                className={`max-w-[75%] px-4 py-2.5 rounded-[16px] text-[15px] leading-[1.4] tracking-[-0.3px] whitespace-pre-wrap ${
-                  m.fromMe ? "bg-[#b6d0ff] text-[#1f1f1f] rounded-br-[4px]" : "bg-[#f4f4f5] text-[#1f1f1f] rounded-bl-[4px]"
-                } ${m.status === "sending" ? "opacity-50" : ""} ${m.status === "failed" ? "opacity-60" : ""}`}
-              >
-                {m.body}
+              <div className={`flex items-end gap-1 ${m.fromMe ? "flex-row" : "flex-row-reverse"}`}>
+                {m.fromMe && !m.readAt && !m.status && (
+                  <span className="text-[11px] font-semibold text-[#ffa100] shrink-0 mb-0.5">1</span>
+                )}
+                <div
+                  className={`max-w-[75%] px-4 py-2.5 rounded-[16px] text-[15px] leading-[1.4] tracking-[-0.3px] whitespace-pre-wrap ${
+                    m.fromMe ? "bg-[#b6d0ff] text-[#1f1f1f] rounded-br-[4px]" : "bg-[#f4f4f5] text-[#1f1f1f] rounded-bl-[4px]"
+                  } ${m.status === "sending" ? "opacity-50" : ""} ${m.status === "failed" ? "opacity-60" : ""}`}
+                >
+                  {m.body}
+                </div>
               </div>
               {m.status === "failed" && (
                 <button
