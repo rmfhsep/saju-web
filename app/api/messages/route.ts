@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { sendPushNotification } from "@/lib/push"
+import { broadcastNewMessage } from "@/lib/realtime"
 import { spendEffectiveStars, effectiveTrialStars, InsufficientStarsError } from "@/lib/stars"
 
 const MESSAGE_COST = 3
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
     const me = await prisma.user.findUnique({ where: { id: payload.userId }, select: { nickname: true, name: true } })
     const fromLabel = me?.nickname || me?.name || "누군가"
     sendPushNotification(toUserId, { title: `${fromLabel}님의 메시지`, body: text }).catch(() => {})
+    broadcastNewMessage({
+      id: message.id,
+      body: message.body,
+      createdAt: message.createdAt.toISOString(),
+      fromUserId: payload.userId,
+      toUserId,
+    }).catch(() => {})
 
     return NextResponse.json({ ok: true, message, cost, stars })
   } catch (err) {

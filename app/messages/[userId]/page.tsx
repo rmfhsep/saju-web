@@ -2,11 +2,20 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { decodeJwt } from "jose"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
+import { getSupabaseClient } from "@/lib/supabaseClient"
+import { chatRoomId } from "@/lib/chatRoom"
 
-type ThreadMessage = { id: number; body: string; createdAt: string; fromMe: boolean }
+type ThreadMessage = {
+  id: number | string
+  body: string
+  createdAt: string
+  fromMe: boolean
+  status?: "sending" | "failed"
+}
 type ThreadUser = { id: number; nickname: string | null; name: string | null; photos: string | null }
 
 export default function MessageThreadPage() {
@@ -43,9 +52,36 @@ export default function MessageThreadPage() {
     bottomRef.current?.scrollIntoView({ block: "end" })
   }, [messages.length])
 
-  async function handleSend() {
-    const body = text.trim()
-    if (!body || sending) return
+  // 상대가 보낸 메시지를 실시간으로 받는다 (Supabase Realtime broadcast).
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token")
+    if (!token) return
+    const counterpartId = Number(params.userId)
+    if (!Number.isFinite(counterpartId)) return
+
+    let myId: number
+    try {
+      myId = (decodeJwt(token) as { userId: number }).userId
+    } catch {
+      return
+    }
+
+    const supabase = getSupabaseClient()
+    const channel = supabase
+      .channel(chatRoomId(myId, counterpartId))
+      .on("broadcast", { event: "new-message" }, ({ payload }) => {
+        const msg = payload as { id: number; body: string; createdAt: string; fromUserId: number; toUserId: number }
+        if (msg.fromUserId !== counterpartId) return
+        setMessages(prev => (prev.some(m => m.id === msg.id) ? prev : [...prev, { id: msg.id, body: msg.body, createdAt: msg.createdAt, fromMe: false }]))
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [params.userId])
+
+  async function sendMessage(body: string, tempId: string) {
     setSending(true)
     setError(null)
     const token = localStorage.getItem("auth_token")
@@ -58,13 +94,37 @@ export default function MessageThreadPage() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError(data.error === "insufficient stars" ? "별이 부족해요. 별을 충전하고 다시 시도해주세요." : "메시지 전송에 실패했어요.")
+        setMessages(prev => prev.map(m => (m.id === tempId ? { ...m, status: "failed" } : m)))
         return
       }
-      setText("")
-      setMessages(prev => [...prev, { id: data.message.id, body: data.message.body, createdAt: data.message.createdAt, fromMe: true }])
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === tempId
+            ? { id: data.message.id, body: data.message.body, createdAt: data.message.createdAt, fromMe: true }
+            : m,
+        ),
+      )
+    } catch {
+      setError("메시지 전송에 실패했어요.")
+      setMessages(prev => prev.map(m => (m.id === tempId ? { ...m, status: "failed" } : m)))
     } finally {
       setSending(false)
     }
+  }
+
+  function handleSend() {
+    const body = text.trim()
+    if (!body || sending) return
+    const tempId = `temp-${Date.now()}`
+    setMessages(prev => [...prev, { id: tempId, body, createdAt: new Date().toISOString(), fromMe: true, status: "sending" }])
+    setText("")
+    sendMessage(body, tempId)
+  }
+
+  function handleRetry(m: ThreadMessage) {
+    if (sending) return
+    setMessages(prev => prev.map(x => (x.id === m.id ? { ...x, status: "sending" } : x)))
+    sendMessage(m.body, m.id as string)
   }
 
   const displayName = user?.nickname || user?.name || ""
@@ -89,14 +149,23 @@ export default function MessageThreadPage() {
           </div>
         ) : (
           messages.map(m => (
-            <div key={m.id} className={`flex ${m.fromMe ? "justify-end" : "justify-start"}`}>
+            <div key={m.id} className={`flex flex-col ${m.fromMe ? "items-end" : "items-start"}`}>
               <div
                 className={`max-w-[75%] px-4 py-2.5 rounded-[16px] text-[15px] leading-[1.4] tracking-[-0.3px] whitespace-pre-wrap ${
                   m.fromMe ? "bg-[#b6d0ff] text-[#1f1f1f] rounded-br-[4px]" : "bg-[#f4f4f5] text-[#1f1f1f] rounded-bl-[4px]"
-                }`}
+                } ${m.status === "sending" ? "opacity-50" : ""} ${m.status === "failed" ? "opacity-60" : ""}`}
               >
                 {m.body}
               </div>
+              {m.status === "failed" && (
+                <button
+                  type="button"
+                  onClick={() => handleRetry(m)}
+                  className="text-[12px] text-[#ff334b] mt-0.5"
+                >
+                  전송 실패 · 탭하여 다시 보내기
+                </button>
+              )}
             </div>
           ))
         )}
