@@ -116,6 +116,60 @@ const ELEMENT_CONTROLS: Record<FiveElement, FiveElement> = {
   목: "토", 토: "수", 수: "화", 화: "금", 금: "목",
 }
 
+export interface DailyRelation {
+  천간합: boolean
+  천간충: boolean
+  지지합: boolean
+  지지충: boolean
+  생관계: boolean
+  극관계: boolean
+  비화: boolean
+}
+
+/**
+ * 일간(+일지) 기준으로 다른 천간/지지(세운·일진 등 무엇이든)와의 합충생극비화 관계를 판정한다.
+ * 세운 관계(연간 리포트)와 오늘의 일진 관계(오늘의 운세 배너) 모두 이 함수 하나로 계산한다.
+ */
+export function computeDayMasterRelation(
+  dayMaster: HeavenlyStem,
+  dayBranch: EarthlyBranch,
+  targetStem: HeavenlyStem,
+  targetBranch: EarthlyBranch,
+): DailyRelation {
+  const dayElement = getHeavenlyStemElement(dayMaster)
+  const targetElement = getHeavenlyStemElement(targetStem)
+  return {
+    천간합: STEM_COMBINE[dayMaster] === targetStem,
+    천간충: STEM_CLASH[dayMaster] === targetStem,
+    지지합: isBranchHarmony(dayBranch, targetBranch),
+    지지충: BRANCH_CLASH[dayBranch] === targetBranch,
+    생관계: ELEMENT_GENERATES[targetElement] === dayElement,
+    극관계: ELEMENT_CONTROLS[targetElement] === dayElement,
+    비화: targetElement === dayElement,
+  }
+}
+
+/** date를 KST 기준 연/월/일/시/분으로 변환한다 — 서버가 어느 타임존에서 돌든(Vercel은 UTC) 결과가 항상 KST 기준이 되도록. */
+function getKstParts(date: Date) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Seoul",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+      hour12: false,
+    }).formatToParts(date).map(p => [p.type, p.value]),
+  )
+  return {
+    year: Number(parts.year), month: Number(parts.month), day: Number(parts.day),
+    hour: Number(parts.hour) % 24, minute: Number(parts.minute),
+  }
+}
+
+/** 오늘(또는 임의 시점, KST 기준) 날짜의 사주팔자 일주(日柱) — 오늘의 일진 계산에 쓰인다. */
+export function calculateTodayPillar(date: Date = new Date()) {
+  const { year, month, day, hour, minute } = getKstParts(date)
+  return calculateFourPillars({ year, month, day, hour, minute }).day
+}
+
 function parseBirthDate(birthDate: string) {
   return {
     year: parseInt(birthDate.slice(0, 4), 10),
@@ -193,8 +247,10 @@ export function computeSaju(input: SajuRawInput, gender: Gender): SajuComputed {
     hour: now.getHours(), minute: now.getMinutes(),
   }).year
 
-  const dayElement = getHeavenlyStemElement(dayMaster)
-  const sewunStemElement = getHeavenlyStemElement(currentYearPillar.heavenlyStem)
+  const sewunRelation = computeDayMasterRelation(
+    dayMaster, result.day.earthlyBranch,
+    currentYearPillar.heavenlyStem, currentYearPillar.earthlyBranch,
+  )
 
   return {
     일간: dayMaster,
@@ -217,13 +273,7 @@ export function computeSaju(input: SajuRawInput, gender: Gender): SajuComputed {
     수_개수: elementCounts.수,
     수오행_점수: elementCounts.수 >= 3 ? 90 : elementCounts.수 === 2 ? 60 : elementCounts.수 === 1 ? 30 : 0,
     음간보정: dayYinYang === "음" ? 20 : 0,
-    천간합: STEM_COMBINE[dayMaster] === currentYearPillar.heavenlyStem,
-    천간충: STEM_CLASH[dayMaster] === currentYearPillar.heavenlyStem,
-    지지합: isBranchHarmony(result.day.earthlyBranch, currentYearPillar.earthlyBranch),
-    지지충: BRANCH_CLASH[result.day.earthlyBranch] === currentYearPillar.earthlyBranch,
-    생관계: ELEMENT_GENERATES[sewunStemElement] === dayElement,
-    극관계: ELEMENT_CONTROLS[sewunStemElement] === dayElement,
-    비화: sewunStemElement === dayElement,
+    ...sewunRelation,
     일지월지충: BRANCH_CLASH[result.day.earthlyBranch] === result.month.earthlyBranch,
   }
 }

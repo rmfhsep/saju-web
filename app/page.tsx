@@ -28,6 +28,52 @@ type Reco = {
   bioTags: string | null;
 };
 
+type FortuneLevel = "HIGH" | "MID" | "LOW";
+
+type DailyFortune = {
+  level: FortuneLevel;
+  text: string;
+};
+
+const FORTUNE_LEVEL_LABEL: Record<FortuneLevel, string> = { HIGH: "좋음", MID: "보통", LOW: "주의" };
+const FORTUNE_LEVEL_BADGE: Record<FortuneLevel, string> = {
+  HIGH: "text-[#ff7b2e] bg-[#fff5e5]",
+  MID: "text-[#6b6b6b] bg-[#f4f4f5]",
+  LOW: "text-[#6b6b6b] bg-[#f4f4f5]",
+};
+const FORTUNE_LEVEL_CARD: Record<FortuneLevel, string> = {
+  HIGH: "border-[#ceffca] bg-[#f3fff2]",
+  MID: "border-[#e5e5e5] bg-[#f7f7f8]",
+  LOW: "border-[#e5e5e5] bg-[#f7f7f8]",
+};
+
+function FortuneBanner({ fortune, onClick }: { fortune: DailyFortune | null; onClick: () => void }) {
+  if (!fortune) {
+    return <div className="mx-5 h-[78px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />;
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`mx-5 flex items-center gap-3 px-4 py-3 rounded-[4px] border text-left active:opacity-80 ${FORTUNE_LEVEL_CARD[fortune.level]}`}
+    >
+      <img src="/icons/luck-clover.png" alt="" className="w-[52px] h-[52px] shrink-0 object-contain" />
+      <div className="flex-1 flex flex-col gap-1 text-[15px] tracking-[-0.3px] min-w-0">
+        <div className="flex items-center gap-1.5">
+          <p className="font-bold text-[#1f1f1f]">오늘의 연애운</p>
+          <span className={`text-[11px] font-semibold rounded-[4px] px-1.5 py-[2px] ${FORTUNE_LEVEL_BADGE[fortune.level]}`}>
+            {FORTUNE_LEVEL_LABEL[fortune.level]}
+          </span>
+        </div>
+        <p className="font-normal leading-[1.5] text-[#1f1f1f] truncate">{fortune.text}</p>
+      </div>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="shrink-0">
+        <path d="M1 1L6 6L1 11" stroke="#b7b7b7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
 const CARD_GRADIENTS = [
   "linear-gradient(160deg, #b5b0d6 0%, #8b7aa8 100%)",
   "linear-gradient(160deg, #a8c4b0 0%, #6b9e7a 100%)",
@@ -142,6 +188,7 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [recos, setRecos] = useState<Reco[]>([]);
   const [noNewToday, setNoNewToday] = useState(false);
+  const [fortune, setFortune] = useState<DailyFortune | null>(null);
   const [loading, setLoading] = useState(true);
   const [recosLoading, setRecosLoading] = useState(true);
   const [moreBusy, setMoreBusy] = useState(false);
@@ -219,6 +266,16 @@ export default function HomePage() {
           })
           .catch(() => {})
           .finally(() => setRecosLoading(false));
+
+        // 오늘의 연애운 배너
+        fetch("/api/daily-fortune/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d?.level && d?.text) setFortune({ level: d.level, text: d.text });
+          })
+          .catch(() => {});
       } catch {
         bridgeNavigate("Landing");
       } finally {
@@ -258,20 +315,8 @@ export default function HomePage() {
       </div>
 
       <div className="flex-1 flex flex-col gap-5 pt-2">
-        {/* 오늘의 연애운 배너 (하드코딩) */}
-        <div className="mx-5 flex items-center gap-3 px-4 py-3 rounded-[4px] border border-[#ceffca] bg-[#f3fff2]">
-          <img
-            src="/icons/luck-clover.png"
-            alt=""
-            className="w-[52px] h-[52px] shrink-0 object-contain"
-          />
-          <div className="flex-1 flex flex-col gap-1 text-[15px] tracking-[-0.3px]">
-            <p className="font-bold text-[#1f1f1f]">오늘의 연애운</p>
-            <p className="font-normal leading-[1.5] text-[#1f1f1f]">
-              오늘은 흐름이 살짝 느려요. 잠깐 쉬어가며 나만의 시간을 가져보세요.
-            </p>
-          </div>
-        </div>
+        {/* 오늘의 연애운 배너 */}
+        <FortuneBanner fortune={fortune} onClick={() => router.push("/today-fortune")} />
 
         {recosLoading ? (
           <div
