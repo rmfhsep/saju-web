@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { bridgeNavigate, navigateAndReplace } from "@/lib/bridge"
+import { bridgeNavigate, bridgeSyncAuthToken, navigateAndReplace } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
@@ -79,6 +79,7 @@ function LoginForm() {
 
       if (data.token) {
         localStorage.setItem("auth_token", data.token)
+        bridgeSyncAuthToken(data.token)
         localStorage.setItem("user_phone", rawPhone)
         localStorage.removeItem("did_logout")
       }

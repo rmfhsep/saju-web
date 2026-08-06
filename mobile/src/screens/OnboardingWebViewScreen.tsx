@@ -10,6 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { SCREEN_PATHS, buildUrl } from '../lib/webBridge';
+import { setStoredAuthToken } from '../lib/authStorage';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'OnboardingWebView'>;
@@ -84,6 +85,11 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
         return;
       }
 
+      if (data.type === 'authToken' && data.token) {
+        setStoredAuthToken(data.token);
+        return;
+      }
+
       if (data.type !== 'navigate') return;
 
       if (data.screen === 'Home') {
@@ -107,7 +113,20 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
         source={{ uri: url }}
         style={styles.webview}
         onLoadStart={() => setLoading(true)}
-        onLoadEnd={() => setLoading(false)}
+        onLoadEnd={() => {
+          setLoading(false);
+          // 페이지가 새로 로드될 때마다 로그인 토큰을 네이티브에 미러링해둔다
+          // (다음 콜드 스타트 때 온보딩을 건너뛰고 Home으로 바로 갈 수 있도록).
+          webViewRef.current?.injectJavaScript(`
+            (function() {
+              var token = localStorage.getItem('auth_token');
+              if (token) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'authToken', token: token }));
+              }
+            })();
+            true;
+          `);
+        }}
         onMessage={handleMessage}
         javaScriptEnabled
         domStorageEnabled

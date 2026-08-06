@@ -76,9 +76,8 @@ export async function getDailyRecommendations(userId: number): Promise<{ users: 
 
   const needsCheck = !me?.lastRecoCheckAt || Date.now() - me.lastRecoCheckAt.getTime() >= RECO_CHECK_INTERVAL_MS
 
-  let noNewToday = false
   if (needsCheck) {
-    noNewToday = await prisma.$transaction(async tx => {
+    await prisma.$transaction(async tx => {
       const existing = await tx.recommendation.findMany({ where: { userId }, select: { recommendedId: true } })
       const candidates = await findEligibleCandidates(tx, userId, opposite, existing.map(r => r.recommendedId), DAILY_RECO_LIMIT)
 
@@ -89,11 +88,18 @@ export async function getDailyRecommendations(userId: number): Promise<{ users: 
         })
       }
       await tx.user.update({ where: { id: userId }, data: { lastRecoCheckAt: new Date() } })
-      return candidates.length === 0
     })
   }
 
-  return { users: await getRecommendedList(userId), noNewToday }
+  // "오늘은 추천 인연이 없어요" 카드는 24시간 체크 주기와 무관하게, 지금 시점에 아직
+  // 추천 안 한 후보가 실제로 남아있는지로 매번 새로 판단한다 — needsCheck=false인
+  // (하루 안에 재방문한) 요청에서도 상태가 유지되도록.
+  const users = await getRecommendedList(userId)
+  const remaining = await prisma.user.count({
+    where: { gender: opposite, profileComplete: true, id: { notIn: [...users.map(u => u.id), userId] } },
+  })
+
+  return { users, noNewToday: remaining === 0 }
 }
 
 /**

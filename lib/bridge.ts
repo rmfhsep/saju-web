@@ -120,6 +120,19 @@ export function onPushTokenReceived(callback: (token: string) => void) {
   ;(window as Window & { __onPushTokenReceived?: (token: string) => void }).__onPushTokenReceived = callback
 }
 
+/**
+ * 로그인 성공 시 토큰을 네이티브에 즉시 미러링한다 — 네이티브가 이 토큰을 로컬에
+ * 저장해두고, 다음 앱 콜드 스타트 때 온보딩 웹뷰를 거치지 않고 곧바로 Home을
+ * 초기 화면으로 띄우는 데 쓴다(HomeScreen도 로드 시점마다 같은 메시지를 보내지만,
+ * 로그인 직후처럼 SPA 네비게이션만 일어나 리로드가 없는 경우를 위한 명시적 호출).
+ */
+export function bridgeSyncAuthToken(token: string) {
+  const rn = getRN()
+  if (rn) {
+    rn.postMessage(JSON.stringify({ type: 'authToken', token }))
+  }
+}
+
 /** Open the native SMS app with recipient and body pre-filled. */
 export function bridgeOpenSms(phone: string, body: string) {
   const rn = getRN()

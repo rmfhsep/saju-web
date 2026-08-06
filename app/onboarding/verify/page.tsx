@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { bridgeNavigate, bridgeOpenSms, navigateAndReplace } from "@/lib/bridge"
+import { bridgeNavigate, bridgeOpenSms, bridgeSyncAuthToken, navigateAndReplace } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
@@ -210,7 +210,10 @@ function VerifyForm() {
       })
       const data = await res.json()
       if (res.ok) {
-        if (data.token) localStorage.setItem("auth_token", data.token)
+        if (data.token) {
+          localStorage.setItem("auth_token", data.token)
+          bridgeSyncAuthToken(data.token)
+        }
         localStorage.setItem("user_phone", rawPhone)
         bridgeNavigate("BirthInfo")
       } else if (data.error === "PHONE_ALREADY_REGISTERED") {
@@ -240,7 +243,10 @@ function VerifyForm() {
       })
       const data = await res.json()
       if (res.ok) {
-        if (data.token) localStorage.setItem("auth_token", data.token)
+        if (data.token) {
+          localStorage.setItem("auth_token", data.token)
+          bridgeSyncAuthToken(data.token)
+        }
         localStorage.setItem("user_phone", rawPhone)
         if (data.profileComplete) {
           if (data.filterComplete) bridgeNavigate("Home")
