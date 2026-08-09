@@ -1,3 +1,7 @@
+import Image from "next/image"
+import RadioOnIcon from "@/public/icons/Radio_on.svg"
+import RadioOffIcon from "@/public/icons/Radio_off.svg"
+
 interface RadioOptionProps {
   label: string
   selected: boolean
@@ -16,12 +20,14 @@ export default function RadioOption({ label, selected, onClick }: RadioOptionPro
         selected ? "bg-[#e9f1ff] border border-[#b6d0ff]" : "bg-[#f7f7f8] border border-transparent"
       }`}
     >
-      <div className={`w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center shrink-0 ${
-        selected ? "border-[#1f1f1f]" : "border-[#e1e2e4]"
-      }`}>
-        {selected && <div className="w-[9px] h-[9px] rounded-full bg-[#1f1f1f]" />}
-      </div>
-      <span className={`text-[15px] ${selected ? "font-semibold text-[#1f1f1f]" : "font-normal text-[#777777]"}`}>
+      <Image
+        src={selected ? RadioOnIcon : RadioOffIcon}
+        alt=""
+        width={20}
+        height={20}
+        className="shrink-0"
+      />
+      <span className={`${selected ? "text-body1Medium text-[#0f0f10]" : "text-body1Medium text-[#777777]"}`}>
         {label}
       </span>
     </button>

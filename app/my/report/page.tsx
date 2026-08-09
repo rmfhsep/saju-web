@@ -252,13 +252,12 @@ export default function ReportPage() {
           <div className="pt-6 flex flex-col gap-3">
             {infoCard}
             <TemperamentCard section={report.섹션1_연애기질} />
-            {hasBirthTime && (
-              <>
+            
                 <TypeMatchCards section={report.섹션2_이상형유형} />
                 <LoveFlowCard section={report.섹션3_올해연애운} />
                 <CautionCard items={report.섹션4_주의포인트} />
-              </>
-            )}
+              
+            
           </div>
         )}
       </div>

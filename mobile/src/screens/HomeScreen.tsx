@@ -144,6 +144,10 @@ export default function HomeScreen() {
           handleRequestContacts(ref);
           return;
         }
+        if (data.type === 'openAppSettings') {
+          Linking.openSettings();
+          return;
+        }
         if (data.type === 'authToken' && data.token) {
           fetchProfilePhoto(data.token);
           setStoredAuthToken(data.token);

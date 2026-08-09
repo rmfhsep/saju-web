@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
+import Checkbox from "@/components/ui/checkbox"
 
 const AMPM = ["오전", "오후"]
 const HOURS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
@@ -64,8 +65,32 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   )
 }
 
+/** 선택된 값만 보여주는 비활성 Button/Selected — 수정 불가 필드(성별, 양력/음력)에 사용 */
+function SelectedButton({ label, selected }: { label: string; selected: boolean }) {
+  return (
+    <div
+      className={`flex-1 h-[48px] rounded-[4px] flex items-center justify-center text-[16px] font-medium tracking-[-0.32px] ${
+        selected ? "bg-[#e9f1ff] border border-[#b6d0ff] text-[#0f0f10]" : "bg-[#f7f7f8] text-[#dfdfdf]"
+      }`}
+    >
+      {label}
+    </div>
+  )
+}
+
+function SelectedField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-[14px] font-semibold text-[#1f1f1f]">{label}</label>
+      <div className="flex gap-2">{children}</div>
+    </div>
+  )
+}
+
 export default function BirthEditPage() {
   const router = useRouter()
+  const [name, setName] = useState("")
+  const [gender, setGender] = useState("")
   const [calendarType, setCalendarType] = useState("")
   const [birthDate, setBirthDate] = useState("")
   const [unknownTime, setUnknownTime] = useState(false)
@@ -83,6 +108,8 @@ export default function BirthEditPage() {
       .then(res => (res.ok ? res.json() : null))
       .then(user => {
         if (!user) return
+        setName(user.name ?? "")
+        setGender(user.gender ?? "")
         setCalendarType(user.calendarType ?? "")
         setBirthDate(user.birthDate ?? "")
         setUnknownTime(!!user.birthTimeUnknown)
@@ -97,7 +124,6 @@ export default function BirthEditPage() {
     return () => { document.body.style.overflow = prevOverflow }
   }, [showTimePicker])
 
-  const calLabel = calendarType === "LUNAR" ? "음력" : calendarType === "LUNAR_LEAP" ? "음력(윤달)" : "양력"
   const birthDateDisplay = birthDate.length === 8
     ? `${birthDate.slice(0, 4)}.${birthDate.slice(4, 6)}.${birthDate.slice(6, 8)}`
     : ""
@@ -133,7 +159,19 @@ export default function BirthEditPage() {
       <div className={`flex-1 px-5 pt-4 flex flex-col gap-5 scroll-area pb-4 ${showTimePicker ? "overflow-hidden" : "overflow-y-auto"}`}>
         <p className="text-[14px] text-[#777] leading-normal">태어난 시간을 제외한 정보는 수정할 수 없어요.</p>
 
-        <ReadOnlyField label="양력/음력" value={calLabel} />
+        <ReadOnlyField label="이름" value={name} />
+
+        <SelectedField label="성별">
+          <SelectedButton label="남성" selected={gender === "MALE"} />
+          <SelectedButton label="여성" selected={gender === "FEMALE"} />
+        </SelectedField>
+
+        <SelectedField label="양력/음력">
+          <SelectedButton label="양력" selected={calendarType === "SOLAR"} />
+          <SelectedButton label="음력" selected={calendarType === "LUNAR"} />
+          <SelectedButton label="음력(윤달)" selected={calendarType === "LUNAR_LEAP"} />
+        </SelectedField>
+
         <ReadOnlyField label="생년월일" value={birthDateDisplay} />
 
         <div className="flex flex-col gap-3">
@@ -151,18 +189,10 @@ export default function BirthEditPage() {
             </button>
           </div>
           <label className="flex items-center gap-2 cursor-pointer w-fit">
-            <div
-              onClick={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
-              className={`w-[20px] h-[20px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
-                unknownTime ? "bg-[#b6d0ff] border-[#b6d0ff]" : "border-[#e1e2e4]"
-              }`}
-            >
-              {unknownTime && (
-                <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
-                  <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
+            <Checkbox
+              checked={unknownTime}
+              onChange={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
+            />
             <span className="text-[15px] font-medium text-[#1f1f1f]">모름</span>
           </label>
         </div>

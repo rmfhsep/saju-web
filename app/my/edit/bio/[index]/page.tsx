@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
+import TextareaField from "@/components/ui/textarea-field"
 import { PencilIcon } from "@/components/ui/icons"
 
 const MIN = 50
@@ -86,25 +87,23 @@ export default function BioEditPage() {
           </button>
         </div>
         <span className="h-[36px] w-fit flex items-center px-4 bg-[#e9f1ff] border border-[#b6d0ff] rounded-[4px] text-[13px] font-medium text-[#1f1f1f] mb-2">{tag}</span>
-        <div className="relative">
-          <textarea
-            placeholder={`${MIN}자 이상 작성해주세요.`}
-            value={text}
-            onChange={e => setText(e.target.value.slice(0, MAX))}
-            className="w-full h-[124px] border border-[#dbdcdf] rounded-[4px] p-4 text-[15px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] resize-none"
-          />
-          <span className="absolute bottom-3 right-3 text-[12px] text-[#9e9e9e]">{text.length}/{MAX}</span>
-        </div>
+        <TextareaField
+          placeholder={`${MIN}자 이상 작성해주세요.`}
+          value={text}
+          onChange={setText}
+          maxLength={MAX}
+          rows={4}
+        />
       </div>
 
       {showTagConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-10">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowTagConfirm(false)} />
           <div className="relative w-full max-w-[320px] bg-white rounded-[16px] p-5 flex flex-col gap-5">
-            <div className="flex flex-col gap-2 text-center">
+            <div className="flex flex-col gap-2 ">
               <h2 className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px]">태그를 변경할까요?</h2>
               <p className="text-[14px] text-[#777] leading-relaxed tracking-[-0.14px]">
-                태그를 변경하면 작성한 자기소개 내용이<br />사라질 수 있어요.
+                태그를 변경하면 작성한 자기소개 내용이<br />사라져요.
               </p>
             </div>
             <div className="flex gap-2">

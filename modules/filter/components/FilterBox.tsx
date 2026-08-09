@@ -5,7 +5,7 @@ import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
 import CategoryStep from "./CategoryStep"
 import DetailStep from "./DetailStep"
 import { submitFilter } from "../services/filterApi"
-import { defaultHeightRange, HEIGHT_RANGES } from "../constants"
+import { defaultHeightRange, FILTER_VALUE_OPTIONS, HEIGHT_RANGES } from "../constants"
 import type { FilterData } from "../types"
 
 const INITIAL_RANGE = HEIGHT_RANGES.MALE
@@ -42,6 +42,15 @@ export default function FilterBox() {
 
   function update(d: Partial<FilterData>) { setData(prev => ({ ...prev, ...d })) }
 
+  function goDetail() {
+    if (!data.category) return
+    const cat = data.category
+    if (cat !== "height" && !data[cat]) {
+      update({ [cat]: FILTER_VALUE_OPTIONS[cat][0] } as Partial<FilterData>)
+    }
+    setStep("detail")
+  }
+
   async function handleSubmit() {
     if (!data.category || submitting) return
     setSubmitting(true)
@@ -58,7 +67,7 @@ export default function FilterBox() {
       <CategoryStep
         value={data.category}
         onSelect={key => update({ category: key })}
-        onNext={() => data.category && setStep("detail")}
+        onNext={goDetail}
         onBack={bridgeBack}
       />
     )

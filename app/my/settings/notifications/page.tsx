@@ -5,21 +5,8 @@ import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import DeleteAccountAction from "@/components/ui/delete-account-action"
+import ToggleSwitch from "@/components/ui/toggle-switch"
 import { bridgeOpenAppSettings } from "@/lib/bridge"
-
-function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return (
-    <button
-      onClick={() => !disabled && onChange(!on)}
-      disabled={disabled}
-      className={`w-[44px] h-[26px] rounded-full p-[3px] flex items-center transition-colors disabled:opacity-60 ${
-        on ? "bg-[#90b7ff] justify-end" : "bg-[#dfdfdf] justify-start"
-      }`}
-    >
-      <span className="w-5 h-5 rounded-full bg-white shadow-sm" />
-    </button>
-  )
-}
 
 function authFetch(path: string, init?: RequestInit) {
   const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
@@ -106,7 +93,7 @@ export default function NotificationsPage() {
                 혜택, 할인, 이벤트 마케팅 정보 수신 동의
               </p>
             </div>
-            <Toggle on={serviceOn} onChange={handleServiceToggle} disabled={saving} />
+            <ToggleSwitch on={serviceOn} onChange={handleServiceToggle} disabled={saving} />
           </div>
         </div>
 

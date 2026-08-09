@@ -1,3 +1,6 @@
+import {
+  SMOKING_OPTIONS, DRINKING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
+} from "@/modules/profile/constants"
 import type { FilterCategory } from "./types"
 
 export const FILTER_CATEGORIES: { key: FilterCategory; label: string }[] = [
@@ -7,6 +10,13 @@ export const FILTER_CATEGORIES: { key: FilterCategory; label: string }[] = [
   { key: "politics", label: "정치 성향" },
   { key: "religion", label: "종교" },
 ]
+
+export const FILTER_VALUE_OPTIONS: Record<Exclude<FilterCategory, "height">, string[]> = {
+  smoking: SMOKING_OPTIONS,
+  drinking: DRINKING_OPTIONS,
+  politics: POLITICS_OPTIONS,
+  religion: RELIGION_OPTIONS,
+}
 
 // 선호 상대의 키 범위 — 내 성별 기준 이성의 범위 (여성: 140~170+, 남성: 168~200+)
 export const HEIGHT_RANGES = {

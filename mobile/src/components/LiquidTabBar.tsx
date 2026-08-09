@@ -34,41 +34,44 @@ const PILL_SLOT_RATIO = 0.80;
 
 const AnimatedLiquidGlassView = Animated.createAnimatedComponent(LiquidGlassView);
 
-function TabIcon({ tab, active, profilePhotoUrl, scaleAnim }: {
+// Figma "마주 Design System" > Icon/Bottom navigation (node 151:426)와 동일한 벡터.
+// stroke는 active 여부와 상관없이 항상 Gray 850(#1f1f1f) — active일 때 fill이 채워지는 것으로 상태를 구분한다.
+const STROKE = '#1f1f1f';
+
+function TabIcon({ tab, active, profilePhotoUrl, dot, scaleAnim }: {
   tab: TabKey;
   active: boolean;
   profilePhotoUrl?: string;
+  dot?: boolean;
   scaleAnim: Animated.Value;
 }) {
-  const color = active ? '#1f1f1f' : '#8e8e93';
-
   const icon = (() => {
     switch (tab) {
       case 'recommend':
         return (
-          <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Svg width={22} height={22} viewBox="0 0 20.5 20.5" fill="none">
             <Path
-              d="M2 9.5L11 2l9 7.5V20a1 1 0 01-1 1H14v-6H8v6H3a1 1 0 01-1-1V9.5z"
-              stroke={color} strokeWidth={1.6} strokeLinejoin="round"
-              fill={active ? color : 'none'}
+              d="M0.75 7.5225C0.75 7.13258 0.948461 6.76678 1.2826 6.54081L9.51594 0.972904C9.95542 0.675698 10.5446 0.675699 10.9841 0.972904L19.2174 6.54081C19.5515 6.76678 19.75 7.13258 19.75 7.5225V17.9431C19.75 18.941 18.8993 19.75 17.85 19.75H2.65C1.60066 19.75 0.75 18.941 0.75 17.9431V7.5225Z"
+              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
             />
+            <Path d="M5.5 15.5938H15" stroke={active ? '#efefef' : STROKE} strokeWidth={1.5} strokeLinecap="round" />
           </Svg>
         );
       case 'like':
         return (
-          <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Svg width={20.5} height={18} viewBox="0 0 22.5 19.5986" fill="none">
             <Path
-              d="M11 19S3 13.8 3 7.8C3 5 5.2 3 7.8 3c1.3 0 2.5.7 3.2 1.8C11.7 3.7 12.9 3 14.2 3 16.8 3 19 5 19 7.8 19 13.8 11 19 11 19z"
-              stroke={color} strokeWidth={1.6} strokeLinejoin="round"
+              d="M16.0227 0.75C14.5254 0.75 13.1612 1.34357 12.149 2.34069C11.6782 2.80443 10.8218 2.80443 10.351 2.34069C9.33879 1.34357 7.97461 0.75 6.47727 0.75C3.32727 0.75 0.75 3.48553 0.75 6.82895C0.75 12.1202 8.83954 17.4896 10.8175 18.7234C11.0844 18.8898 11.4161 18.8903 11.6834 18.7248C13.6631 17.4987 21.75 12.1638 21.75 6.82895C21.75 3.48553 19.1727 0.75 16.0227 0.75Z"
+              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
             />
           </Svg>
         );
       case 'message':
         return (
-          <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+          <Svg width={19.5} height={20} viewBox="0 0 21.4981 21.5" fill="none">
             <Path
-              d="M4 4h14a1 1 0 011 1v9a1 1 0 01-1 1H8.5L4 18.5V15a1 1 0 01-1-1V5a1 1 0 011-1z"
-              stroke={color} strokeWidth={1.6} strokeLinejoin="round"
+              d="M19.9926 14.57C20.4795 13.3931 20.7481 12.1029 20.7481 10.75C20.7481 5.22715 16.2714 0.75 10.7491 0.75C5.22673 0.75 0.75 5.22715 0.75 10.75C0.75 16.2728 5.22673 20.75 10.7491 20.75C12.4087 20.75 13.974 20.3456 15.3516 19.63C15.5406 19.5318 15.7584 19.501 15.9649 19.5527L19.5477 20.4484C20.1218 20.592 20.6584 20.108 20.5747 19.5222L19.9325 15.0259C19.9104 14.8714 19.933 14.7142 19.9926 14.57Z"
+              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
             />
           </Svg>
         );
@@ -82,9 +85,9 @@ function TabIcon({ tab, active, profilePhotoUrl, scaleAnim }: {
           );
         }
         return (
-          <Svg width={22} height={22} viewBox="0 0 22 22" fill="none">
-            <Circle cx={11} cy={7.5} r={4} stroke={color} strokeWidth={1.6} />
-            <Path d="M3 19c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth={1.6} strokeLinecap="round" />
+          <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+            <Circle cx={10} cy={6.5} r={3.5} stroke={STROKE} strokeWidth={1.5} />
+            <Path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" />
           </Svg>
         );
     }
@@ -92,7 +95,10 @@ function TabIcon({ tab, active, profilePhotoUrl, scaleAnim }: {
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      {icon}
+      <View>
+        {icon}
+        {dot && <View style={styles.dot} />}
+      </View>
     </Animated.View>
   );
 }
@@ -101,10 +107,14 @@ export default function LiquidTabBar({
   active,
   onPress,
   profilePhotoUrl,
+  hasNewLike,
+  hasNewMessage,
 }: {
   active: TabKey | null;
   onPress: (tab: TabKey) => void;
   profilePhotoUrl?: string;
+  hasNewLike?: boolean;
+  hasNewMessage?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const activeIdx = Math.max(0, active ? TABS.findIndex(t => t.key === active) : 0);
@@ -224,6 +234,7 @@ export default function LiquidTabBar({
               tab={tab.key}
               active={isActive}
               profilePhotoUrl={profilePhotoUrl}
+              dot={tab.key === 'like' ? hasNewLike : tab.key === 'message' ? hasNewMessage : false}
               scaleAnim={scaleAnims[tab.key]}
             />
             <Text style={[styles.label, isActive && styles.labelActive]}>
@@ -336,6 +347,16 @@ const styles = StyleSheet.create({
   profilePhotoActive: {
     borderWidth: 1.5,
     borderColor: '#1a75ff',
+  },
+  // Figma: Atomic/Red/Red 550 (#FF4242), 6px, 아이콘 우상단
+  dot: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#ff4242',
   },
   pill: {
     position: 'absolute',

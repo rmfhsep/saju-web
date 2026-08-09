@@ -42,6 +42,7 @@ export default function MyFilterPage() {
   const [step, setStep] = useState<"category" | "detail">("category")
   const [gender, setGender] = useState<string>("MALE")
   const [category, setCategory] = useState<FilterCategory>("height")
+  const [savedValues, setSavedValues] = useState<Partial<Record<Exclude<FilterCategory, "height">, string>>>({})
   const [value, setValue] = useState<string>("")
   const [heightMin, setHeightMin] = useState<number>(0)
   const [heightMax, setHeightMax] = useState<number>(0)
@@ -65,21 +66,19 @@ export default function MyFilterPage() {
         if (preset) setCategory(preset)
         setHeightMin(u.preferredHeightMin ?? def.min)
         setHeightMax(u.preferredHeightMax ?? def.max)
-        if (preset && preset !== "height") {
-          const v =
-            preset === "smoking" ? u.preferredSmoking :
-            preset === "drinking" ? u.preferredDrinking :
-            preset === "politics" ? u.preferredPolitics :
-            preset === "religion" ? u.preferredReligion : null
-          if (v) setValue(v)
-        }
+        setSavedValues({
+          smoking: u.preferredSmoking ?? undefined,
+          drinking: u.preferredDrinking ?? undefined,
+          politics: u.preferredPolitics ?? undefined,
+          religion: u.preferredReligion ?? undefined,
+        })
       })
       .catch(() => {})
   }, [])
 
   function goDetail() {
-    if (category !== "height" && !value) {
-      setValue(OPTIONS[category][0])
+    if (category !== "height") {
+      setValue(savedValues[category] ?? OPTIONS[category][0])
     }
     setStep("detail")
   }
@@ -144,7 +143,7 @@ export default function MyFilterPage() {
         <BackButton onClick={() => setStep("category")} />
         <span className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">선호하는 {LABELS[category]}</span>
       </div>
-      <div className="flex-1 px-5 pt-4 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-4 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">{DETAIL_TITLES[category]}</h1>
 
         {category === "height" ? (

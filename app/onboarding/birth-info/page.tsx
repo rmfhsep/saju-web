@@ -5,6 +5,7 @@ import { bridgeNavigate } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
+import Checkbox from "@/components/ui/checkbox"
 
 type Gender = "MALE" | "FEMALE" | ""
 type CalendarType = "SOLAR" | "LUNAR" | "LUNAR_LEAP" | ""
@@ -145,7 +146,7 @@ export default function BirthInfoPage() {
       {/* 출생 정보 입력 진입 시 뒤로가기 불가 — Top navigation 미노출 */}
       <div className="h-[54px] shrink-0" />
 
-      <div className="flex-1 px-5 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-3">
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             정확한 연애운 분석을 위해<br />출생 정보를 알려주세요.
@@ -227,18 +228,10 @@ export default function BirthInfoPage() {
               </button>
             </div>
             <label className="flex items-center gap-2 cursor-pointer w-fit">
-              <div
-                onClick={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
-                className={`w-[20px] h-[20px] border rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer ${
-                  unknownTime ? "bg-[#b6d0ff] border-[#b6d0ff]" : "border-[#e1e2e4]"
-                }`}
-              >
-                {unknownTime && (
-                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
-                    <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
+              <Checkbox
+                checked={unknownTime}
+                onChange={() => { setUnknownTime(!unknownTime); if (!unknownTime) setBirthTime("") }}
+              />
               <span className="text-[15px] font-medium text-[#1f1f1f] tracking-[-0.3px]">모름</span>
             </label>
           </div>

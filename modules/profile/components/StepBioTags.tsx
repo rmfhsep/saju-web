@@ -123,7 +123,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
           </p>
         </div>
 
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <p className="text-[12px] font-medium text-[#1a75ff]">3개 선택 필수</p>
             <div className="flex flex-wrap gap-2">
@@ -176,7 +176,7 @@ export default function StepBioTags({ data, onChange, onNext, onBack, step }: St
                 type="text"
                 value={customInput}
                 onChange={e => setCustomInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addCustom()}
+                onKeyDown={e => e.key === "Enter" && !e.nativeEvent.isComposing && addCustom()}
                 placeholder="입력 후 엔터를 누르세요."
                 autoFocus
                 className="h-[48px] border border-[#dbdcdf] rounded-[4px] px-4 text-[16px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] tracking-[-0.32px]"

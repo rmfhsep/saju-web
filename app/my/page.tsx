@@ -6,7 +6,13 @@ import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
-import StarIcon from "@/components/ui/star-icon";
+import StarChip from "@/components/ui/star-chip";
+import FilterIcon from "@/public/icons/filter.svg"
+import LoveLuckIcon from "@/public/icons/loveluck.svg"
+import ProhibitionIcon from "@/public/icons/prohibition.svg"
+import SettingIcon from "@/public/icons/setting.svg"
+import KakaoIcon from "@/public/icons/kakao.svg"
+import Image from "next/image";
 
 // 문의하기 → 카카오톡 비즈니스 채널 1:1 채팅
 const KAKAO_CHANNEL_CHAT_URL = "https://pf.kakao.com/_VaWxfX/chat";
@@ -129,15 +135,7 @@ export default function MyPage() {
         <span className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           {displayName}
         </span>
-        <button
-          onClick={() => router.push("/my/store")}
-          className="flex items-center gap-1 h-[34px] pl-3 pr-3.5 bg-[#fff5e5] rounded-full active:opacity-80"
-        >
-          <StarIcon size={20} color="#FFA100" />
-          <span className="text-[16px] font-bold text-[#ff7b2e] tracking-[-0.32px]">
-            {user?.stars ?? 0}
-          </span>
-        </button>
+        <StarChip stars={user?.stars ?? 0} onClick={() => router.push("/my/store")} />
       </div>
 
       {/* 프로필 */}
@@ -170,91 +168,28 @@ export default function MyPage() {
           subtitle={summary}
           onClick={() => router.push("/my/filter")}
           icon={
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M3 6h9M15 6h2M3 14h2M8 14h9"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <circle
-                cx="13.5"
-                cy="6"
-                r="2"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-              />
-              <circle
-                cx="6.5"
-                cy="14"
-                r="2"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-              />
-            </svg>
+            <Image src={FilterIcon} alt="filter" width={20} height={20} />
           }
         />
         <ListCell
           label="내 연애운 리포트"
           onClick={() => router.push("/my/report")}
           icon={
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <rect
-                x="3.5"
-                y="2.5"
-                width="13"
-                height="15"
-                rx="2"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M10 12.2c-2-1.3-3.2-2.4-3.2-3.7 0-1 .8-1.6 1.6-1.6.6 0 1.2.3 1.6.9.4-.6 1-.9 1.6-.9.8 0 1.6.6 1.6 1.6 0 1.3-1.2 2.4-3.2 3.7z"
-                fill="#1f1f1f"
-              />
-            </svg>
+            <Image src={LoveLuckIcon} alt="love luck" width={20} height={20} />
           }
         />
         <ListCell
           label="지인 차단"
           onClick={() => router.push("/my/blocking")}
           icon={
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle
-                cx="10"
-                cy="10"
-                r="7.5"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M5 15L15 5"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Image src={ProhibitionIcon} alt="prohibition" width={20} height={20} />
           }
         />
         <ListCell
           label="설정"
           onClick={() => router.push("/my/settings")}
           icon={
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle
-                cx="10"
-                cy="10"
-                r="2.5"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4M15.3 15.3l-1.4-1.4M6.1 6.1L4.7 4.7"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Image src={SettingIcon} alt="setting" width={20} height={20} />
           }
         />
         <ListCell
@@ -263,14 +198,7 @@ export default function MyPage() {
             window.location.href = KAKAO_CHANNEL_CHAT_URL;
           }}
           icon={
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M4 4.5h12a1 1 0 011 1v7a1 1 0 01-1 1H8l-3 2.5v-2.5a1 1 0 01-1-1v-7a1 1 0 011-1z"
-                stroke="#1f1f1f"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Image src={KakaoIcon} alt="kakao" width={20} height={20} />
           }
         />
       </div>

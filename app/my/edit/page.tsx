@@ -58,6 +58,7 @@ export default function ProfileEditPage() {
   const [data, setData] = useState<EditData | null>(null)
 
   // 사진 롱프레스 드래그 순서 변경
+  const [showRequiredModal, setShowRequiredModal] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const slotRefs = useRef<(HTMLDivElement | null)[]>([])
   const gridRef = useRef<HTMLDivElement>(null)
@@ -142,6 +143,11 @@ export default function ProfileEditPage() {
   }
   function deletePhoto(idx: number) {
     if (!data) return
+    // 정면 사진 2장은 필수라 2장뿐일 때 삭제하면 최소 요건을 못 채우므로 안내 모달만 띄운다
+    if (data.photos.length <= 2) {
+      setShowRequiredModal(true)
+      return
+    }
     savePhotos(data.photos.filter((_, i) => i !== idx))
   }
 
@@ -224,7 +230,7 @@ export default function ProfileEditPage() {
   return (
     <Screen>
       <EditHeader title="프로필 편집" onBack={() => router.back()} />
-      <div className="flex-1 scroll-area overflow-y-auto pb-9 flex flex-col gap-10">
+      <div className="flex-1 scroll-area overflow-y-auto pb-9 flex flex-col gap-12">
 
         {/* 프로필 사진 */}
         <section className="flex flex-col gap-3">
@@ -284,7 +290,7 @@ export default function ProfileEditPage() {
               >
                 <div className="flex items-center justify-between w-full">
                   <span className="h-[36px] flex items-center px-4 bg-[#e9f1ff] border border-[#b6d0ff] rounded-[4px] text-[13px] font-medium text-[#1f1f1f]">{tag}</span>
-                  <span className="text-[14px] font-semibold text-[#777]">수정</span>
+                  <span className="text-body3Semibold underline text-[#777]">수정</span>
                 </div>
                 <div className="w-full bg-white border border-[#dbdcdf] rounded-[4px] px-4 py-3">
                   <p className="text-[15px] text-[#1f1f1f] leading-normal tracking-[-0.3px] line-clamp-3">
@@ -321,6 +327,25 @@ export default function ProfileEditPage() {
           </div>
         </section>
       </div>
+
+      {/* 정면 사진 2장 필수 안내 모달 (Figma 176:4903) */}
+      {showRequiredModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
+          <div className="absolute inset-0 bg-black/61" onClick={() => setShowRequiredModal(false)} />
+          <div className="relative bg-white rounded-[8px] p-5 w-[312px] flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">정면 사진 2장은 필수예요.</p>
+              <p className="text-[15px] text-[#777] tracking-[-0.3px]">먼저 새로운 사진을 올리고, 바꾸고 싶은 사진을 삭제해 주세요.</p>
+            </div>
+            <button
+              onClick={() => setShowRequiredModal(false)}
+              className="w-full h-[48px] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </Screen>
   )
 }
@@ -365,7 +390,7 @@ function EditPhotoSlot({ url, required, loading, dragging, onClick, onDelete, on
             alt=""
             draggable={false}
             onDragStart={e => e.preventDefault()}
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            className="absolute inset-0 z-0 w-full h-full object-cover pointer-events-none"
             style={{ WebkitUserDrag: "none" } as React.CSSProperties}
           />
         ) : (
@@ -374,8 +399,8 @@ function EditPhotoSlot({ url, required, loading, dragging, onClick, onDelete, on
             <path d="M16 10v12M10 16h12" stroke="#c0c0c0" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         )}
-        {!url && required && (
-          <span className="absolute top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-full leading-[1.4] pointer-events-none">필수</span>
+        {required && (
+          <span className="absolute z-10 top-2 left-2 bg-[#1a75ff] text-white text-[12px] font-medium px-[6px] py-px rounded-full leading-[1.4] pointer-events-none">필수</span>
         )}
       </button>
       {url && (

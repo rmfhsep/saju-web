@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
+import TextareaField from "@/components/ui/textarea-field"
 import StepHeader from "./StepHeader"
 import type { StepProps } from "../types"
 
@@ -23,7 +24,7 @@ export default function StepBio({ data, onChange, onNext, onBack, step }: StepPr
   return (
     <Screen className="relative">
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <div className="flex flex-col gap-3">
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
             자기소개를 작성해주세요.
@@ -41,17 +42,13 @@ export default function StepBio({ data, onChange, onNext, onBack, step }: StepPr
               <span className="self-start h-[36px] flex items-center px-4 bg-[#e9f1ff] border border-[#b6d0ff] rounded-[4px] text-[13px] font-medium text-[#1f1f1f]">
                 {tag}
               </span>
-              <div className="relative">
-                <textarea
-                  placeholder="50자 이상 작성해주세요."
-                  value={data.bio[tag] ?? ""}
-                  onChange={e => onChange({ bio: { ...data.bio, [tag]: e.target.value.slice(0, MAX) } })}
-                  className="w-full min-h-[93px] border border-[#dbdcdf] rounded-[4px] px-4 pt-3 pb-8 text-[15px] text-[#1f1f1f] placeholder:text-[#b7b7b7] outline-none focus:border-[#90b7ff] resize-none tracking-[-0.3px] leading-normal"
-                />
-                <span className="absolute bottom-3 right-3 text-[12px] font-medium text-[#777]">
-                  {(data.bio[tag] ?? "").length}/{MAX}
-                </span>
-              </div>
+              <TextareaField
+                placeholder="50자 이상 작성해주세요."
+                value={data.bio[tag] ?? ""}
+                onChange={v => onChange({ bio: { ...data.bio, [tag]: v } })}
+                maxLength={MAX}
+                rows={2}
+              />
             </div>
           ))}
         </div>

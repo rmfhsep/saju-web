@@ -6,6 +6,7 @@ import { bridgeNavigate, bridgeOpenSms, bridgeSyncAuthToken, navigateAndReplace 
 import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
+import Checkbox from "@/components/ui/checkbox"
 import { CheckCircleIcon } from "@/components/ui/icons"
 
 type Step = "start" | "loading" | "password" | "blocked"
@@ -46,24 +47,6 @@ function EyeIcon({ visible }: { visible: boolean }) {
       <path d="M3 3l14 14M8.5 8.7A2.5 2.5 0 0 0 12 12.5M5.5 5.7C3.6 7 2 10 2 10s3 6 8 6c1.8 0 3.4-.6 4.7-1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
       <path d="M10 4c5 0 8 6 8 6a14 14 0 0 1-2 2.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
-  )
-}
-
-function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={e => { e.stopPropagation(); onChange() }}
-      className={`w-[20px] h-[20px] rounded-[4px] flex items-center justify-center shrink-0 transition-colors ${
-        checked ? "bg-[#b6d0ff]" : "border border-[#e1e2e4]"
-      }`}
-    >
-      {checked && (
-        <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
-          <path d="M1.5 5L5 8.5L11.5 1.5" stroke="#1f1f1f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      )}
-    </button>
   )
 }
 

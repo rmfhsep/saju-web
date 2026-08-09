@@ -46,7 +46,7 @@ export default function NicknameEditPage() {
         onBack={() => router.back()}
         action={{ label: "저장", onClick: handleSave, disabled: !valid || saving }}
       />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <div>
           <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">닉네임을 입력해주세요.</h1>
           <p className="mt-2 text-[14px] text-[#777] leading-normal">

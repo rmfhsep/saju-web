@@ -85,12 +85,12 @@ export function CloseIcon({ size, color = "#1f1f1f", className }: IconProps) {
     </svg>
   )
 }
-/** 회색 원형 닫기(삭제) — 태그/사진 삭제용. Gray400 배경 + 흰 X */
-export function CloseCircleIcon({ size, color = "#b7b7b7", className }: IconProps) {
+/** 반투명 원형 닫기(삭제) — 태그 삭제용. Gray850 61% 배경 + 흰 X (Figma 161:3676) */
+export function CloseCircleIcon({ size, color = "#1f1f1f", className }: IconProps) {
   return (
-    <svg width={S(size)} height={S(size)} viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="12" cy="12" r="12" fill={color} />
-      <path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
+    <svg width={S(size)} height={S(size)} viewBox="0 0 14 14" fill="none" className={className}>
+      <circle cx="7" cy="7" r="7" fill={color} opacity="0.61" />
+      <path d="M9 5L5 9M5 5L9 9" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -106,10 +106,10 @@ export function CheckIcon({ size, color = "#1a75ff", className }: IconProps) {
 /** 파랑 원형 체크 — 완료/계정확인. Blue600 배경 + 흰 체크 */
 export function CheckCircleIcon({ size, color = "#1a75ff", className }: IconProps) {
   return (
-    <svg width={S(size)} height={S(size)} viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="12" cy="12" r="12" fill={color} />
-      <path d="M6.5 12.5L10.5 16.5L17.5 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <circle cx="28" cy="28" r="28" fill="#69A5FF"/>
+  <path d="M19 28L25 34L37 22" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
   )
 }
 

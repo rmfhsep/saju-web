@@ -10,7 +10,7 @@ export default function StepHeight({ data, onChange, onNext, onBack, step }: Ste
   return (
     <Screen>
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-10 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">키를 알려주세요.</h1>
         <div className="flex items-center gap-3">
           <input

@@ -30,7 +30,7 @@ export default function StepJob({ data, onChange, onNext, onBack, step }: StepPr
     return (
       <Screen>
         <StepHeader onBack={() => setShowDetail(false)} step={step} title="프로필 설정" />
-        <div className="px-5 pt-6 flex flex-col gap-10 shrink-0">
+        <div className="px-5 pt-6 flex flex-col gap-12 shrink-0">
           <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">
             {isProfessional ? "전문직 종류를 선택해주세요." : "직무명을 입력해주세요."}
           </h1>
@@ -81,7 +81,7 @@ export default function StepJob({ data, onChange, onNext, onBack, step }: StepPr
   return (
     <Screen>
       <StepHeader onBack={onBack} step={step} title="프로필 설정" />
-      <div className="px-5 pt-6 flex flex-col gap-10 shrink-0">
+      <div className="px-5 pt-6 flex flex-col gap-12 shrink-0">
         <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35]">직업을 알려주세요.</h1>
         <div className="flex items-center gap-2 h-[48px] bg-[#f4f4f5] rounded-[4px] px-4">
           <SearchIcon size={20} />

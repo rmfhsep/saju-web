@@ -5,7 +5,7 @@ import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
-import StarIcon from "@/components/ui/star-icon";
+import StarChip from "@/components/ui/star-chip";
 import { calcAge } from "@/lib/age";
 import { useRouter } from "next/navigation";
 
@@ -306,12 +306,7 @@ export default function HomePage() {
         <h1 className="flex-1 text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           추천
         </h1>
-        <div className="flex items-center gap-1 px-3 py-1 rounded-[40px] bg-[#fff5e5] shrink-0">
-          <StarIcon size={20} />
-          <span className="text-[16px] font-semibold text-[#ff7b2e] tracking-[-0.32px]">
-            {user.stars}
-          </span>
-        </div>
+        <StarChip stars={user.stars} className="shrink-0" />
       </div>
 
       <div className="flex-1 flex flex-col gap-5 pt-2">

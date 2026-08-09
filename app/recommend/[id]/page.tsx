@@ -6,6 +6,7 @@ import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import CtaButton from "@/components/ui/cta-button"
 import StarIcon from "@/components/ui/star-icon"
+import TextareaField from "@/components/ui/textarea-field"
 import {
   ProfileChipIcon,
   MoreDotsIcon,
@@ -382,20 +383,15 @@ export default function ProfileDetailPage() {
                 <StarCostRow cost={messageCost} balance={myStars} />
               </div>
 
-              <div className="flex flex-col gap-2">
-                <p className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px]">메시지 작성</p>
-                <div className={`rounded-[4px] border border-[#dbdcdf] px-4 py-3 ${insufficientForMessage ? "bg-[#f5f5f5]" : "bg-white"}`}>
-                  <textarea
-                    disabled={insufficientForMessage}
-                    value={messageText}
-                    onChange={e => setMessageText(e.target.value.slice(0, MESSAGE_MAX))}
-                    placeholder="메시지를 작성해주세요."
-                    rows={3}
-                    className="w-full resize-none text-[15px] tracking-[-0.3px] placeholder:text-[#b7b7b7] outline-none bg-transparent text-[#1f1f1f]"
-                  />
-                  <div className="text-right text-[12px] font-medium text-[#777]">{messageText.length}/{MESSAGE_MAX}</div>
-                </div>
-              </div>
+              <TextareaField
+                label="메시지 작성"
+                disabled={insufficientForMessage}
+                value={messageText}
+                onChange={setMessageText}
+                placeholder="메시지를 작성해주세요."
+                maxLength={MESSAGE_MAX}
+                rows={3}
+              />
             </div>
 
             <div className="w-full px-5 pb-5" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}>

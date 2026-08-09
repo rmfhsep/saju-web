@@ -1,14 +1,11 @@
 "use client"
 
-import { useEffect } from "react"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import RadioOption from "@/components/ui/radio-option"
-import {
-  SMOKING_OPTIONS, DRINKING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
-} from "@/modules/profile/constants"
+import { FILTER_VALUE_OPTIONS } from "../constants"
 import HeightRangeSlider from "./HeightRangeSlider"
 import type { FilterCategory, FilterData } from "../types"
 
@@ -18,13 +15,6 @@ const TITLES: Record<FilterCategory, string> = {
   drinking: "선호하는 음주 빈도를 선택해주세요.",
   politics: "선호하는 정치 성향을 선택해주세요.",
   religion: "선호하는 종교를 선택해주세요.",
-}
-
-const OPTIONS: Record<Exclude<FilterCategory, "height">, string[]> = {
-  smoking: SMOKING_OPTIONS,
-  drinking: DRINKING_OPTIONS,
-  politics: POLITICS_OPTIONS,
-  religion: RELIGION_OPTIONS,
 }
 
 interface Props {
@@ -39,19 +29,12 @@ interface Props {
 }
 
 export default function DetailStep({ category, data, heightMin, heightMax, onChange, onSubmit, onBack, submitting }: Props) {
-  useEffect(() => {
-    if (category !== "height" && !data[category]) {
-      onChange({ [category]: OPTIONS[category][0] } as Partial<FilterData>)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category])
-
   return (
     <Screen>
       <div className="h-[54px] flex items-center px-5">
         <BackButton onClick={onBack} />
       </div>
-      <div className="flex-1 px-5 pt-6 flex flex-col gap-8 scroll-area overflow-y-auto pb-4">
+      <div className="flex-1 px-5 pt-6 flex flex-col gap-12 scroll-area overflow-y-auto pb-4">
         <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">{TITLES[category]}</h1>
 
         {category === "height" ? (
@@ -76,7 +59,7 @@ export default function DetailStep({ category, data, heightMin, heightMax, onCha
           </div>
         ) : (
           <div className="flex flex-col gap-[10px]">
-            {OPTIONS[category].map(opt => (
+            {FILTER_VALUE_OPTIONS[category].map(opt => (
               <RadioOption
                 key={opt}
                 label={opt}

@@ -1,6 +1,401 @@
 @import "tailwindcss";
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
+/*
+ * 타이포그래피 스케일 — Figma Design System "Typography" (node 114:517) 기준.
+ * font-size + line-height + letter-spacing + font-weight을 한 번에 적용하는 커스텀 유틸리티.
+ * 사용 예: className="text-body1Medium"
+ * (13px/12px는 Figma에서 둘 다 "Label 3"으로 표기되어 있어 12px 쪽을 label4로 구분함)
+ */
+@utility text-display1Bold {
+  font-size: 40px;
+  line-height: 1.4;
+  letter-spacing: -0.8px;
+  font-weight: 700;
+}
+
+@utility text-display1Semibold {
+  font-size: 40px;
+  line-height: 1.4;
+  letter-spacing: -0.8px;
+  font-weight: 600;
+}
+
+@utility text-display1Medium {
+  font-size: 40px;
+  line-height: 1.4;
+  letter-spacing: -0.8px;
+  font-weight: 500;
+}
+
+@utility text-display2Bold {
+  font-size: 36px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  font-weight: 700;
+}
+
+@utility text-display2Semibold {
+  font-size: 36px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  font-weight: 600;
+}
+
+@utility text-display2Medium {
+  font-size: 36px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  font-weight: 500;
+}
+
+@utility text-heading1Bold {
+  font-size: 32px;
+  line-height: 1.4;
+  letter-spacing: -0.64px;
+  font-weight: 700;
+}
+
+@utility text-heading1Semibold {
+  font-size: 32px;
+  line-height: 1.4;
+  letter-spacing: -0.64px;
+  font-weight: 600;
+}
+
+@utility text-heading1Medium {
+  font-size: 32px;
+  line-height: 1.4;
+  letter-spacing: -0.64px;
+  font-weight: 500;
+}
+
+@utility text-heading2Bold {
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: -0.56px;
+  font-weight: 700;
+}
+
+@utility text-heading2Semibold {
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: -0.56px;
+  font-weight: 600;
+}
+
+@utility text-heading2Medium {
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: -0.56px;
+  font-weight: 500;
+}
+
+@utility text-heading3Bold {
+  font-size: 24px;
+  line-height: 1.4;
+  letter-spacing: -0.48px;
+  font-weight: 700;
+}
+
+@utility text-heading3Semibold {
+  font-size: 24px;
+  line-height: 1.4;
+  letter-spacing: -0.48px;
+  font-weight: 600;
+}
+
+@utility text-heading3Medium {
+  font-size: 24px;
+  line-height: 1.4;
+  letter-spacing: -0.48px;
+  font-weight: 500;
+}
+
+@utility text-heading4Bold {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.44px;
+  font-weight: 700;
+}
+
+@utility text-heading4Semibold {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.44px;
+  font-weight: 600;
+}
+
+@utility text-heading4Medium {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.44px;
+  font-weight: 500;
+}
+
+@utility text-subheading1Bold {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.4px;
+  font-weight: 700;
+}
+
+@utility text-subheading1Semibold {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.4px;
+  font-weight: 600;
+}
+
+@utility text-subheading1Medium {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.4px;
+  font-weight: 500;
+}
+
+@utility text-subheading2Bold {
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.36px;
+  font-weight: 700;
+}
+
+@utility text-subheading2Semibold {
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.36px;
+  font-weight: 600;
+}
+
+@utility text-subheading2Medium {
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.36px;
+  font-weight: 500;
+}
+
+@utility text-subheading3Bold {
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: -0.34px;
+  font-weight: 700;
+}
+
+@utility text-subheading3Semibold {
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: -0.34px;
+  font-weight: 600;
+}
+
+@utility text-subheading3Medium {
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: -0.34px;
+  font-weight: 500;
+}
+
+@utility text-body1Bold {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.32px;
+  font-weight: 700;
+}
+
+@utility text-body1Semibold {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.32px;
+  font-weight: 600;
+}
+
+@utility text-body1Medium {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.32px;
+  font-weight: 500;
+}
+
+@utility text-body1Regular {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.32px;
+  font-weight: 400;
+}
+
+@utility text-body2Bold {
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  font-weight: 700;
+}
+
+@utility text-body2Semibold {
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  font-weight: 600;
+}
+
+@utility text-body2Medium {
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  font-weight: 500;
+}
+
+@utility text-body2Regular {
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  font-weight: 400;
+}
+
+@utility text-body3Bold {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  font-weight: 700;
+}
+
+@utility text-body3Semibold {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  font-weight: 600;
+}
+
+@utility text-body3Medium {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  font-weight: 500;
+}
+
+@utility text-body3Regular {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  font-weight: 400;
+}
+
+@utility text-label1Bold {
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  font-weight: 700;
+}
+
+@utility text-label1Semibold {
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  font-weight: 600;
+}
+
+@utility text-label1Medium {
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  font-weight: 500;
+}
+
+@utility text-label1Regular {
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  font-weight: 400;
+}
+
+@utility text-label2Bold {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  font-weight: 700;
+}
+
+@utility text-label2Semibold {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  font-weight: 600;
+}
+
+@utility text-label2Medium {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  font-weight: 500;
+}
+
+@utility text-label2Regular {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  font-weight: 400;
+}
+
+@utility text-label3Semibold {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+@utility text-label3Medium {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+@utility text-label3Regular {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+@utility text-label4Semibold {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+@utility text-label4Medium {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+@utility text-label4Regular {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+@utility text-caption1Medium {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+@utility text-caption1Regular {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+@utility text-caption2Medium {
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+@utility text-caption2Regular {
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
 * {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-tap-highlight-color: transparent;
