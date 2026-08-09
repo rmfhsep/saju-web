@@ -153,7 +153,15 @@ function RecoCard({
       </div>
       <div
         className="absolute inset-0 rounded-[8px]"
-        style={{ background: "rgba(31, 31, 31, 0.52)", backdropFilter: "blur(10px)" }}
+        style={{
+          background: "rgba(31, 31, 31, 0.52)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          // 스와이프 스크롤 중 backdrop-filter가 프레임마다 재계산되면서 깜빡이는 WebKit 버그 방지 —
+          // 별도 GPU 컴포지팅 레이어로 승격시켜 스크롤과 독립적으로 렌더링되게 한다.
+          transform: "translateZ(0)",
+          willChange: "transform",
+        } as React.CSSProperties}
       />
 
       <div className="absolute left-5 right-5 bottom-[28px] flex flex-col gap-2">

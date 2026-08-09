@@ -17,9 +17,11 @@ interface Props extends Omit<StepProps, "data" | "onChange"> {
 
 export default function StepRadio({ title, options, value, onChange, onNext, onBack, step }: Props) {
   useEffect(() => {
+    // options는 스텝마다 다른 모듈 상수 배열이라, 참조가 바뀔 때(=스텝 전환 시)마다 다시 체크된다.
+    // 같은 컴포넌트 인스턴스가 5~9단계에 걸쳐 재사용되므로 마운트 시 1회만 실행되는 []는 이후 스텝에서 동작하지 않는다.
     if (!value && options.length > 0) onChange(options[0])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [options])
 
   return (
     <Screen>

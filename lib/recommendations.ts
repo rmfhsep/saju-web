@@ -75,31 +75,36 @@ export async function getDailyRecommendations(userId: number): Promise<{ users: 
   if (!opposite) return { users: await getRecommendedList(userId), noNewToday: false }
 
   const needsCheck = !me?.lastRecoCheckAt || Date.now() - me.lastRecoCheckAt.getTime() >= RECO_CHECK_INTERVAL_MS
+  let lastCheckAt = me?.lastRecoCheckAt ?? null
 
   if (needsCheck) {
+    const checkedAt = new Date()
     await prisma.$transaction(async tx => {
       const existing = await tx.recommendation.findMany({ where: { userId }, select: { recommendedId: true } })
       const candidates = await findEligibleCandidates(tx, userId, opposite, existing.map(r => r.recommendedId), DAILY_RECO_LIMIT)
 
       if (candidates.length > 0) {
         await tx.recommendation.createMany({
-          data: candidates.map(c => ({ userId, recommendedId: c.id })),
+          data: candidates.map(c => ({ userId, recommendedId: c.id, createdAt: checkedAt })),
           skipDuplicates: true,
         })
       }
-      await tx.user.update({ where: { id: userId }, data: { lastRecoCheckAt: new Date() } })
+      await tx.user.update({ where: { id: userId }, data: { lastRecoCheckAt: checkedAt } })
     })
+    lastCheckAt = checkedAt
   }
 
-  // "오늘은 추천 인연이 없어요" 카드는 24시간 체크 주기와 무관하게, 지금 시점에 아직
-  // 추천 안 한 후보가 실제로 남아있는지로 매번 새로 판단한다 — needsCheck=false인
-  // (하루 안에 재방문한) 요청에서도 상태가 유지되도록.
+  // "오늘은 추천 인연이 없어요" 카드는 "후보 풀이 바닥났는지"가 아니라 "가장 최근 체크 주기에서
+  // 실제로 새 추천이 추가됐는지"로 판단한다 — 이번 주기에 추천을 받았으면(그게 마지막 남은
+  // 후보였더라도) 표시하지 않고, 다음 24시간 주기에 추가된 게 하나도 없을 때만 표시한다.
+  // Recommendation.createdAt을 lastRecoCheckAt과 동일한 시각으로 심어두었기 때문에
+  // needsCheck=false로 같은 날 재방문한 요청에서도 그 주기의 결과가 그대로 유지된다.
   const users = await getRecommendedList(userId)
-  const remaining = await prisma.user.count({
-    where: { gender: opposite, profileComplete: true, id: { notIn: [...users.map(u => u.id), userId] } },
-  })
+  const foundInLastCheck = lastCheckAt
+    ? await prisma.recommendation.count({ where: { userId, createdAt: lastCheckAt } })
+    : 0
 
-  return { users, noNewToday: remaining === 0 }
+  return { users, noNewToday: foundInLastCheck === 0 }
 }
 
 /**

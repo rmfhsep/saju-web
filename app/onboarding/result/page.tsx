@@ -459,7 +459,13 @@ function ResultContent() {
                         )}
                         <div
                           className="absolute inset-0 rounded-[8px]"
-                          style={{ background: "rgba(31,31,31,0.52)", backdropFilter: "blur(10px)" }}
+                          style={{
+                            background: "rgba(31,31,31,0.52)",
+                            backdropFilter: "blur(10px)",
+                            WebkitBackdropFilter: "blur(10px)",
+                            transform: "translateZ(0)",
+                            willChange: "transform",
+                          } as React.CSSProperties}
                         />
                         <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
                           <div className="flex items-center gap-1">
