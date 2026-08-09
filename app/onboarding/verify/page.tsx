@@ -7,7 +7,7 @@ import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import Checkbox from "@/components/ui/checkbox"
-import { CheckCircleIcon } from "@/components/ui/icons"
+import { CheckCircleBlueIcon, CheckCircleIcon } from "@/components/ui/icons"
 
 type Step = "start" | "loading" | "password" | "blocked"
 type Mode = "register" | "reset"
@@ -398,7 +398,7 @@ function VerifyForm() {
             <label className="text-[14px] font-semibold text-[#1f1f1f] leading-normal tracking-[-0.14px]">아이디</label>
             <div className="h-[48px] bg-[#f5f5f5] border border-[#dbdcdf] rounded-[4px] px-4 flex items-center justify-between gap-3">
               <span className="text-[16px] text-[#777] leading-normal tracking-[-0.32px]">{formatPhone(rawPhone)}</span>
-              <CheckCircleIcon size={24} />
+              <CheckCircleBlueIcon size={24} />
             </div>
           </div>
 

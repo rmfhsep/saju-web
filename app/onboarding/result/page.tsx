@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
+import Screen from "@/components/ui/screen"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 import RunnerGame from "@/components/ui/runner-game"
 import StarIcon from "@/components/ui/star-icon"
@@ -188,7 +189,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
   onReveal: () => void
 }) {
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <Screen>
       <div className="flex flex-col px-5 pt-[52px] gap-2">
         <h1 className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px]">
           {ready ? "분석이 완료됐어요!" : <>{name}님의 연애운을<br />분석하고 있어요...</>}
@@ -219,7 +220,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
           {ready ? "결과 보기" : "분석 중..."}
         </button>
       </div>
-    </div>
+    </Screen>
   )
 }
 
@@ -362,7 +363,7 @@ function ResultContent() {
   )
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <Screen>
       {/* Header — left-aligned title, matches Figma */}
       <div className="sticky top-0 z-10 bg-white h-[52px] flex items-center px-5">
         <button
@@ -377,7 +378,7 @@ function ResultContent() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 px-5 pt-5 pb-4 flex flex-col gap-7 overflow-y-auto">
+      <div className="flex-1 px-5 pt-5 pb-4 flex flex-col gap-7 scroll-area overflow-y-auto">
 
         {/* 분석 완료 badge + 제목 */}
         <div className="flex flex-col gap-1">
@@ -515,7 +516,7 @@ function ResultContent() {
           내 프로필 만들기
         </button>
       </div>
-    </div>
+    </Screen>
   )
 }
 

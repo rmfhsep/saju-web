@@ -78,8 +78,9 @@ function ScrollColumn({ items, selected, onChange }: {
   )
 }
 
-const toggleSel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border-0 transition-colors bg-[#e9f1ff] text-[#1f1f1f] tracking-[-0.32px]"
-const toggleUnsel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border-0 transition-colors bg-[#f7f7f8] text-[#777] tracking-[-0.32px]"
+// 디자인 시스템 Button/Selected (my/edit/birth와 동일 팔레트) — selected: bg #e9f1ff border #b6d0ff / unselected: bg #f7f7f8
+const toggleSel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border border-[#b6d0ff] transition-colors bg-[#e9f1ff] text-[#0f0f10] tracking-[-0.32px]"
+const toggleUnsel = "flex-1 h-[48px] rounded-[4px] text-[16px] font-medium border border-transparent transition-colors bg-[#f7f7f8] text-[#777] tracking-[-0.32px]"
 
 function RequiredBadge() {
   return <span className="text-[12px] font-medium text-[#1a75ff] leading-[1.4]">필수</span>

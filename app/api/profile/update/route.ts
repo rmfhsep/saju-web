@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { computeSaju } from "@/lib/saju"
-import { buildSajuReport } from "@/lib/sajuReport"
+import { generateSajuReport } from "@/lib/prompts/sajuReport"
 
 const SIMPLE_FIELDS = [
   "nickname", "location", "job", "jobDetail",
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
             },
             user.gender as "MALE" | "FEMALE",
           )
-          const report = buildSajuReport(saju)
+          const report = await generateSajuReport(saju)
           data.sajuResult = JSON.stringify(report)
         } catch (err) {
           console.error("saju report regeneration failed", err)
