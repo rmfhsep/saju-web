@@ -113,6 +113,18 @@ export function CheckCircleIcon({ size, color = "#1a75ff", className }: IconProp
   )
 }
 
+/** 파랑 원형 체크 — 완료/계정확인. Blue600 배경 + 흰 체크 */
+export function CheckCircleBlueIcon({ size, color = "#1a75ff", className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#1A75FF"/>
+    <path d="M8.25 12L10.75 14.5L15.75 9.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  )
+}
+
+
+
 /* ── Warning (Icon-Normal) — 주의 포인트. 빨강 원형 + 흰 느낌표 ── */
 export function WarningIcon({ size, color = "#ff334b", className }: IconProps) {
   return (

@@ -7,7 +7,7 @@ import Screen from "@/components/ui/screen"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import Checkbox from "@/components/ui/checkbox"
-import { CheckCircleBlueIcon, CheckCircleIcon } from "@/components/ui/icons"
+import { CheckCircleBlueIcon } from "@/components/ui/icons"
 
 type Step = "start" | "loading" | "password" | "blocked"
 type Mode = "register" | "reset"
