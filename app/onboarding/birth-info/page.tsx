@@ -111,6 +111,27 @@ export default function BirthInfoPage() {
   const rawBirthDate = birthDate.replace(/\D/g, "")
   const canProceed = name.trim().length > 0 && gender !== "" && calendarType !== "" && rawBirthDate.length === 8
 
+  // 분석 화면으로 넘어갔다가 뒤로 가기로 돌아오면 이 페이지가 리마운트되면서 state가
+  // 초기값으로 리셋되는데, 웹뷰가 <input> DOM 값만 자체적으로 복원해서 화면엔 입력값이
+  // 보이지만 실제 state(canProceed 계산 기준)는 비어있어 버튼이 안 눌리는 문제가 있었다.
+  // 이미 /api/auth/birth로 저장된 값이 있으므로 마운트 시 다시 불러와 state를 복구한다.
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token")
+    if (!token) return
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(user => {
+        if (!user) return
+        if (user.name) setName(user.name)
+        if (user.gender) setGender(user.gender)
+        if (user.calendarType) setCalendarType(user.calendarType)
+        if (user.birthDate) setBirthDate(formatBirthDate(user.birthDate))
+        if (user.birthTimeUnknown) setUnknownTime(true)
+        else if (user.birthTime) setBirthTime(user.birthTime)
+      })
+      .catch(() => {})
+  }, [])
+
   function handleConfirmTime() {
     setBirthTime(`${pickerAmpm} ${pickerHour}:${pickerMin}`)
     setShowTimePicker(false)

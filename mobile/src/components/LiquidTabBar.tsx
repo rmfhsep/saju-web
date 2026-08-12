@@ -12,7 +12,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import {
-  LiquidGlassContainerView,
   LiquidGlassView,
   isLiquidGlassSupported,
 } from '@callstack/liquid-glass';
@@ -59,7 +58,7 @@ function TabIcon({ tab, active, profilePhotoUrl, dot, scaleAnim }: {
         );
       case 'like':
         return (
-          <Svg width={20.5} height={18} viewBox="0 0 22.5 19.5986" fill="none">
+          <Svg width={23} height={20.1} viewBox="0 0 22.5 19.5986" fill="none">
             <Path
               d="M16.0227 0.75C14.5254 0.75 13.1612 1.34357 12.149 2.34069C11.6782 2.80443 10.8218 2.80443 10.351 2.34069C9.33879 1.34357 7.97461 0.75 6.47727 0.75C3.32727 0.75 0.75 3.48553 0.75 6.82895C0.75 12.1202 8.83954 17.4896 10.8175 18.7234C11.0844 18.8898 11.4161 18.8903 11.6834 18.7248C13.6631 17.4987 21.75 12.1638 21.75 6.82895C21.75 3.48553 19.1727 0.75 16.0227 0.75Z"
               fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
@@ -68,7 +67,7 @@ function TabIcon({ tab, active, profilePhotoUrl, dot, scaleAnim }: {
         );
       case 'message':
         return (
-          <Svg width={19.5} height={20} viewBox="0 0 21.4981 21.5" fill="none">
+          <Svg width={21.5} height={22} viewBox="0 0 21.4981 21.5" fill="none">
             <Path
               d="M19.9926 14.57C20.4795 13.3931 20.7481 12.1029 20.7481 10.75C20.7481 5.22715 16.2714 0.75 10.7491 0.75C5.22673 0.75 0.75 5.22715 0.75 10.75C0.75 16.2728 5.22673 20.75 10.7491 20.75C12.4087 20.75 13.974 20.3456 15.3516 19.63C15.5406 19.5318 15.7584 19.501 15.9649 19.5527L19.5477 20.4484C20.1218 20.592 20.6584 20.108 20.5747 19.5222L19.9325 15.0259C19.9104 14.8714 19.933 14.7142 19.9926 14.57Z"
               fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
@@ -253,21 +252,16 @@ export default function LiquidTabBar({
     >
       <Animated.View style={[styles.barOuter, { transform: [{ scale: barScale }] }]}>
         {supported ? (
-          <LiquidGlassContainerView spacing={12} style={styles.barContainer}>
+          <View style={styles.barContainer}>
             <LiquidGlassView
               effect="regular"
               colorScheme="light"
               style={styles.bar}
             >
+              <Animated.View style={[pillAnimStyle, styles.fallbackPill]} />
               {tabButtons}
             </LiquidGlassView>
-            <AnimatedLiquidGlassView
-              effect="clear"
-              colorScheme="light"
-              interactive
-              style={pillAnimStyle}
-            />
-          </LiquidGlassContainerView>
+          </View>
         ) : (
           <View style={[styles.barContainer, styles.fallbackBg]}>
             <View style={styles.bar}>
@@ -346,7 +340,7 @@ const styles = StyleSheet.create({
   },
   profilePhotoActive: {
     borderWidth: 1.5,
-    borderColor: '#1a75ff',
+    borderColor: '#ffffff',
   },
   // Figma: Atomic/Red/Red 550 (#FF4242), 6px, 아이콘 우상단
   dot: {
