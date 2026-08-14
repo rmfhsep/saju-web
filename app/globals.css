@@ -1,5 +1,9 @@
 @import "tailwindcss";
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+/* Pretendard 폰트는 app/layout.tsx의 <link rel="stylesheet"> 로 로드한다 —
+   여기서 @import url(...)로 넣으면 다른 CSS(예: swiper/css)와 합쳐질 때
+   "@import는 다른 규칙보다 앞에 와야 한다"는 제약을 깨서 빌드러가 이후 셀렉터를
+   깨뜨리는 문제가 있었다 (예: .swiper-vertical > .swiper-wrapper 가 전역
+   .swiper-wrapper 로 뭉개져 가로 캐러셀이 세로로 보이는 버그). */
 
 /*
  * 타이포그래피 스케일 — Figma Design System "Typography" (node 114:517) 기준.
@@ -432,7 +436,8 @@ body {
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 16px;
-  padding-bottom: max(calc(env(safe-area-inset-bottom) + 8px), 28px);
+  /* QA: 최하단 간격 36px — 안전영역(홈 인디케이터) 위에 항상 36px씩 추가로 확보 */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 36px);
 }
 
 .no-scrollbar {

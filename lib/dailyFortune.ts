@@ -37,7 +37,7 @@ export interface DailyFortune {
 // [섹션6] 레벨별 배너 문구 풀 — 5개씩, 날짜+userId 시드로 로테이션
 const BANNER_TEXT_POOL: Record<Level, string[]> = {
   HIGH: [
-    "오늘은 인연의 기운이 강해요, 대화를 먼저 걸어보세요",
+    "오늘은 인연의 기운이 \n 대화를 먼저 걸어보세요",
     "설렘 지수 최고! 오늘 만남에 적극적으로 움직여보세요",
     "좋은 인연의 신호가 보이는 하루예요",
     "오늘 대화한 사람, 눈여겨봐도 좋아요",

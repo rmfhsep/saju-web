@@ -71,8 +71,12 @@ export function EyeOffIcon({ size, color = "#b7b7b7", className }: IconProps) {
 export function PencilIcon({ size, color = "#777777", className }: IconProps) {
   return (
     <svg width={S(size)} height={S(size)} viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M16.5 3.5l4 4L8 20l-4.5 1 1-4.5L16.5 3.5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M14.5 5.5l4 4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M12.854 7.35155L15.4485 4.75709C15.8647 4.34083 16.5396 4.34083 16.9559 4.75709L18.8938 6.69499C19.3101 7.11125 19.3101 7.78614 18.8938 8.2024L16.2993 10.7969L9.6196 17.4284C9.45611 17.5908 9.24442 17.6957 9.01625 17.7276L6.74659 18.045C6.06798 18.1399 5.4774 17.5791 5.53713 16.8965L5.70729 14.9517C5.7289 14.7047 5.83592 14.473 6.00994 14.2964L12.854 7.35155ZM16.2993 10.7969L12.854 7.35155"
+        stroke={color}
+        strokeWidth="1.5"
+      />
+      <path d="M14.0132 17.9727L19.6977 17.9727" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   )
 }

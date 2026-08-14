@@ -209,7 +209,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
         {showGame && <RunnerGame height={220} maxPlays={3} onGameOver={onGameOver} />}
       </div>
 
-      <div className="px-5 pb-8 pt-4">
+      <div className="keyboard-footer">
         <button
           onClick={ready ? onReveal : undefined}
           disabled={!ready}
@@ -371,29 +371,55 @@ function ResultContent() {
           className="w-8 h-8 flex items-center justify-center mr-2 shrink-0"
         >
           <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-            <path d="M9 1L1 9L9 17" stroke="#0f0f10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M9 1L1 9L9 17"
+              stroke="#0f0f10"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
-        <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px]">연애운 리포트</h2>
+        <h2 className="text-[18px] font-semibold text-[#1f1f1f] leading-[1.4] tracking-[-0.36px]">
+          연애운 리포트
+        </h2>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 px-5 pt-5 pb-4 flex flex-col gap-7 scroll-area overflow-y-auto">
-
         {/* 분석 완료 badge + 제목 */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             {/* Blue check circle */}
             <div className="w-6 h-6 rounded-full bg-[#1a75ff] flex items-center justify-center shrink-0">
-              <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                <path d="M1.5 4.5L4.5 7.5L9.5 1.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle cx="12" cy="12" r="10" fill="#1A75FF" />
+                <path
+                  d="M8.25 12L10.75 14.5L15.75 9.5"
+                  stroke="white"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
-            <span className="text-[16px] font-semibold text-[#1a75ff] leading-normal tracking-[-0.32px]">분석 완료</span>
+            <span className="text-[16px] font-semibold text-[#1a75ff] leading-normal tracking-[-0.32px]">
+              분석 완료
+            </span>
           </div>
           <h1 className="text-[22px] font-bold text-[#0f0f10] leading-[1.4] tracking-[-0.44px]">
             {isMale ? (
-              <>{name}님의 연애 성향을 분석해<br />프로필을 준비했어요.</>
+              <>
+                {name}님의 연애 성향을 분석해
+                <br />
+                프로필을 준비했어요.
+              </>
             ) : (
               <>{name}님의 연애 성향과 올해 연애운</>
             )}
@@ -411,8 +437,8 @@ function ResultContent() {
               </p>
               <button
                 onClick={() => {
-                  const token = localStorage.getItem("auth_token")
-                  if (token) generateReport(token)
+                  const token = localStorage.getItem("auth_token");
+                  if (token) generateReport(token);
                 }}
                 className="h-[44px] px-6 bg-[#b6d0ff] rounded-[4px] text-[15px] font-semibold text-[#1f1f1f]"
               >
@@ -430,9 +456,12 @@ function ResultContent() {
 
             {/* 추천 프로필 캐러셀 + CTA */}
             <div className="flex flex-col gap-3">
-              <div className="overflow-x-auto flex gap-3 pb-1 -mx-5 px-5" style={{ scrollbarWidth: "none" }}>
+              <div
+                className="overflow-x-auto flex gap-3 pb-1 -mx-5 px-5"
+                style={{ scrollbarWidth: "none" }}
+              >
                 {maleRecosLoading ? (
-                  [0, 1].map(i => (
+                  [0, 1].map((i) => (
                     <div
                       key={i}
                       className="shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse"
@@ -440,40 +469,65 @@ function ResultContent() {
                   ))
                 ) : maleRecos.length === 0 ? (
                   <div className="shrink-0 w-full h-[200px] rounded-[8px] bg-[#f4f4f5] flex items-center justify-center">
-                    <p className="text-[14px] text-[#777]">아직 추천할 프로필이 없어요.</p>
+                    <p className="text-[14px] text-[#777]">
+                      아직 추천할 프로필이 없어요.
+                    </p>
                   </div>
                 ) : (
                   maleRecos.map((reco, i) => {
-                    const photos: string[] = reco.photos ? JSON.parse(reco.photos) : []
-                    const tags: string[] = reco.bioTags ? JSON.parse(reco.bioTags) : []
-                    const displayName = reco.nickname || reco.name || ""
-                    const age = calcAge(reco.birthDate)
+                    const photos: string[] = reco.photos
+                      ? JSON.parse(reco.photos)
+                      : [];
+                    const tags: string[] = reco.bioTags
+                      ? JSON.parse(reco.bioTags)
+                      : [];
+                    const displayName = reco.nickname || reco.name || "";
+                    const age = calcAge(reco.birthDate);
                     return (
                       <div
                         key={reco.id}
                         className="shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden"
-                        style={photos[0] ? undefined : { background: CARD_GRADIENTS[i % CARD_GRADIENTS.length] }}
+                        style={
+                          photos[0]
+                            ? undefined
+                            : {
+                                background:
+                                  CARD_GRADIENTS[i % CARD_GRADIENTS.length],
+                              }
+                        }
                       >
                         {photos[0] && (
-                          <img src={photos[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          <img
+                            src={photos[0]}
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
                         )}
                         <div
                           className="absolute inset-0 rounded-[8px]"
-                          style={{
-                            background: "rgba(31,31,31,0.52)",
-                            backdropFilter: "blur(10px)",
-                            WebkitBackdropFilter: "blur(10px)",
-                            transform: "translateZ(0)",
-                            willChange: "transform",
-                          } as React.CSSProperties}
+                          style={
+                            {
+                              background: "rgba(31,31,31,0.52)",
+                              backdropFilter: "blur(10px)",
+                              WebkitBackdropFilter: "blur(10px)",
+                              transform: "translateZ(0)",
+                              willChange: "transform",
+                            } as React.CSSProperties
+                          }
                         />
                         <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2">
                           <div className="flex items-center gap-1">
-                            <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{displayName}</span>
+                            <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">
+                              {displayName}
+                            </span>
                             {age != null && (
                               <>
-                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">/</span>
-                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">{age}살</span>
+                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">
+                                  /
+                                </span>
+                                <span className="text-[20px] font-semibold text-white leading-[1.4] tracking-[-0.4px]">
+                                  {age}살
+                                </span>
                               </>
                             )}
                           </div>
@@ -489,7 +543,7 @@ function ResultContent() {
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })
                 )}
               </div>
@@ -514,7 +568,7 @@ function ResultContent() {
       </div>
 
       {/* CTA */}
-      <div className="px-5 pb-8 pt-4 bg-white">
+      <div className="keyboard-footer bg-white">
         <button
           onClick={() => bridgeNavigate("Blocking")}
           className="w-full h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
@@ -523,7 +577,7 @@ function ResultContent() {
         </button>
       </div>
     </Screen>
-  )
+  );
 }
 
 export default function ResultPage() {

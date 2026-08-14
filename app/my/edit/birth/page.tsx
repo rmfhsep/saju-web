@@ -201,7 +201,7 @@ export default function BirthEditPage() {
       {showTimePicker && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowTimePicker(false)} />
-          <div className="relative bg-white rounded-t-[20px] px-5 pt-6 pb-8 flex flex-col gap-5">
+          <div className="relative bg-white rounded-t-[20px] px-5 pt-6 pb-[calc(env(safe-area-inset-bottom)+36px)] flex flex-col gap-5">
             <h2 className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">시간을 선택해주세요.</h2>
             <div className="flex items-center gap-2">
               <ScrollColumn items={AMPM} selected={pickerAmpm} onChange={setPickerAmpm} />

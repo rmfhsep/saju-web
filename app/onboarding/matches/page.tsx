@@ -99,7 +99,7 @@ function MatchesContent() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="sticky bottom-0 bg-white px-4 pb-8 pt-3">
+      <div className="sticky bottom-0 bg-white px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+36px)]">
         <button
           onClick={() => bridgeNavigate("ProfileSetup")}
           className="w-full h-[48px] bg-[#aecbff] rounded-[4px] text-[16px] font-semibold text-[#0f0f10] active:opacity-80"

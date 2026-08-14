@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
@@ -35,41 +37,72 @@ type DailyFortune = {
   text: string;
 };
 
-const FORTUNE_LEVEL_LABEL: Record<FortuneLevel, string> = { HIGH: "좋음", MID: "보통", LOW: "주의" };
-const FORTUNE_LEVEL_BADGE: Record<FortuneLevel, string> = {
-  HIGH: "text-[#ff7b2e] bg-[#fff5e5]",
-  MID: "text-[#6b6b6b] bg-[#f4f4f5]",
-  LOW: "text-[#6b6b6b] bg-[#f4f4f5]",
-};
+// Figma "BTN/Box/Primary" 3가지 컬러 배리언트 (node 276:8659 / 276:8736 / 276:8813) —
+// 오늘의 운세 레벨(LOW/MID/HIGH)에 따라 결정되며, 레벨이 매일 바뀌므로 보는 사람 입장에선
+// 색이 랜덤하게 바뀌는 것처럼 느껴진다.
 const FORTUNE_LEVEL_CARD: Record<FortuneLevel, string> = {
-  HIGH: "border-[#ceffca] bg-[#f3fff2]",
-  MID: "border-[#e5e5e5] bg-[#f7f7f8]",
-  LOW: "border-[#e5e5e5] bg-[#f7f7f8]",
+  LOW: "border-[#ceffca] bg-[#f3fff2]",
+  MID: "border-[#ffeec8] bg-[#fffbf3]",
+  HIGH: "border-[#c9defe] bg-[#f7fbff]",
+};
+const FORTUNE_LEVEL_ICON: Record<FortuneLevel, string> = {
+  LOW: "/icons/luck_low.png",
+  MID: "/icons/luck_middle.png",
+  HIGH: "/icons/luck_high.png",
 };
 
-function FortuneBanner({ fortune, onClick }: { fortune: DailyFortune | null; onClick: () => void }) {
+function FortuneBanner({
+  fortune,
+  onClick,
+}: {
+  fortune: DailyFortune | null;
+  onClick: () => void;
+}) {
   if (!fortune) {
-    return <div className="mx-5 h-[78px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />;
+    return (
+      <div className="mx-5 h-[78px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
+    );
   }
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`mx-5 flex items-center gap-3 px-4 py-3 rounded-[4px] border text-left active:opacity-80 ${FORTUNE_LEVEL_CARD[fortune.level]}`}
+      className={`mx-5 relative flex items-center gap-3 px-4 py-3 rounded-[4px] border text-left active:opacity-80 ${
+        FORTUNE_LEVEL_CARD[fortune.level]
+      }`}
+      style={{
+        boxShadow:
+          "inset -4px -4px 8px 0 rgba(255,255,255,0.4), inset 4px 4px 8px 0 rgba(255,255,255,0.5)",
+      }}
     >
-      <img src="/icons/luck-clover.png" alt="" className="w-[52px] h-[52px] shrink-0 object-contain" />
+      <img
+        src={FORTUNE_LEVEL_ICON[fortune.level]}
+        alt=""
+        className="w-[52px] h-[52px] shrink-0 object-contain"
+      />
       <div className="flex-1 flex flex-col gap-1 text-[15px] tracking-[-0.3px] min-w-0">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-1.5">
           <p className="font-bold text-[#1f1f1f]">오늘의 연애운</p>
-          <span className={`text-[11px] font-semibold rounded-[4px] px-1.5 py-[2px] ${FORTUNE_LEVEL_BADGE[fortune.level]}`}>
-            {FORTUNE_LEVEL_LABEL[fortune.level]}
-          </span>
+          <svg
+            width="6"
+            height="12"
+            viewBox="0 0 6 12"
+            fill="none"
+            className="shrink-0"
+          >
+            <path
+              d="M1 1L5 6L1 11"
+              stroke="#1f1f1f"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
-        <p className="font-normal leading-[1.5] text-[#1f1f1f] truncate">{fortune.text}</p>
+        <p className="font-normal leading-[1.5] text-[#1f1f1f] line-clamp-2">
+          {fortune.text}
+        </p>
       </div>
-      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="shrink-0">
-        <path d="M1 1L6 6L1 11" stroke="#b7b7b7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
     </button>
   );
 }
@@ -83,8 +116,12 @@ const MORE_INTRO_COST = 10;
 
 function EmptyTodayCard() {
   return (
-    <div className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f7f7f8] flex flex-col items-center justify-center gap-4">
-      <img src="/icons/logo-solid-72.svg" alt="" className="w-[72px] h-[72px]" />
+    <div className="w-[300px] h-[400px] rounded-[8px] bg-[#f7f7f8] flex flex-col items-center justify-center gap-4">
+      <img
+        src="/icons/logo-solid-72.svg"
+        alt=""
+        className="w-[72px] h-[72px]"
+      />
       <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
         오늘은 추천 인연이 없어요.
       </p>
@@ -100,8 +137,12 @@ function MoreIntroCard({
   onClick: () => void;
 }) {
   return (
-    <div className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#e9f1ff] relative flex flex-col items-center pt-[92px] gap-4">
-      <img src="/icons/more-intro-star.svg" alt="" className="w-[88px] h-[88px]" />
+    <div className="w-[300px] h-[400px] rounded-[8px] bg-[#e9f1ff] relative flex flex-col items-center pt-[92px] gap-4">
+      <img
+        src="/icons/more-intro-star.svg"
+        alt=""
+        className="w-[88px] h-[88px]"
+      />
       <div className="flex flex-col items-center gap-0.5 text-[15px] text-center tracking-[-0.3px] text-[#1f1f1f]">
         <p className="font-bold">더 소개 받기</p>
         <p className="font-normal whitespace-nowrap">
@@ -137,7 +178,7 @@ function RecoCard({
   return (
     <div
       onClick={onClick}
-      className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] relative overflow-hidden bg-[#f4f4f5] cursor-pointer"
+      className="w-[300px] h-[400px] rounded-[8px] relative overflow-hidden bg-[#f4f4f5] cursor-pointer"
     >
       <div
         className="absolute inset-0"
@@ -153,15 +194,17 @@ function RecoCard({
       </div>
       <div
         className="absolute inset-0 rounded-[8px]"
-        style={{
-          background: "rgba(31, 31, 31, 0.52)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          // 스와이프 스크롤 중 backdrop-filter가 프레임마다 재계산되면서 깜빡이는 WebKit 버그 방지 —
-          // 별도 GPU 컴포지팅 레이어로 승격시켜 스크롤과 독립적으로 렌더링되게 한다.
-          transform: "translateZ(0)",
-          willChange: "transform",
-        } as React.CSSProperties}
+        style={
+          {
+            background: "rgba(31, 31, 31, 0.52)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            // 스와이프 스크롤 중 backdrop-filter가 프레임마다 재계산되면서 깜빡이는 WebKit 버그 방지 —
+            // 별도 GPU 컴포지팅 레이어로 승격시켜 스크롤과 독립적으로 렌더링되게 한다.
+            transform: "translateZ(0)",
+            willChange: "transform",
+          } as React.CSSProperties
+        }
       />
 
       <div className="absolute left-5 right-5 bottom-[28px] flex flex-col gap-2">
@@ -281,7 +324,8 @@ export default function HomePage() {
         })
           .then((r) => (r.ok ? r.json() : null))
           .then((d) => {
-            if (d?.level && d?.text) setFortune({ level: d.level, text: d.text });
+            if (d?.level && d?.text)
+              setFortune({ level: d.level, text: d.text });
           })
           .catch(() => {});
       } catch {
@@ -317,43 +361,65 @@ export default function HomePage() {
         <StarChip stars={user.stars} className="shrink-0" />
       </div>
 
-      <div className="flex-1 flex flex-col gap-5 pt-2">
+      <div className="flex-1 flex flex-col gap-7 pt-5">
         {/* 오늘의 연애운 배너 */}
-        <FortuneBanner fortune={fortune} onClick={() => router.push("/today-fortune")} />
+        <FortuneBanner
+          fortune={fortune}
+          onClick={() => router.push("/today-fortune")}
+        />
 
         {recosLoading ? (
-          <div
-            className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none" }}
+          <Swiper
+            slidesPerView="auto"
+            spaceBetween={12}
+            slidesOffsetBefore={20}
+            slidesOffsetAfter={20}
+            className="pb-2! w-full min-w-0"
           >
             {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="snap-center shrink-0 w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse"
-              />
+              <SwiperSlide key={i} style={{ width: 300 }}>
+                <div className="w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse" />
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         ) : (
-          <div
-            className="overflow-x-auto flex gap-3 px-5 pb-2 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none" }}
+          <Swiper
+            slidesPerView={"auto"}
+            spaceBetween={12}
+            slidesOffsetBefore={20}
+            slidesOffsetAfter={20}
+            className="pb-2! w-full min-w-0"
           >
-            {noNewToday && <EmptyTodayCard />}
+            {noNewToday && (
+              <SwiperSlide style={{ width: 300 }}>
+                <EmptyTodayCard />
+              </SwiperSlide>
+            )}
             {recos.map((reco, i) => (
-              <RecoCard
-                key={reco.id}
-                reco={reco}
-                gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
-                onClick={() => router.push(`/recommend/${reco.id}`)}
-              />
+              <SwiperSlide key={reco.id} style={{ width: 300 }}>
+                <RecoCard
+                  reco={reco}
+                  gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
+                  onClick={() => router.push(`/recommend/${reco.id}`)}
+                />
+              </SwiperSlide>
             ))}
-            <MoreIntroCard busy={moreBusy} onClick={handleMoreIntro} />
-          </div>
+            <SwiperSlide style={{ width: 300 }}>
+              <MoreIntroCard busy={moreBusy} onClick={handleMoreIntro} />
+            </SwiperSlide>
+          </Swiper>
         )}
       </div>
 
       {toast && (
-        <div className="fixed left-1/2 -translate-x-1/2 z-[60] bg-black/74 text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap max-w-[296px] text-center" style={{ bottom: `calc(env(safe-area-inset-bottom) + ${APP_BOTTOM_NAV_HEIGHT + 16}px)` }}>
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-[60] bg-black/74 text-white text-[14px] font-medium px-6 py-3 rounded-[6px] whitespace-nowrap max-w-[296px] text-center"
+          style={{
+            bottom: `calc(env(safe-area-inset-bottom) + ${
+              APP_BOTTOM_NAV_HEIGHT + 16
+            }px)`,
+          }}
+        >
           {toast}
         </div>
       )}

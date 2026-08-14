@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import { SearchIcon } from "@/components/ui/icons"
-import { ALL_LOCATIONS } from "@/modules/profile/constants"
+import { useLocationSearch } from "@/lib/useLocationSearch"
 
 export default function LocationEditPage() {
   const router = useRouter()
@@ -24,11 +24,7 @@ export default function LocationEditPage() {
       })
   }, [])
 
-  const trimmed = q.trim()
-  // 진입 시(검색어 없음)에도 전체 시·군·구 목록을 노출
-  const results = trimmed
-    ? ALL_LOCATIONS.filter(l => l.replace(/\s/g, "").includes(trimmed.replace(/\s/g, "")))
-    : ALL_LOCATIONS
+  const { results, loading } = useLocationSearch(q)
 
   async function handleSave() {
     if (!location || saving) return
@@ -76,7 +72,17 @@ export default function LocationEditPage() {
         </div>
       </div>
       <div className="flex-1 scroll-area overflow-y-auto px-5">
-        {results.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col gap-3 pt-4">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className="h-5 rounded-sm bg-[#f4f4f5] animate-pulse" />
+            ))}
+          </div>
+        ) : results === null ? (
+          <p className="text-[14px] text-[#777] leading-relaxed pt-4">
+            시·군·구를 검색해주세요.
+          </p>
+        ) : results.length === 0 ? (
           <p className="text-[14px] text-[#777] leading-relaxed pt-4">
             검색 결과가 없어요.<br />주소를 다시 확인해주세요.
           </p>

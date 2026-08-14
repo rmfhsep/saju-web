@@ -112,7 +112,7 @@ export default function MyFilterPage() {
           <BackButton onClick={() => router.back()} />
           <span className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">선호하는 조건 설정</span>
         </div>
-        <div className="flex-1 px-5 pt-4 flex flex-col gap-6 scroll-area overflow-y-auto pb-4">
+        <div className="flex-1 px-5 pt-5 flex flex-col gap-6 scroll-area overflow-y-auto pb-4">
           <div className="flex flex-col gap-2">
             <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] tracking-[-0.56px]">
               이성을 만날 때<br />가장 원하는 조건이 있나요?

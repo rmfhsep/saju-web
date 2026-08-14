@@ -339,17 +339,15 @@ function VerifyForm() {
           {/* 스피너 화면 전체 세로 중앙 */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative w-[148px] h-[148px] flex items-center justify-center">
-            <svg className="absolute inset-0 animate-spin w-full h-full" viewBox="0 0 148 148" fill="none">
-              <circle cx="74" cy="74" r="68" stroke="#efefef" strokeWidth="8"/>
-              <path d="M74 6 A68 68 0 0 1 142 74" stroke="#90b7ff" strokeWidth="8" strokeLinecap="round"/>
-            </svg>
-            <div className="relative z-10 w-[56px] h-[56px] rounded-[12px] bg-[#b6d0ff] flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <path d="M14 3L5 7v7c0 6.1 4.1 11.8 9.3 13.4C19.9 25.8 24 20.1 24 14V7L14 3z" fill="white"/>
-                <path d="M10 14l3 3 5-5" stroke="#b6d0ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg className="absolute animate-spin" width="142" height="142" viewBox="0 0 142 142" fill="none">
+                <circle cx="71" cy="71" r="68" stroke="#EFEFEF" strokeWidth="6" />
+                <path d="M71 3C108.555 3 139 33.4446 139 71C139 94.9469 126.622 116.003 107.914 128.118" stroke="#90B7FF" strokeWidth="6" strokeLinecap="round" />
+              </svg>
+              <svg className="relative z-10" width="56" height="56" viewBox="0 0 56 56" fill="none">
+                <path d="M32.0249 5.95015C29.4912 4.68328 26.5088 4.68328 23.9751 5.95016L12.2111 11.8321C10.856 12.5097 10 13.8947 10 15.4098V33.0077C10 38.0964 15.626 43.842 25.8756 50.5705C27.1656 51.4174 28.8329 51.4149 30.1321 50.5823C40.3768 44.0165 46 39.5005 46 33.0077C46 27.9381 46 19.545 46 15.4042C46 13.8891 45.144 12.5097 43.7889 11.8321L32.0249 5.95015Z" fill="#69A5FF" />
+                <path d="M22 28L26 32L34 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-          </div>
           </div>
         </div>
       </Screen>
