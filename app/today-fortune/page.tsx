@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Screen from "@/components/ui/screen";
 import BackButton from "@/components/ui/back-button";
+import PageFooter from "@/components/ui/page-footer";
+import CtaButton from "@/components/ui/cta-button";
 
 type Level = "HIGH" | "MID" | "LOW";
 
@@ -12,25 +14,9 @@ type DailyFortuneDetail = {
   총운: { score: number; level: Level };
   애정운: { level: Level; text: string };
   새로운인연운: { level: Level; text: string };
-  궁합좋은상대: { 유형명: string; 태그: string[] } | null;
+  궁합좋은상대: { 유형명: string; 설명: string } | null;
   행운의아이템: string;
-};
-
-const LEVEL_LABEL: Record<Level, string> = {
-  HIGH: "좋음",
-  MID: "보통",
-  LOW: "주의",
-};
-// 홈 화면 배너(Figma 276:8659/8736/8813)와 동일한 레벨별 컬러 — LOW 그린 / MID 옐로우 / HIGH 블루
-const LEVEL_BADGE: Record<Level, string> = {
-  HIGH: "text-[#1f1f1f] bg-[#f7fbff] border border-[#c9defe]",
-  MID: "text-[#1f1f1f] bg-[#fffbf3] border border-[#ffeec8]",
-  LOW: "text-[#1f1f1f] bg-[#F3FFF2] border border-[#ceffca]",
-};
-const LEVEL_BAR: Record<Level, string> = {
-  HIGH: "bg-[#c9defe]",
-  MID: "bg-[#ffeec8]",
-  LOW: "bg-[#ceffca]",
+  게이지보완문구: string | null;
 };
 
 function formatDate(dateStr: string): string {
@@ -38,28 +24,38 @@ function formatDate(dateStr: string): string {
   return `${parseInt(m, 10)}월 ${parseInt(d, 10)}일`;
 }
 
-function LevelCard({
-  title,
-  level,
-  text,
-}: {
-  title: string;
-  level: Level;
-  text: string;
-}) {
+// Figma 원형 게이지(node 396:6548 "gage") — 트랙 #F7F7F8 + 진행 아크 #90B7FF, r=74/stroke=12 그대로 재현
+function GaugeRing({ score }: { score: number }) {
+  const r = 74;
+  const circumference = 2 * Math.PI * r;
+  const clamped = Math.min(Math.max(score, 0), 100);
+  const offset = circumference * (1 - clamped / 100);
+
   return (
-    <div className="bg-white border border-[#e8e8e8] rounded-[4px] px-5 py-4 flex flex-col gap-2">
-      <div className="flex items-center gap-1.5">
-        <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
-          {title}
-        </p>
-        <span
-          className={`text-[11px] font-semibold rounded-[4px] px-1.5 py-[2px] ${LEVEL_BADGE[level]}`}
-        >
-          {LEVEL_LABEL[level]}
-        </span>
-      </div>
-      <p className="text-[14px] text-[#3f3f3f] leading-normal tracking-[-0.14px]">
+    <svg width={160} height={160} viewBox="0 0 160 160" fill="none">
+      <circle cx="80" cy="80" r={r} stroke="#F7F7F8" strokeWidth="12" />
+      <circle
+        cx="80"
+        cy="80"
+        r={r}
+        stroke="#90B7FF"
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        transform="rotate(-90 80 80)"
+      />
+    </svg>
+  );
+}
+
+function InfoCard({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="bg-white border border-[#e8e8e8] rounded-[4px] p-4 flex flex-col gap-2">
+      <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">
+        {title}
+      </p>
+      <p className="text-[14px] text-[#1f1f1f] leading-[1.5] tracking-[-0.14px]">
         {text}
       </p>
     </div>
@@ -91,7 +87,7 @@ export default function TodayFortunePage() {
     if (!fortune) return;
     const text = `[오늘의 운세 · ${formatDate(fortune.date)}]\n총운 ${
       fortune.총운.score
-    }점 (${LEVEL_LABEL[fortune.총운.level]})\n${fortune.애정운.text}`;
+    }점\n${fortune.애정운.text}`;
     if (typeof navigator !== "undefined" && navigator.share) {
       navigator.share({ title: "오늘의 운세", text }).catch(() => {});
       return;
@@ -112,123 +108,102 @@ export default function TodayFortunePage() {
         <h1 className="flex-1 text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           오늘의 연애운
         </h1>
-        {fortune && (
-          <span className="text-[13px] text-[#777]">
-            {formatDate(fortune.date)}
-          </span>
-        )}
       </div>
 
-      <div className="flex-1 scroll-area overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+36px)] flex flex-col gap-3">
-        {loading ? (
-          <>
-            <div className="h-[100px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
+      {loading ? (
+        <div className="flex-1 scroll-area overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+24px)] flex flex-col items-center gap-9 pt-7">
+          <div className="w-[164px] h-[164px] rounded-full bg-[#f4f4f5] animate-pulse" />
+          <div className="w-full flex flex-col gap-3">
             <div className="h-[80px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
             <div className="h-[80px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
-            <div className="h-[100px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
-            <div className="h-[80px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
-          </>
-        ) : !fortune ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 py-20">
-            <p className="text-[15px] font-semibold text-[#1f1f1f]">
-              운세를 불러오지 못했어요
-            </p>
-            <p className="text-[13px] text-[#777]">
-              잠시 후 다시 시도해주세요.
-            </p>
+            <div className="h-[130px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
+            <div className="h-[70px] rounded-[4px] bg-[#f4f4f5] animate-pulse" />
           </div>
-        ) : (
-          <>
-            {/* 총운 게이지 */}
-            <div className="bg-white border border-[#e8e8e8] rounded-[4px] px-5 py-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
-                  총운
-                </p>
-                <span
-                  className={`text-[11px] font-semibold rounded-[4px] px-1.5 py-[2px] ${
-                    LEVEL_BADGE[fortune.총운.level]
-                  }`}
-                >
-                  {LEVEL_LABEL[fortune.총운.level]}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-2 rounded-full bg-[#f4f4f5] overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      LEVEL_BAR[fortune.총운.level]
-                    }`}
-                    style={{ width: `${fortune.총운.score}%` }}
-                  />
+        </div>
+      ) : !fortune ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 py-20">
+          <p className="text-[15px] font-semibold text-[#1f1f1f]">
+            운세를 불러오지 못했어요
+          </p>
+          <p className="text-[13px] text-[#777]">잠시 후 다시 시도해주세요.</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 scroll-area overflow-y-auto pb-6 flex flex-col items-center pt-7">
+            {/* 총운 원형 게이지 */}
+            <div className="relative w-[164px] h-[164px] flex items-center justify-center shrink-0">
+              <GaugeRing score={fortune.총운.score} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                <img
+                  src="/icons/luck-clover.png"
+                  alt=""
+                  className="w-[52px] h-[52px] object-contain"
+                />
+                <div className="flex items-center gap-0.5 text-[#1f1f1f]">
+                  <span className="text-[28px] font-bold tracking-[-0.56px]">
+                    {fortune.총운.score}
+                  </span>
+                  <span className="text-[17px] font-semibold tracking-[-0.34px]">
+                    점
+                  </span>
                 </div>
-                <span className="text-[15px] font-bold text-[#1f1f1f]">
-                  {fortune.총운.score}
-                </span>
               </div>
             </div>
 
-            <LevelCard
-              title="애정운"
-              level={fortune.애정운.level}
-              text={fortune.애정운.text}
-            />
-            <LevelCard
-              title="새로운 인연운"
-              level={fortune.새로운인연운.level}
-              text={fortune.새로운인연운.text}
-            />
-
-            {fortune.궁합좋은상대 && (
-              <div className="bg-[#e9f1ff] rounded-[4px] px-5 py-4 flex flex-col gap-3">
-                <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
-                  오늘의 궁합 좋은 상대
-                </p>
-                <p className="text-[14px] text-[#3f3f3f]">
-                  <span className="font-semibold text-[#1f1f1f]">
-                    {fortune.궁합좋은상대.유형명}
-                  </span>{" "}
-                  스타일과 잘 맞는 하루예요
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {fortune.궁합좋은상대.태그.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[12px] font-medium text-white bg-[#1f1f1f] rounded-[4px] px-2 py-[3px] h-6 flex items-center"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => router.push("/")}
-                  className="h-10 rounded-[4px] bg-[#1f1f1f] text-white text-[14px] font-semibold tracking-[-0.14px] active:opacity-80"
-                >
-                  지금 둘러보기
-                </button>
-              </div>
+            {/* LOW 전용 보완 문구 */}
+            {fortune.게이지보완문구 && (
+              <p className="mt-4 px-5 text-[14px] text-[#1f1f1f] text-center leading-[1.5] tracking-[-0.14px] whitespace-pre-line">
+                {fortune.게이지보완문구}
+              </p>
             )}
 
-            <div className="bg-[#fff5e5] rounded-[4px] px-5 py-4 flex flex-col gap-1">
-              <p className="text-[15px] font-semibold text-[#1f1f1f] tracking-[-0.3px]">
-                행운의 아이템
-              </p>
-              <p className="text-[14px] text-[#3f3f3f] leading-normal">
-                {fortune.행운의아이템}
-              </p>
-            </div>
+            <div className="w-full px-5 flex flex-col gap-3 mt-9">
+              <InfoCard title="오늘의 애정운" text={fortune.애정운.text} />
+              <InfoCard title="새로운 인연운" text={fortune.새로운인연운.text} />
 
-            <button
-              type="button"
-              onClick={handleShare}
-              className="h-11 rounded-[4px] border border-[#dbdcdf] text-[14px] font-semibold text-[#1f1f1f] active:opacity-70 mt-1"
-            >
+              {fortune.궁합좋은상대 && (
+                <div className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-5">
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">
+                      오늘의 궁합
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <span className="self-start text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px] bg-[#dbd3fe] rounded-[4px] px-2 py-[2px]">
+                        {fortune.궁합좋은상대.유형명}
+                      </span>
+                      <p className="text-[14px] text-[#3f3f3f] leading-[1.5] tracking-[-0.14px]">
+                        {fortune.궁합좋은상대.설명}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/")}
+                    className="h-9 rounded-[4px] bg-white border border-[#b6d0ff] text-[13px] font-medium text-[#1a75ff] active:opacity-70"
+                  >
+                    지금 둘러보기
+                  </button>
+                </div>
+              )}
+
+              <div className="bg-[#fff5e5] rounded-[4px] p-4 flex flex-col gap-2">
+                <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">
+                  행운의 아이템
+                </p>
+                <p className="text-[14px] text-[#1f1f1f] tracking-[-0.14px]">
+                  {fortune.행운의아이템}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <PageFooter>
+            <CtaButton variant="secondary" onClick={handleShare}>
               {shareMsg ?? "공유하기"}
-            </button>
-          </>
-        )}
-      </div>
+            </CtaButton>
+          </PageFooter>
+        </>
+      )}
     </Screen>
   );
 }

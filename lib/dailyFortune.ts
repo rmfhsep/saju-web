@@ -30,8 +30,10 @@ export interface DailyFortune {
   총운: { score: number; level: Level }
   애정운: { level: Level; text: string }
   새로운인연운: { level: Level; text: string }
-  궁합좋은상대: { 유형명: string; 태그: string[] } | null
+  궁합좋은상대: { 유형명: string; 설명: string } | null
   행운의아이템: string
+  /** 상세 화면 원형 게이지 아래 보완 문구 — 총운 LOW일 때만 노출 (prompt/maju_today_fortune.md 섹션1 "low case 보완 문구") */
+  게이지보완문구: string | null
 }
 
 // [섹션6] 레벨별 배너 문구 풀 — 5개씩, 날짜+userId 시드로 로테이션
@@ -115,17 +117,20 @@ export function todayDateStrKst(date: Date = new Date()): string {
 }
 
 /** 연간 리포트(JSON string)에서 "궁합 좋은 상대" 카드에 쓸 값만 뽑아낸다. 없거나 파싱 실패 시 null. */
-function extractGoodMatch(sajuResult: string | null): { 유형명: string; 태그: string[] } | null {
+function extractGoodMatch(sajuResult: string | null): { 유형명: string; 설명: string } | null {
   if (!sajuResult) return null
   try {
     const parsed = JSON.parse(sajuResult) as SajuReport
     const 끌리는유형 = parsed?.섹션2_이상형유형?.끌리는유형
     if (!끌리는유형) return null
-    return { 유형명: 끌리는유형.유형명, 태그: 끌리는유형.태그.slice(0, 3) }
+    return { 유형명: 끌리는유형.유형명, 설명: 끌리는유형.설명 }
   } catch {
     return null
   }
 }
+
+// [섹션1] 원형 게이지 하단 보완 문구 — 총운 LOW일 때만 노출, 배너/애정운 문구와 별개의 고정 문구
+const GAUGE_LOW_SUPPLEMENT = "점수보다 마음이 중요해요.\n{아이템}을 곁에 두면 오늘의 기운을 보완할 수 있어요."
 
 /**
  * 유저의 사주 입력값 + 오늘 날짜로 오늘의 운세를 계산한다.
@@ -168,5 +173,6 @@ export function computeDailyFortune(user: DailyFortuneUserInput, now: Date = new
     새로운인연운: { level: meetLevel, text: NEW_MEET_TEXT[meetLevel] },
     궁합좋은상대: extractGoodMatch(user.sajuResult),
     행운의아이템: luckyItem,
+    게이지보완문구: level === "LOW" ? GAUGE_LOW_SUPPLEMENT.replace("{아이템}", luckyItem) : null,
   }
 }
