@@ -261,7 +261,11 @@ function ResultContent() {
         body: JSON.stringify({ bestSeconds: seconds }),
       })
       const d = await res.json()
-      if (res.ok && d.earned) setEarnedStars(d.earned)
+      if (res.ok && d.earned) {
+        setEarnedStars(d.earned)
+        // 홈 화면(app/page.tsx) 첫 진입 시 별 적립 안내 모달을 띄우기 위한 1회성 플래그
+        localStorage.setItem("star_reward_pending", String(d.earned))
+      }
       setMiniGamePlayed(true)
     } catch { /* ignore */ }
   }

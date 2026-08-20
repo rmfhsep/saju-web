@@ -8,6 +8,8 @@ import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
 import StarChip from "@/components/ui/star-chip";
+import StarIcon from "@/components/ui/star-icon";
+import CtaButton from "@/components/ui/cta-button";
 import { calcAge } from "@/lib/age";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +21,8 @@ type User = {
   gender: string | null;
   profileComplete: boolean;
   stars: number;
+  bioTags: string | null;
+  bio: string | null;
 };
 
 type Reco = {
@@ -104,6 +108,53 @@ function FortuneBanner({
         </p>
       </div>
     </button>
+  );
+}
+
+// Figma "BTN/Box/Primary" 자기소개 작성 유도 배너 (node 743:5587) — 자기소개를 하나도 작성하지
+// 않은 유저에게만 노출되는 소프트 넛지로, 별도 서버 제약은 없다(호감/메시지 API는 막지 않음).
+function IntroBanner({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="mx-5 flex items-center gap-3 p-4 rounded-[4px] bg-[#f0ecfe]">
+      <p className="flex-1 text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px] leading-[1.5]">
+        자기소개를 작성해야 호감과 메시지를 보낼 수 있어요.
+      </p>
+      <button
+        type="button"
+        onClick={onClick}
+        className="shrink-0 h-7 px-3 rounded-[4px] bg-[#2a2a2a] text-white text-[12px] font-medium tracking-[-0.12px] active:opacity-80"
+      >
+        자기소개 작성
+      </button>
+    </div>
+  );
+}
+
+// Figma "02_추천_가입 직후 별 적립 안내 modal" (node 416:6997) — 온보딩 미니게임으로 별을
+// 적립한 직후, 홈 화면 첫 진입 시 1회 노출된다. app/onboarding/result/page.tsx에서
+// localStorage에 적립분을 남겨두면 여기서 읽어 보여주고 지운다.
+function StarRewardModal({ stars, onClose }: { stars: number; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-8" style={{ touchAction: "none" }}>
+      <div className="absolute inset-0 bg-black/61" onClick={onClose} />
+      <div className="relative bg-white rounded-[8px] p-5 w-[312px] flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] leading-[1.5]">
+            미니게임으로 별이 {stars}개 적립됐어요.
+            <br />
+            바로 호감을 보내보세요.
+          </p>
+          <div className="flex items-center gap-1">
+            <StarIcon size={20} color="#FFA100" />
+            <span className="text-[15px] tracking-[-0.3px]">
+              <b className="text-[#ff9f00] font-bold">{stars}</b>
+              <span className="text-[#1f1f1f] font-medium">개 적립</span>
+            </span>
+          </div>
+        </div>
+        <CtaButton onClick={onClose}>확인</CtaButton>
+      </div>
+    </div>
   );
 }
 
@@ -244,6 +295,16 @@ export default function HomePage() {
   const [recosLoading, setRecosLoading] = useState(true);
   const [moreBusy, setMoreBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [starReward, setStarReward] = useState<number | null>(null);
+
+  useEffect(() => {
+    const pending = localStorage.getItem("star_reward_pending");
+    if (pending) {
+      localStorage.removeItem("star_reward_pending");
+      const n = parseInt(pending, 10);
+      if (n > 0) setStarReward(n);
+    }
+  }, []);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -348,6 +409,11 @@ export default function HomePage() {
 
   if (!user) return null;
 
+  const bioTags: string[] = user.bioTags ? JSON.parse(user.bioTags) : [];
+  const bioMap: Record<string, string> = user.bio ? JSON.parse(user.bio) : {};
+  const bioIncomplete =
+    bioTags.length === 0 || bioTags.some((tag) => !bioMap[tag]?.trim());
+
   return (
     <div
       className="flex flex-col min-h-screen bg-white"
@@ -362,11 +428,17 @@ export default function HomePage() {
       </div>
 
       <div className="flex-1 flex flex-col gap-7 pt-5">
-        {/* 오늘의 연애운 배너 */}
-        <FortuneBanner
-          fortune={fortune}
-          onClick={() => router.push("/today-fortune")}
-        />
+        <div className="flex flex-col gap-2">
+          {/* 자기소개 작성 유도 배너 */}
+          {bioIncomplete && (
+            <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />
+          )}
+          {/* 오늘의 연애운 배너 */}
+          <FortuneBanner
+            fortune={fortune}
+            onClick={() => router.push("/today-fortune")}
+          />
+        </div>
 
         {recosLoading ? (
           <Swiper
@@ -425,6 +497,10 @@ export default function HomePage() {
       )}
 
       <AppBottomNav />
+
+      {starReward != null && (
+        <StarRewardModal stars={starReward} onClose={() => setStarReward(null)} />
+      )}
     </div>
   );
 }
