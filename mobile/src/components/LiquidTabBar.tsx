@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -11,10 +10,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
-import {
-  LiquidGlassView,
-  isLiquidGlassSupported,
-} from '@callstack/liquid-glass';
 
 export type TabKey = 'recommend' | 'like' | 'message' | 'my';
 
@@ -30,8 +25,6 @@ const BAR_RADIUS = 999;
 const NUM_TABS = TABS.length;
 // pill 너비 = 탭 슬롯의 이 비율
 const PILL_SLOT_RATIO = 0.80;
-
-const AnimatedLiquidGlassView = Animated.createAnimatedComponent(LiquidGlassView);
 
 // Figma "마주 Design System" > Icon/Bottom navigation (node 151:426)와 동일한 벡터.
 // stroke는 active 여부와 상관없이 항상 Gray 850(#1f1f1f) — active일 때 fill이 채워지는 것으로 상태를 구분한다.
@@ -197,7 +190,6 @@ export default function LiquidTabBar({
   }, [activeIdx]);
 
   const bottomPad = insets.bottom || 0;
-  const supported = isLiquidGlassSupported && Platform.OS === 'ios';
 
   const pillAnimStyle = [
     styles.pill,
@@ -251,28 +243,12 @@ export default function LiquidTabBar({
       style={[styles.wrapper, { paddingBottom: bottomPad + 8 }]}
     >
       <Animated.View style={[styles.barOuter, { transform: [{ scale: barScale }] }]}>
-        {supported ? (
-          <View style={styles.barContainer}>
-            <LiquidGlassView
-              effect="regular"
-              colorScheme="light"
-              style={styles.bar}
-            >
-              <Animated.View style={[pillAnimStyle, styles.fallbackPill]} />
-              {tabButtons}
-            </LiquidGlassView>
+        <View style={[styles.barContainer, styles.fallbackBg]}>
+          <View style={styles.bar}>
+            <Animated.View style={[pillAnimStyle, styles.fallbackPill]} />
+            {tabButtons}
           </View>
-        ) : (
-          <View style={[styles.barContainer, styles.fallbackBg]}>
-            <View style={styles.bar}>
-              <AnimatedLiquidGlassView
-                effect="none"
-                style={[pillAnimStyle, styles.fallbackPill]}
-              />
-              {tabButtons}
-            </View>
-          </View>
-        )}
+        </View>
       </Animated.View>
     </View>
   );
