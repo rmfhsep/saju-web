@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppRouter } from "@/lib/useAppRouter";
 import { bridgeNavigate } from "@/lib/bridge";
+import Screen from "@/components/ui/screen";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
@@ -132,95 +133,97 @@ export default function MyPage() {
   const summary = user ? filterSummary(user) : null;
 
   return (
-    <div
-      className="flex flex-col min-h-screen bg-white"
-      style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}
-    >
+    <Screen>
       {/* 헤더: 닉네임 + 보유 별 칩 */}
-      <div className="h-[52px] flex items-center justify-between px-5">
+      <div className="h-[52px] flex items-center justify-between px-5 shrink-0">
         <span className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           {displayName}
         </span>
         <StarChip stars={user?.stars ?? 0} onClick={() => router.push("/my/store")} />
       </div>
 
-      {/* 프로필 + 자기소개 유도 배너 */}
-      <div className="flex flex-col gap-4 items-center pt-7 pb-8">
-        <div className="flex flex-col gap-4 items-center">
-          <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-[#f4f4f5] flex items-center justify-center">
-            {photos[0] ? (
-              <img
-                src={photos[0]}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-[36px] font-semibold text-[#b7b7b7]">
-                {displayName.slice(0, 1)}
-              </span>
-            )}
+      <div
+        className="flex-1 scroll-area overflow-y-auto"
+        style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT + 36 }}
+      >
+        {/* 프로필 + 자기소개 유도 배너 */}
+        <div className="flex flex-col gap-4 items-center pt-7 pb-8">
+          <div className="flex flex-col gap-4 items-center">
+            <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-[#f4f4f5] flex items-center justify-center">
+              {photos[0] ? (
+                <img
+                  src={photos[0]}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-[36px] font-semibold text-[#b7b7b7]">
+                  {displayName.slice(0, 1)}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => router.push("/my/edit")}
+              className="h-[36px] px-4 bg-[#e9f1ff] rounded-[4px] text-[13px] font-medium text-[#1a75ff] active:opacity-80"
+            >
+              프로필 수정
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/my/edit")}
-            className="h-[36px] px-4 bg-[#e9f1ff] rounded-[4px] text-[13px] font-medium text-[#1a75ff] active:opacity-80"
-          >
-            프로필 수정
-          </button>
+
+          {user && bioIncomplete && <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />}
         </div>
 
-        {user && bioIncomplete && <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />}
-      </div>
-
-      {/* 리스트 */}
-      <div className="w-full flex flex-col">
-        <ListCell
-          label="선호하는 조건 설정"
-          subtitle={summary}
-          onClick={() => router.push("/my/filter")}
-          icon={
-            <Image src={FilterIcon} alt="filter" width={20} height={20} />
-          }
-        />
-        <ListCell
-          label="내 연애운 리포트"
-          onClick={() => router.push("/my/report")}
-          icon={
-            <Image src={LoveLuckIcon} alt="love luck" width={20} height={20} />
-          }
-        />
-        <ListCell
-          label="내 프로필 확인하기"
-          onClick={() => router.push("/my/profile-preview")}
-          icon={
-            <Image src={ProfileCardIcon} alt="profile card" width={20} height={20} />
-          }
-        />
-        <ListCell
-          label="지인 차단"
-          onClick={() => router.push("/my/blocking")}
-          icon={
-            <Image src={ProhibitionIcon} alt="prohibition" width={20} height={20} />
-          }
-        />
-        <ListCell
-          label="설정"
-          onClick={() => router.push("/my/settings")}
-          icon={
-            <Image src={SettingIcon} alt="setting" width={20} height={20} />
-          }
-        />
-        <ListCell
-          label="문의하기"
-          onClick={() => {
-            window.location.href = KAKAO_CHANNEL_CHAT_URL;
-          }}
-          icon={
-            <Image src={KakaoIcon} alt="kakao" width={20} height={20} />
-          }
-        />
+        {/* 리스트 */}
+        <div className="w-full flex flex-col">
+          <ListCell
+            label="선호하는 조건 설정"
+            subtitle={summary}
+            onClick={() => router.push("/my/filter")}
+            icon={
+              <Image src={FilterIcon} alt="filter" width={20} height={20} />
+            }
+          />
+          <ListCell
+            label="내 연애운 리포트"
+            onClick={() => router.push("/my/report")}
+            icon={
+              <Image src={LoveLuckIcon} alt="love luck" width={20} height={20} />
+            }
+          />
+          <ListCell
+            label="내 프로필 확인하기"
+            onClick={() => router.push("/my/profile-preview")}
+            icon={
+              <Image src={ProfileCardIcon} alt="profile card" width={20} height={20} />
+            }
+          />
+          <ListCell
+            label="지인 차단"
+            onClick={() => router.push("/my/blocking")}
+            icon={
+              <Image src={ProhibitionIcon} alt="prohibition" width={20} height={20} />
+            }
+          />
+          <ListCell
+            label="설정"
+            onClick={() => router.push("/my/settings")}
+            icon={
+              <Image src={SettingIcon} alt="setting" width={20} height={20} />
+            }
+          />
+          <ListCell
+            label="문의하기"
+            onClick={() => {
+              window.location.href = KAKAO_CHANNEL_CHAT_URL;
+            }}
+            icon={
+              <Image src={KakaoIcon} alt="kakao" width={20} height={20} />
+            }
+          />
+        </div>
       </div>
 
       <AppBottomNav />
-    </div>
+    </Screen>
   );
 }

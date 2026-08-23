@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
 
 export type TabKey = 'recommend' | 'like' | 'message' | 'my';
 
@@ -243,11 +244,12 @@ export default function LiquidTabBar({
       style={[styles.wrapper, { paddingBottom: bottomPad + 8 }]}
     >
       <Animated.View style={[styles.barOuter, { transform: [{ scale: barScale }] }]}>
-        <View style={[styles.barContainer, styles.fallbackBg]}>
-          <View style={styles.bar}>
+        <View style={styles.barContainer}>
+          <BlurView intensity={50} tint="light" style={styles.bar}>
+            <View style={[StyleSheet.absoluteFill, styles.glassTint]} />
             <Animated.View style={[pillAnimStyle, styles.fallbackPill]} />
             {tabButtons}
-          </View>
+          </BlurView>
         </View>
       </Animated.View>
     </View>
@@ -273,17 +275,22 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: BAR_RADIUS,
     position: 'relative',
-  },
-  bar: {
-    height: BAR_HEIGHT,
-    borderRadius: BAR_RADIUS,
+    // 그림자는 overflow:hidden인 bar(블러 클립용)가 아니라 여기서 그려야 안 잘림
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
     elevation: 6,
-    overflow: 'visible',
+  },
+  bar: {
+    height: BAR_HEIGHT,
+    borderRadius: BAR_RADIUS,
+    overflow: 'hidden',
     // paddingHorizontal 제거 — pill % 기준과 통일시켜 정렬 맞춤
+  },
+  // Figma "Bottomnavigation BG" — 블러 위에 반투명 흰색 65%를 겹쳐 라이트 글래스 톤을 맞춘다.
+  glassTint: {
+    backgroundColor: 'rgba(255,255,255,0.65)',
   },
   tabRow: {
     flexDirection: 'row',
@@ -333,9 +340,6 @@ const styles = StyleSheet.create({
     top: 6,
     bottom: 6,
     borderRadius: BAR_RADIUS,
-  },
-  fallbackBg: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
   },
   fallbackPill: {
     backgroundColor: '#efefef',
