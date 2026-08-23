@@ -333,9 +333,32 @@ export default function HomePage() {
           return;
         }
 
-        const res = await fetch("/api/auth/me", {
+        // auth/me 응답을 기다렸다가 순서대로 쏘던 걸 병렬로 — 셋 다 같은 token만 있으면
+        // 되는 독립적인 요청이라, 순차로 묶을 이유가 없었다(왕복 3번 → 1번 분량으로 단축).
+        const authPromise = fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        fetch("/api/users/discover", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d?.users) setRecos(d.users as Reco[]);
+            setNoNewToday(!!d?.noNewToday);
+          })
+          .catch(() => {})
+          .finally(() => setRecosLoading(false));
+        fetch("/api/daily-fortune/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d?.level && d?.text)
+              setFortune({ level: d.level, text: d.text });
+          })
+          .catch(() => {});
+
+        const res = await authPromise;
 
         if (!res.ok) {
           localStorage.removeItem("auth_token");
@@ -350,29 +373,6 @@ export default function HomePage() {
         }
 
         setUser(data);
-
-        // 이성 유저 추천 (누적 목록 — 24시간마다 새 추천 배치 추가)
-        fetch("/api/users/discover", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d?.users) setRecos(d.users as Reco[]);
-            setNoNewToday(!!d?.noNewToday);
-          })
-          .catch(() => {})
-          .finally(() => setRecosLoading(false));
-
-        // 오늘의 연애운 배너
-        fetch("/api/daily-fortune/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d?.level && d?.text)
-              setFortune({ level: d.level, text: d.text });
-          })
-          .catch(() => {});
       } catch {
         bridgeNavigate("Landing");
       } finally {

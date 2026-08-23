@@ -10,16 +10,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { SCREEN_PATHS, buildUrl } from '../lib/webBridge';
-import { setStoredAuthToken } from '../lib/authStorage';
+import { setStoredAuthToken, clearStoredAuthToken } from '../lib/authStorage';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'OnboardingWebView'>;
   route: RouteProp<RootStackParamList, 'OnboardingWebView'>;
 };
 
-export default // 원래는 온보딩 전용이었지만, 지금은 4개 탭 루트(HomeScreen) 아래의 모든 서브페이지가
+// 원래는 온보딩 전용이었지만, 지금은 4개 탭 루트(HomeScreen) 아래의 모든 서브페이지가
 // 이 화면을 통해 네이티브 스택에 push된다 — 'push'/'replace' 메시지가 그 경로다.
-function OnboardingWebViewScreen({ navigation, route }: Props) {
+export default function OnboardingWebViewScreen({ navigation, route }: Props) {
   const { url } = route.params;
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
@@ -108,6 +108,17 @@ function OnboardingWebViewScreen({ navigation, route }: Props) {
       }
 
       if (data.type !== 'navigate') return;
+
+      // 로그아웃 / 탈퇴 — HomeScreen의 동일 분기와 맞춰서 여기서도 처리해야 한다.
+      // 이 화면(서브페이지 push)에서 로그아웃하는 경우가 실제로 여기 해당.
+      if (data.screen === 'Landing' || data.screen === 'PhoneInput') {
+        clearStoredAuthToken();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'OnboardingWebView', params: { url: buildUrl('/onboarding') } }],
+        });
+        return;
+      }
 
       if (data.screen === 'Home') {
         navigation.reset({ index: 0, routes: [{ name: 'Home' }] });

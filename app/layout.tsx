@@ -20,6 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        {/* 폰트 CSS가 렌더 블로킹이라, 커넥션이라도 먼저 열어두면 새 WebView가 뜰 때마다
+            생기는 DNS/TLS 왕복을 다른 리소스 로딩과 겹쳐서 줄일 수 있다. */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
