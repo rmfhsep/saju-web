@@ -245,7 +245,7 @@ export default function LiquidTabBar({
     >
       <Animated.View style={[styles.barOuter, { transform: [{ scale: barScale }] }]}>
         <View style={styles.barContainer}>
-          <BlurView intensity={50} tint="light" style={styles.bar}>
+          <BlurView intensity={85} tint="light" style={styles.bar}>
             <View style={[StyleSheet.absoluteFill, styles.glassTint]} />
             <Animated.View style={[pillAnimStyle, styles.fallbackPill]} />
             {tabButtons}
@@ -288,9 +288,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     // paddingHorizontal 제거 — pill % 기준과 통일시켜 정렬 맞춤
   },
-  // Figma "Bottomnavigation BG" — 블러 위에 반투명 흰색 65%를 겹쳐 라이트 글래스 톤을 맞춘다.
+  // 블러 위에 아주 옅은 흰색만 얹어 톤을 맞춘다 — 진하게 얹으면 블러 자체가 죽어버린다.
   glassTint: {
-    backgroundColor: 'rgba(255,255,255,0.65)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   tabRow: {
     flexDirection: 'row',

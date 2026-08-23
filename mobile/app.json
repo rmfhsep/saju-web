@@ -2,13 +2,14 @@
   "expo": {
     "name": "마주",
     "slug": "saju-agent",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ulruru.sajuagent",
+      "buildNumber": "1",
       "googleServicesFile": "./GoogleService-Info.plist",
       "entitlements": {
         "aps-environment": "production"
