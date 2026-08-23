@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     try {
       const result = await prisma.$transaction(async tx => {
         const spent = cost > 0
-          ? await spendEffectiveStars(tx, payload.userId, cost)
+          ? await spendEffectiveStars(tx, payload.userId, cost, "쪽지 보내기")
           : await (async () => {
               const cur = await tx.user.findUnique({
                 where: { id: payload.userId },

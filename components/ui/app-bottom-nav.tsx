@@ -92,7 +92,21 @@ export default function AppBottomNav({ hasNewLike = false, hasNewMessage = false
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-col items-center" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="w-full max-w-[430px] px-[25px] pt-4 pb-5">
-        <div className="flex items-stretch justify-center bg-white/65 backdrop-blur-xl rounded-[296px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+        <div
+          className="flex items-stretch justify-center rounded-[296px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+          style={
+            {
+              background: "rgba(255, 255, 255, 0.65)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              // RecoCard(app/page.tsx)와 동일한 이슈: fixed 탭바 아래로 콘텐츠가 계속
+              // 스크롤되면 WebKit이 backdrop-filter를 프레임마다 재계산하며 블러가
+              // 꺼진 것처럼 보이는 버그가 있다 — 별도 GPU 레이어로 승격시켜 방지.
+              transform: "translateZ(0)",
+              willChange: "transform",
+            } as React.CSSProperties
+          }
+        >
           {TABS.map(tab => {
             const active = pathname === tab.href
             return (

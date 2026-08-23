@@ -11,6 +11,11 @@ function getRN(): RNWebView | undefined {
   return (window as Window & { ReactNativeWebView?: RNWebView }).ReactNativeWebView
 }
 
+/** True when running inside the React Native WebView shell (not a plain browser). */
+export function isInNativeApp(): boolean {
+  return !!getRN()
+}
+
 export const SCREEN_PATHS: Record<string, string> = {
   PhoneInput:   '/onboarding/phone',
   Verify:       '/onboarding/verify',
@@ -63,6 +68,22 @@ export function bridgeBack() {
     return
   }
   window.history.back()
+}
+
+/**
+ * 탭 루트(추천/호감/메시지/내 정보) 아래의 모든 서브페이지 이동에 쓰는 범용 push —
+ * 네이티브에서는 그 경로를 새 WebView 화면으로 스택에 쌓는다. 브라우저에서는
+ * 폴백이 없으니(Next 라우터가 필요) useAppRouter를 통해서만 호출할 것.
+ */
+export function bridgePush(path: string) {
+  const rn = getRN()
+  if (rn) rn.postMessage(JSON.stringify({ type: 'push', path }))
+}
+
+/** bridgePush와 같지만 현재 네이티브 스택의 최상단 화면을 교체한다(뒤로가기 시 건너뜀). */
+export function bridgeReplace(path: string) {
+  const rn = getRN()
+  if (rn) rn.postMessage(JSON.stringify({ type: 'replace', path }))
 }
 
 /**

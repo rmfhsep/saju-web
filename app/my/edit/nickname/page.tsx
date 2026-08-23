@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 
@@ -9,7 +9,7 @@ const DISALLOWED_RE = /[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]/g
 const MAX = 12
 
 export default function NicknameEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [nickname, setNickname] = useState("")
   const [saving, setSaving] = useState(false)
 

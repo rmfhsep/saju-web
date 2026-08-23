@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
@@ -169,7 +169,7 @@ type MeUser = {
 }
 
 export default function ReportPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [user, setUser] = useState<MeUser | null>(null)
   const [report, setReport] = useState<SajuReport | null>(null)
   const [loading, setLoading] = useState(true)

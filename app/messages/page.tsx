@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
 import { timeAgo } from "@/lib/time"
 
@@ -13,7 +13,7 @@ type Conversation = {
 }
 
 export default function MessagesPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [conversations, setConversations] = useState<Conversation[] | null>(null)
 
   useEffect(() => {

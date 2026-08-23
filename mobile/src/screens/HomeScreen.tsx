@@ -148,6 +148,14 @@ export default function HomeScreen() {
           Linking.openSettings();
           return;
         }
+        if (data.type === 'push' && typeof data.path === 'string') {
+          navigation.push('OnboardingWebView', { url: buildUrl(data.path) });
+          return;
+        }
+        if (data.type === 'replace' && typeof data.path === 'string') {
+          navigation.replace('OnboardingWebView', { url: buildUrl(data.path) });
+          return;
+        }
         if (data.type === 'authToken' && data.token) {
           fetchProfilePhoto(data.token);
           setStoredAuthToken(data.token);
@@ -226,6 +234,30 @@ export default function HomeScreen() {
     setActiveTab(tab);
   }
 
+  /**
+   * 카카오페이/네이버페이/토스페이 등 PG 결제는 자체 앱으로 넘어가기 위해
+   * kakaotalk://, supertoss:// 같은 커스텀 URL 스킴으로 리다이렉트한다.
+   * WebView는 http/https가 아닌 스킴을 직접 열 수 없어 그냥 무시해버리므로,
+   * 여기서 가로채 OS(Linking)에 위임해야 결제 수단 딥링크가 정상 동작한다.
+   */
+  function handleShouldStartLoadWithRequest(request: { url: string }): boolean {
+    const { url } = request;
+    if (
+      url.startsWith('http://') ||
+      url.startsWith('https://') ||
+      url.startsWith('about:') ||
+      url.startsWith('data:')
+    ) {
+      return true;
+    }
+    Linking.canOpenURL(url)
+      .then(supported => {
+        if (supported) Linking.openURL(url);
+      })
+      .catch(() => {});
+    return false;
+  }
+
   // 탭 전환 시에는 항상 탭바를 다시 노출 (하위 페이지에서 숨겨졌더라도)
   useEffect(() => {
     setTabBarVisible(true);
@@ -258,6 +290,7 @@ export default function HomeScreen() {
               onLoadEnd={makeLoadEndHandler(tab.key)}
               onMessage={makeMessageHandler(tab.key)}
               onNavigationStateChange={makeNavStateHandler(tab.key)}
+              onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
               javaScriptEnabled
               domStorageEnabled
               allowsBackForwardNavigationGestures={isActive}

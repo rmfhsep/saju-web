@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/lib/useAppRouter";
 import Screen from "@/components/ui/screen";
 import EditHeader from "@/components/ui/edit-header";
 import { SearchIcon } from "@/components/ui/icons";
@@ -31,7 +31,7 @@ function ListSkeleton({ onBack }: { onBack: () => void }) {
 }
 
 export default function JobEditPage() {
-  const router = useRouter();
+  const router = useAppRouter();
   const [job, setJob] = useState("");
   const [jobDetail, setJobDetail] = useState("");
   const [q, setQ] = useState("");

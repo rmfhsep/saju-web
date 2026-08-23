@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import DeleteAccountAction from "@/components/ui/delete-account-action"
@@ -17,7 +17,7 @@ function authFetch(path: string, init?: RequestInit) {
 }
 
 export default function NotificationsPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [deviceOn, setDeviceOn] = useState(false) // OS 푸시 권한 (추후 네이티브 연동 시 갱신)
   const [serviceOn, setServiceOn] = useState(true) // 서비스 알림 (DB)
   const [saving, setSaving] = useState(false)

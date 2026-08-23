@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import CtaButton from "@/components/ui/cta-button"
@@ -82,7 +83,7 @@ function StarCostRow({ cost, balance }: { cost: number; balance: number }) {
 }
 
 export default function ProfileDetailPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const params = useParams<{ id: string }>()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 

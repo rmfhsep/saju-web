@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/lib/useAppRouter";
 import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
 import StarChip from "@/components/ui/star-chip";
+import IntroBanner from "@/components/ui/intro-banner";
+import { useBioIncomplete } from "@/lib/useBioIncomplete";
 import FilterIcon from "@/public/icons/filter.svg"
 import LoveLuckIcon from "@/public/icons/loveluck.svg"
+import ProfileCardIcon from "@/public/icons/profileCard.svg"
 import ProhibitionIcon from "@/public/icons/prohibition.svg"
 import SettingIcon from "@/public/icons/setting.svg"
 import KakaoIcon from "@/public/icons/kakao.svg"
@@ -22,6 +25,8 @@ type MeUser = {
   name: string | null;
   gender: string | null;
   photos: string | null;
+  bioTags: string | null;
+  bio: string | null;
   stars: number;
   filterComplete: boolean;
   preferredFilterType: string | null;
@@ -103,8 +108,9 @@ function ListCell({
 }
 
 export default function MyPage() {
-  const router = useRouter();
+  const router = useAppRouter();
   const [user, setUser] = useState<MeUser | null>(null);
+  const bioIncomplete = useBioIncomplete(user);
 
   useEffect(() => {
     const token =
@@ -138,27 +144,31 @@ export default function MyPage() {
         <StarChip stars={user?.stars ?? 0} onClick={() => router.push("/my/store")} />
       </div>
 
-      {/* 프로필 */}
+      {/* 프로필 + 자기소개 유도 배너 */}
       <div className="flex flex-col gap-4 items-center pt-7 pb-8">
-        <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-[#f4f4f5] flex items-center justify-center">
-          {photos[0] ? (
-            <img
-              src={photos[0]}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-[36px] font-semibold text-[#b7b7b7]">
-              {displayName.slice(0, 1)}
-            </span>
-          )}
+        <div className="flex flex-col gap-4 items-center">
+          <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-[#f4f4f5] flex items-center justify-center">
+            {photos[0] ? (
+              <img
+                src={photos[0]}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-[36px] font-semibold text-[#b7b7b7]">
+                {displayName.slice(0, 1)}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => router.push("/my/edit")}
+            className="h-[36px] px-4 bg-[#e9f1ff] rounded-[4px] text-[13px] font-medium text-[#1a75ff] active:opacity-80"
+          >
+            프로필 수정
+          </button>
         </div>
-        <button
-          onClick={() => router.push("/my/edit")}
-          className="h-[36px] px-4 bg-[#e9f1ff] rounded-[4px] text-[13px] font-medium text-[#1a75ff] active:opacity-80"
-        >
-          프로필 수정
-        </button>
+
+        {user && bioIncomplete && <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />}
       </div>
 
       {/* 리스트 */}
@@ -176,6 +186,13 @@ export default function MyPage() {
           onClick={() => router.push("/my/report")}
           icon={
             <Image src={LoveLuckIcon} alt="love luck" width={20} height={20} />
+          }
+        />
+        <ListCell
+          label="내 프로필 확인하기"
+          onClick={() => router.push("/my/profile-preview")}
+          icon={
+            <Image src={ProfileCardIcon} alt="profile card" width={20} height={20} />
           }
         />
         <ListCell

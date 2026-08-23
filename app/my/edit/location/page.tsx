@@ -1,14 +1,14 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import { SearchIcon } from "@/components/ui/icons"
 import { useLocationSearch } from "@/lib/useLocationSearch"
 
 export default function LocationEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [q, setQ] = useState("")
   const [location, setLocation] = useState("")

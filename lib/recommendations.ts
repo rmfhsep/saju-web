@@ -121,7 +121,7 @@ export async function addMoreIntroductions(userId: number): Promise<{ users: Rec
     const candidates = await findEligibleCandidates(tx, userId, opposite, existing.map(r => r.recommendedId), MORE_INTRO_LIMIT)
     if (candidates.length === 0) throw new NoMoreCandidatesError()
 
-    const spent = await spendEffectiveStars(tx, userId, MORE_INTRO_COST)
+    const spent = await spendEffectiveStars(tx, userId, MORE_INTRO_COST, "인연 추천 더 받기")
     await tx.recommendation.createMany({
       data: candidates.map(c => ({ userId, recommendedId: c.id })),
       skipDuplicates: true,

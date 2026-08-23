@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/lib/useAppRouter";
 import Screen from "@/components/ui/screen";
 import BackButton from "@/components/ui/back-button";
 import PageFooter from "@/components/ui/page-footer";
@@ -63,7 +63,7 @@ function InfoCard({ title, text }: { title: string; text: string }) {
 }
 
 export default function TodayFortunePage() {
-  const router = useRouter();
+  const router = useAppRouter();
   const [fortune, setFortune] = useState<DailyFortuneDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [shareMsg, setShareMsg] = useState<string | null>(null);

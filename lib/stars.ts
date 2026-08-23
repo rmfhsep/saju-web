@@ -38,11 +38,13 @@ export class InsufficientStarsError extends Error {
  * 표시되는 잔액(auth/me 등)은 stars + 만료 전 trialStars 합산이므로, 실제 차감도
  * 그 합산 잔액 기준으로 판단하고 trialStars부터 먼저 소모한다(어차피 만료되는 값이라).
  * 트랜잭션 클라이언트(tx)를 받아 호출부의 $transaction 안에서 원자적으로 실행되게 한다.
+ * reason은 이용 내역(StarTransaction)에 그대로 노출되는 문구다 (예: "좋아요 보내기").
  */
 export async function spendEffectiveStars(
   tx: Prisma.TransactionClient | PrismaClient,
   userId: number,
   cost: number,
+  reason: string,
 ): Promise<{ stars: number }> {
   const user = await tx.user.findUnique({
     where: { id: userId },
@@ -66,5 +68,41 @@ export async function spendEffectiveStars(
     select: { stars: true, trialStars: true, trialStarsExpireAt: true },
   })
 
-  return { stars: updated.stars + effectiveTrialStars(updated.trialStars, updated.trialStarsExpireAt) }
+  const balanceAfter = updated.stars + effectiveTrialStars(updated.trialStars, updated.trialStarsExpireAt)
+
+  await tx.starTransaction.create({
+    data: { userId, type: "spend", amount: -cost, reason, balanceAfter },
+  })
+
+  return { stars: balanceAfter }
+}
+
+/**
+ * 스토어 충전 등으로 별(User.stars)을 늘릴 때 쓰는 공용 헬퍼 — 이용 내역도 함께 남긴다.
+ * 체험용(trialStars)이 아닌 실 잔액(stars)에만 적립한다.
+ */
+export async function addStars(
+  tx: Prisma.TransactionClient | PrismaClient,
+  params: { userId: number; amount: number; reason: string; mulNo?: string },
+): Promise<{ stars: number }> {
+  const updated = await tx.user.update({
+    where: { id: params.userId },
+    data: { stars: { increment: params.amount } },
+    select: { stars: true, trialStars: true, trialStarsExpireAt: true },
+  })
+
+  const balanceAfter = updated.stars + effectiveTrialStars(updated.trialStars, updated.trialStarsExpireAt)
+
+  await tx.starTransaction.create({
+    data: {
+      userId: params.userId,
+      type: "charge",
+      amount: params.amount,
+      reason: params.reason,
+      balanceAfter,
+      mulNo: params.mulNo,
+    },
+  })
+
+  return { stars: balanceAfter }
 }

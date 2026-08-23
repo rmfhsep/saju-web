@@ -1,30 +1,63 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import StarIcon from "@/components/ui/star-icon"
 import { STAR_PACKAGES, formatWon } from "@/lib/store"
 
+const TERMS_URL = "https://maju.app/terms"
+
 export default function StorePage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [toast, setToast] = useState<string | null>(null)
   const [stars, setStars] = useState(0)
+  const [starsLoading, setStarsLoading] = useState(true)
+  const [purchasingCount, setPurchasingCount] = useState<number | null>(null)
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) return
+    if (!token) {
+      setStarsLoading(false)
+      return
+    }
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => (res.ok ? res.json() : null))
       .then(u => { if (u) setStars(u.stars ?? 0) })
       .catch(() => {})
+      .finally(() => setStarsLoading(false))
   }, [])
 
-  function handlePurchase(count: number) {
-    // 실제 결제 연동 전까지는 안내 토스트만 표시
-    setToast(`별 ${count}개 구매는 준비 중이에요.`)
-    setTimeout(() => setToast(null), 1800)
+  async function handlePurchase(count: number) {
+    if (purchasingCount) return
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    if (!token) {
+      setToast("로그인이 필요해요.")
+      setTimeout(() => setToast(null), 1800)
+      return
+    }
+
+    setPurchasingCount(count)
+    try {
+      const res = await fetch("/api/stars/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ starCount: count }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.payurl) {
+        setToast(data?.error || "결제 요청에 실패했어요.")
+        setTimeout(() => setToast(null), 1800)
+        return
+      }
+      window.location.href = data.payurl
+    } catch {
+      setToast("결제 요청에 실패했어요.")
+      setTimeout(() => setToast(null), 1800)
+    } finally {
+      setPurchasingCount(null)
+    }
   }
 
   return (
@@ -45,7 +78,11 @@ export default function StorePage() {
                 <path d="M6 3.5L10.5 8L6 12.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">{stars}</span>
+            {starsLoading ? (
+              <span className="h-[24px] w-[40px] rounded-[4px] bg-black/10 animate-pulse" />
+            ) : (
+              <span className="text-[24px] font-bold text-[#1f1f1f] tracking-[-0.48px]">{stars}</span>
+            )}
           </button>
 
           {/* 패키지 목록 */}
@@ -54,25 +91,39 @@ export default function StorePage() {
               <button
                 key={pkg.count}
                 onClick={() => handlePurchase(pkg.count)}
-                className="w-full bg-white rounded-[8px] px-4 py-5 flex items-center justify-between shadow-[0px_2px_6px_rgba(0,0,0,0.08)] active:opacity-90"
+                disabled={purchasingCount !== null}
+                className="w-full bg-white rounded-[8px] px-4 py-5 flex items-center justify-between shadow-[0px_2px_6px_rgba(0,0,0,0.08)] active:opacity-90 disabled:opacity-60"
               >
                 <div className="flex items-center gap-2">
                   <StarIcon size={20} color="#FFA100" />
                   <span className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">{pkg.count}개</span>
                 </div>
-                <span className="text-[16px] font-bold text-[#ff9f00] tracking-[-0.32px]">{formatWon(pkg.price)}</span>
+                <span className="text-[16px] font-bold text-[#ff9f00] tracking-[-0.32px]">
+                  {purchasingCount === pkg.count ? "요청 중..." : formatWon(pkg.price)}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
         {/* 이용 안내 (풀 블리드 회색 영역) */}
-        <div className="mt-10 bg-[#f4f4f5] px-5 py-5 flex flex-col gap-2">
+        <div className="mt-10 bg-[#f4f4f5] px-5 pt-5 pb-9 flex flex-col gap-2">
           <p className="text-[12px] font-semibold text-[#1f1f1f] leading-[1.4]">이용 안내</p>
           <ul className="flex flex-col gap-2 text-[12px] font-normal text-[#777] leading-[1.4] list-disc pl-[18px]">
             <li>별은 좋아요, 쪽지 보내기, 인연 추천 등 마주의 기능을 이용할 때 사용할 수 있습니다.</li>
-            <li>별은 구매 즉시 지급되며 유효기간은 없습니다.</li>
+            <li>
+              구매한 별은 결제 즉시 지급되며, 발행일로부터 5년간 유효합니다. (이벤트·미션으로 무료 지급된 별은 지급일로부터 7일간만
+              사용할 수 있습니다.)
+            </li>
+            <li>보낸 쪽지를 상대가 3일간 확인하지 않으면 사용한 별을 100% 환급해 드립니다. 단, 상대가 쪽지를 확인한 이후에는 환급되지 않습니다.</li>
             <li>결제는 App Store를 통해 이루어지며, 환불은 Apple 환불 정책에 따라 처리됩니다.</li>
+            <li>
+              자세한 내용은{" "}
+              <button type="button" onClick={() => { window.location.href = TERMS_URL }} className="underline">
+                이용약관
+              </button>
+              을 확인해주세요.
+            </li>
           </ul>
         </div>
       </div>

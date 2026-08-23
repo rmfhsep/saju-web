@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
@@ -18,7 +19,7 @@ function Toast({ message }: { message: string }) {
 }
 
 export default function ChangeBioTagPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const params = useParams<{ index: string }>()
   const index = parseInt(params.index, 10)
 

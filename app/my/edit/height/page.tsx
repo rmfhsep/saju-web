@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 
 export default function HeightEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [height, setHeight] = useState("")
   const [saving, setSaving] = useState(false)
 

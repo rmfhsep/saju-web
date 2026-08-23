@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
 import { calcAge } from "@/lib/age"
 import { timeAgo } from "@/lib/time"
@@ -17,7 +17,7 @@ type LikeUser = {
 }
 
 export default function LikesPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [likes, setLikes] = useState<LikeUser[] | null>(null)
 
   useEffect(() => {

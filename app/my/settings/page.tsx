@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import { bridgeNavigate } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
@@ -26,7 +26,7 @@ function Row({ label, chevron, onClick }: { label: string; chevron?: boolean; on
 }
 
 export default function SettingsPage() {
-  const router = useRouter()
+  const router = useAppRouter()
 
   function handleLogout() {
     localStorage.setItem("did_logout", "true")

@@ -17,7 +17,9 @@ type Props = {
   route: RouteProp<RootStackParamList, 'OnboardingWebView'>;
 };
 
-export default function OnboardingWebViewScreen({ navigation, route }: Props) {
+export default // 원래는 온보딩 전용이었지만, 지금은 4개 탭 루트(HomeScreen) 아래의 모든 서브페이지가
+// 이 화면을 통해 네이티브 스택에 push된다 — 'push'/'replace' 메시지가 그 경로다.
+function OnboardingWebViewScreen({ navigation, route }: Props) {
   const { url } = route.params;
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,21 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
 
       if (data.type === 'back') {
         if (navigation.canGoBack()) navigation.goBack();
+        return;
+      }
+
+      if (data.type === 'push' && typeof data.path === 'string') {
+        navigation.push('OnboardingWebView', { url: buildUrl(data.path) });
+        return;
+      }
+
+      if (data.type === 'replace' && typeof data.path === 'string') {
+        navigation.replace('OnboardingWebView', { url: buildUrl(data.path) });
+        return;
+      }
+
+      if (data.type === 'openAppSettings') {
+        Linking.openSettings();
         return;
       }
 

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     let stars: number
     try {
       stars = await prisma.$transaction(async tx => {
-        const spent = await spendEffectiveStars(tx, payload.userId, LIKE_COST)
+        const spent = await spendEffectiveStars(tx, payload.userId, LIKE_COST, "좋아요 보내기")
         await tx.like.create({ data: { fromUserId: payload.userId, toUserId } })
         return spent.stars
       })

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import { decodeJwt } from "jose"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
@@ -20,7 +21,7 @@ type ThreadMessage = {
 type ThreadUser = { id: number; nickname: string | null; name: string | null; photos: string | null }
 
 export default function MessageThreadPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const params = useParams<{ userId: string }>()
 
   const [user, setUser] = useState<ThreadUser | null>(null)

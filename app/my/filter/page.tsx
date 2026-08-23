@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
@@ -38,7 +38,7 @@ const OPTIONS: Record<Exclude<FilterCategory, "height">, string[]> = {
 }
 
 export default function MyFilterPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [step, setStep] = useState<"category" | "detail">("category")
   const [gender, setGender] = useState<string>("MALE")
   const [category, setCategory] = useState<FilterCategory>("height")

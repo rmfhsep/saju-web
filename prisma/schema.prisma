@@ -102,6 +102,42 @@ model Message {
   @@index([toUserId, fromUserId])
 }
 
+// PayApp 결제 요청/완료/취소 내역 — mulNo는 PayApp이 발급하는 결제요청번호 (lib/payapp.ts 참고)
+model Payment {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  mulNo        String    @unique
+  goodname     String
+  price        Int
+  state        Int       @default(1) // 1=요청, 4=결제완료, 8/32=요청취소, 9/64=승인취소
+  payDate      DateTime?
+  payurl       String?
+  qrurl        String?
+  var1         String?
+  var2         String?
+  cancelMemo   String?
+  // feedbackurl은 여러 번 재호출될 수 있어(PayApp 정책), 결제완료 콜백 한 번당 별을 한 번만 지급하기 위한 플래그
+  starsGranted Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+// 별 충전/사용 내역 — 스토어 결제(충전), 좋아요/메시지 소모(사용) 등 모든 별 증감을 기록
+model StarTransaction {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  type         String // "charge" | "spend"
+  amount       Int // 충전: 양수, 사용: 음수
+  reason       String // "스토어 충전" | "좋아요 보내기" | "쪽지 보내기" 등
+  balanceAfter Int // 처리 후 잔여 별 수(stars + 유효 trialStars 합산)
+  mulNo        String? // 충전인 경우 PayApp 결제요청번호(Payment.mulNo)
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
 // 유저별 추천(오늘의 추천) 이력 — 누적 저장, 같은 상대 중복 추천 방지에도 사용
 model Recommendation {
   id            Int      @id @default(autoincrement())
@@ -111,4 +147,14 @@ model Recommendation {
 
   @@unique([userId, recommendedId])
   @@index([userId])
+}
+
+// iOS 심사용 백도어 로그인 계정 — 앱스토어 심사관이 전화번호 인증 없이 로그인할 수 있도록 별도 관리.
+// userId는 심사 전용으로 만든 데모 User를 가리키며, 실제 유저 계정과는 분리되어 있다.
+model ReviewAccount {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  userId       Int
+  createdAt    DateTime @default(now())
 }

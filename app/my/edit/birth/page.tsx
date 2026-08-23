@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import Checkbox from "@/components/ui/checkbox"
@@ -88,7 +88,7 @@ function SelectedField({ label, children }: { label: string; children: React.Rea
 }
 
 export default function BirthEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [name, setName] = useState("")
   const [gender, setGender] = useState("")
   const [calendarType, setCalendarType] = useState("")

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/lib/bridge"
 
 export default function BlockingPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [blockedCount, setBlockedCount] = useState(0)
   const [phone, setPhone] = useState("")
   const [showUnblock, setShowUnblock] = useState(false)

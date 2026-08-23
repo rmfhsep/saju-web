@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import RadioOption from "@/components/ui/radio-option"
@@ -18,7 +19,7 @@ const FIELD_CONFIG: Record<string, { title: string; options: string[] }> = {
 }
 
 export default function FieldEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const params = useParams<{ field: string }>()
   const config = FIELD_CONFIG[params.field]
 

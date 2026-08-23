@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAppRouter } from "@/lib/useAppRouter";
 import Screen from "@/components/ui/screen";
 import EditHeader from "@/components/ui/edit-header";
 import type { ProfileData } from "@/modules/profile/types";
@@ -75,7 +75,7 @@ function formatBirthDisplay(
 }
 
 export default function ProfileEditPage() {
-  const router = useRouter();
+  const router = useAppRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [loadingSlots, setLoadingSlots] = useState<Set<number>>(new Set());

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import { INCOME_OPTIONS } from "@/modules/profile/constants"
@@ -23,7 +23,7 @@ function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean
 }
 
 export default function IncomeEditPage() {
-  const router = useRouter()
+  const router = useAppRouter()
   const [income, setIncome] = useState("")
   const [saving, setSaving] = useState(false)
 
