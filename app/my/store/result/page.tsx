@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import CtaButton from "@/components/ui/cta-button"
 import StarIcon from "@/components/ui/star-icon"
+import { queryKeys } from "@/lib/queries/keys"
 
 const PAY_STATE_COMPLETED = 4
 const PAY_STATE_CANCEL = [8, 9, 32, 64]
@@ -23,6 +25,7 @@ type ViewState = "checking" | "success" | "cancelled" | "timeout" | "not_found"
 
 export default function ResultPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<PurchaseStatus | null>(null)
   const [view, setView] = useState<ViewState>("checking")
   const pollCountRef = useRef(0)
@@ -52,6 +55,8 @@ export default function ResultPage() {
 
         if (data.state === PAY_STATE_COMPLETED) {
           setView("success")
+          // 결제로 늘어난 별 개수를 스토어/홈/마이페이지 등 me 쿼리를 보는 모든 화면에 반영한다.
+          queryClient.invalidateQueries({ queryKey: queryKeys.me })
           return
         }
         if (PAY_STATE_CANCEL.includes(data.state)) {

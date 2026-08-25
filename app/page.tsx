@@ -12,29 +12,12 @@ import StarIcon from "@/components/ui/star-icon";
 import CtaButton from "@/components/ui/cta-button";
 import IntroBanner from "@/components/ui/intro-banner";
 import { useBioIncomplete } from "@/lib/useBioIncomplete";
+import { useMe } from "@/lib/queries/useMe";
+import { useDiscover, useMoreIntroMutation, type RecoUser } from "@/lib/queries/useDiscover";
 import { calcAge } from "@/lib/age";
 import { useAppRouter } from "@/lib/useAppRouter";
 
-type User = {
-  id: number;
-  phone: string;
-  name: string | null;
-  nickname: string | null;
-  gender: string | null;
-  profileComplete: boolean;
-  stars: number;
-  bioTags: string | null;
-  bio: string | null;
-};
-
-type Reco = {
-  id: number;
-  nickname: string | null;
-  name: string | null;
-  photos: string | null;
-  birthDate: string | null;
-  bioTags: string | null;
-};
+type Reco = RecoUser;
 
 type FortuneLevel = "HIGH" | "MID" | "LOW";
 
@@ -270,13 +253,16 @@ function RecoCard({
 
 export default function HomePage() {
   const router = useAppRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [recos, setRecos] = useState<Reco[]>([]);
-  const [noNewToday, setNoNewToday] = useState(false);
+  const meQuery = useMe();
+  const user = meQuery.data ?? null;
+  // 프로필 완성 전에는 추천 API가 의미 없으니 그때까지는 쿼리 자체를 실행하지 않는다.
+  const discoverQuery = useDiscover({ enabled: !!user?.profileComplete });
+  const moreIntroMutation = useMoreIntroMutation();
+  const recos = discoverQuery.data?.users ?? [];
+  const noNewToday = discoverQuery.data?.noNewToday ?? false;
+  // "로딩 중"과 "데이터 없음"을 같은 조건으로 뭉뚱그리지 않도록 data 존재 여부로만 판단한다.
+  const recosLoading = !discoverQuery.data;
   const [fortune, setFortune] = useState<DailyFortune | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [recosLoading, setRecosLoading] = useState(true);
-  const [moreBusy, setMoreBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [starReward, setStarReward] = useState<number | null>(null);
   const bioIncomplete = useBioIncomplete(user);
@@ -295,95 +281,43 @@ export default function HomePage() {
     setTimeout(() => setToast(null), 2200);
   }
 
-  async function handleMoreIntro() {
-    if (moreBusy) return;
-    setMoreBusy(true);
-    try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch("/api/users/discover/more", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (data.error === "no more candidates") {
-          showToast("더 이상 추천해줄 이성이 없어요.");
-        } else if (data.error === "insufficient stars") {
-          showToast("별이 부족해요.");
-        } else {
-          showToast("잠시 후 다시 시도해주세요.");
-        }
-        return;
-      }
-      setRecos(data.users ?? []);
-      setUser((prev) => (prev ? { ...prev, stars: data.stars } : prev));
-    } catch {
-      showToast("잠시 후 다시 시도해주세요.");
-    } finally {
-      setMoreBusy(false);
-    }
+  function handleMoreIntro() {
+    if (moreIntroMutation.isPending) return;
+    moreIntroMutation.mutate(undefined, {
+      onError: (err: Error) => {
+        if (err.message === "no more candidates") showToast("더 이상 추천해줄 이성이 없어요.");
+        else if (err.message === "insufficient stars") showToast("별이 부족해요.");
+        else showToast("잠시 후 다시 시도해주세요.");
+      },
+    });
   }
 
+  // 토큰 없음 / 프로필 미완성 → 랜딩으로. useMe()가 로딩을 마친 뒤에만 판단한다.
   useEffect(() => {
-    async function check() {
-      try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) {
-          bridgeNavigate("Landing");
-          return;
-        }
-
-        // auth/me 응답을 기다렸다가 순서대로 쏘던 걸 병렬로 — 셋 다 같은 token만 있으면
-        // 되는 독립적인 요청이라, 순차로 묶을 이유가 없었다(왕복 3번 → 1번 분량으로 단축).
-        const authPromise = fetch("/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        fetch("/api/users/discover", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d?.users) setRecos(d.users as Reco[]);
-            setNoNewToday(!!d?.noNewToday);
-          })
-          .catch(() => {})
-          .finally(() => setRecosLoading(false));
-        fetch("/api/daily-fortune/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d?.level && d?.text)
-              setFortune({ level: d.level, text: d.text });
-          })
-          .catch(() => {});
-
-        const res = await authPromise;
-
-        if (!res.ok) {
-          localStorage.removeItem("auth_token");
-          bridgeNavigate("Landing");
-          return;
-        }
-
-        const data: User = await res.json();
-        if (!data.profileComplete) {
-          bridgeNavigate("Landing");
-          return;
-        }
-
-        setUser(data);
-      } catch {
-        bridgeNavigate("Landing");
-      } finally {
-        setLoading(false);
-      }
+    if (meQuery.isLoading) return;
+    if (!meQuery.data) {
+      localStorage.removeItem("auth_token");
+      bridgeNavigate("Landing");
+      return;
     }
+    if (!meQuery.data.profileComplete) {
+      bridgeNavigate("Landing");
+    }
+  }, [meQuery.isLoading, meQuery.data]);
 
-    check();
-  }, []);
+  useEffect(() => {
+    if (!user?.profileComplete) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    fetch("/api/daily-fortune/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.level && d?.text) setFortune({ level: d.level, text: d.text });
+      })
+      .catch(() => {});
+  }, [user?.profileComplete]);
 
-  if (loading) {
+  if (meQuery.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="w-8 h-8 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
@@ -456,7 +390,7 @@ export default function HomePage() {
               </SwiperSlide>
             ))}
             <SwiperSlide style={{ width: 300 }}>
-              <MoreIntroCard busy={moreBusy} onClick={handleMoreIntro} />
+              <MoreIntroCard busy={moreIntroMutation.isPending} onClick={handleMoreIntro} />
             </SwiperSlide>
           </Swiper>
         )}

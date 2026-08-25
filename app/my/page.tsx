@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppRouter } from "@/lib/useAppRouter";
 import { bridgeNavigate } from "@/lib/bridge";
 import Screen from "@/components/ui/screen";
@@ -10,6 +10,7 @@ import AppBottomNav, {
 import StarChip from "@/components/ui/star-chip";
 import IntroBanner from "@/components/ui/intro-banner";
 import { useBioIncomplete } from "@/lib/useBioIncomplete";
+import { useMe, type MeUser } from "@/lib/queries/useMe";
 import FilterIcon from "@/public/icons/filter.svg"
 import LoveLuckIcon from "@/public/icons/loveluck.svg"
 import ProfileCardIcon from "@/public/icons/profileCard.svg"
@@ -20,24 +21,6 @@ import Image from "next/image";
 
 // 문의하기 → 카카오톡 비즈니스 채널 1:1 채팅
 const KAKAO_CHANNEL_CHAT_URL = "https://pf.kakao.com/_VaWxfX/chat";
-
-type MeUser = {
-  nickname: string | null;
-  name: string | null;
-  gender: string | null;
-  photos: string | null;
-  bioTags: string | null;
-  bio: string | null;
-  stars: number;
-  filterComplete: boolean;
-  preferredFilterType: string | null;
-  preferredHeightMin: number | null;
-  preferredHeightMax: number | null;
-  preferredSmoking: string | null;
-  preferredDrinking: string | null;
-  preferredPolitics: string | null;
-  preferredReligion: string | null;
-};
 
 // 선호 조건 요약 문구 — 마이 홈의 "선호하는 조건 설정" 셀 서브타이틀
 function filterSummary(u: MeUser): string | null {
@@ -110,23 +93,14 @@ function ListCell({
 
 export default function MyPage() {
   const router = useAppRouter();
-  const [user, setUser] = useState<MeUser | null>(null);
+  const meQuery = useMe();
+  const user = meQuery.data ?? null;
   const bioIncomplete = useBioIncomplete(user);
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (!token) {
-      bridgeNavigate("Landing");
-      return;
-    }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) setUser(data);
-      })
-      .catch(() => {});
-  }, []);
+    if (meQuery.isLoading) return;
+    if (!user) bridgeNavigate("Landing");
+  }, [meQuery.isLoading, user]);
 
   const photos: string[] = user?.photos ? JSON.parse(user.photos) : [];
   const displayName = user?.nickname || user?.name || "";

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import TabBarController from "@/components/ui/tabbar-controller"
 import PushTokenListener from "@/components/ui/push-token-listener"
+import QueryProvider from "@/app/query-provider"
 
 export const metadata: Metadata = {
   title: "연애 사주",
@@ -60,11 +61,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 배경 오브 */}
 
 
-        <TabBarController />
-        <PushTokenListener />
-        <div className="relative w-full max-w-[768px]" style={{ height: "var(--app-height, 100dvh)" }}>
-          {children}
-        </div>
+        <QueryProvider>
+          <TabBarController />
+          <PushTokenListener />
+          <div className="relative w-full max-w-[768px]" style={{ height: "var(--app-height, 100dvh)" }}>
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   )

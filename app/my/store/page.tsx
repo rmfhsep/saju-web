@@ -1,33 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import StarIcon from "@/components/ui/star-icon"
 import { STAR_PACKAGES, formatWon } from "@/lib/store"
+import { useMe } from "@/lib/queries/useMe"
 
 const TERMS_URL = "https://maju.app/terms"
 
 export default function StorePage() {
   const router = useAppRouter()
   const [toast, setToast] = useState<string | null>(null)
-  const [stars, setStars] = useState(0)
-  const [starsLoading, setStarsLoading] = useState(true)
+  const meQuery = useMe()
+  const stars = meQuery.data?.stars ?? 0
+  const starsLoading = meQuery.isLoading
   const [purchasingCount, setPurchasingCount] = useState<number | null>(null)
-
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) {
-      setStarsLoading(false)
-      return
-    }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(u => { if (u) setStars(u.stars ?? 0) })
-      .catch(() => {})
-      .finally(() => setStarsLoading(false))
-  }, [])
 
   async function handlePurchase(count: number) {
     if (purchasingCount) return

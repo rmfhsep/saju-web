@@ -30,16 +30,16 @@ const STEM_OFFSET: Record<string, { 표현: number; 주도: number }> = {
   계: { 표현: -10, 주도: -15 },
 }
 
-type TagDesc = { max: number; 태그: string; 설명: string }
+export type TagDesc = { max: number; 태그: string; 설명: string }
 
-const TABLE_표현: TagDesc[] = [
+export const TABLE_표현: TagDesc[] = [
   { max: 20, 태그: "내면형", 설명: "말보다 행동으로 표현하고, 감정은 혼자 삭혀요" },
   { max: 40, 태그: "신중형", 설명: "확신이 생길 때만 표현하고, 먼저 다가가기 어려워요" },
   { max: 60, 태그: "유동형", 설명: "관계가 깊어질수록 표현이 달라지고, 낯선 사람엔 조심스러워요" },
   { max: 80, 태그: "표현형", 설명: "감정을 말로 자주 전달하고, 솔직한 편이에요" },
   { max: 100, 태그: "감성형", 설명: "감정을 즉각적으로 표현하고, 감성이 풍부한 편이에요" },
 ]
-const TABLE_감정: TagDesc[] = [
+export const TABLE_감정: TagDesc[] = [
   { max: 20, 태그: "쿨한 편", 설명: "감정에 오래 머물지 않고, 빠르게 회복해요" },
   { max: 40, 태그: "이성형", 설명: "감정 기복이 적고, 관계를 이성적으로 바라봐요" },
   { max: 60, 태그: "균형형", 설명: "상황에 따라 감정 깊이가 달라지고, 크게 치우치지 않아요" },
@@ -61,7 +61,7 @@ const TABLE_집착: TagDesc[] = [
   { max: 100, 태그: "매우 몰입", 설명: "헌신적이지만 집착으로 번지기 쉽고, 감정 소모가 많아요" },
 ]
 
-const pickTag = (table: TagDesc[], score: number): TagDesc =>
+export const pickTag = (table: TagDesc[], score: number): TagDesc =>
   table.find(t => score <= t.max) ?? table[table.length - 1]
 
 // [섹션2] 끌리는 유형 — 음양 + 관성강도(없음약/중/강)

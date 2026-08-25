@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { bridgeBack, bridgeNavigate } from "@/lib/bridge"
 import Screen from "@/components/ui/screen"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
@@ -9,6 +10,7 @@ import RunnerGame from "@/components/ui/runner-game"
 import StarIcon from "@/components/ui/star-icon"
 import { WarningIcon } from "@/components/ui/icons"
 import { calcAge } from "@/lib/age"
+import { queryKeys } from "@/lib/queries/keys"
 
 type Reco = {
   id: number
@@ -226,6 +228,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
 
 function ResultContent() {
   const params = useSearchParams()
+  const queryClient = useQueryClient()
   const name = params.get("name") ?? "혜민"
   const gender = params.get("gender") ?? ""
   const calendarType = params.get("calendarType") ?? "SOLAR"
@@ -265,6 +268,8 @@ function ResultContent() {
         setEarnedStars(d.earned)
         // 홈 화면(app/page.tsx) 첫 진입 시 별 적립 안내 모달을 띄우기 위한 1회성 플래그
         localStorage.setItem("star_reward_pending", String(d.earned))
+        // 이후 홈/스토어 등에서 useMe()로 읽는 별 개수가 곧바로 반영되도록 캐시를 무효화한다.
+        queryClient.invalidateQueries({ queryKey: queryKeys.me })
       }
       setMiniGamePlayed(true)
     } catch { /* ignore */ }

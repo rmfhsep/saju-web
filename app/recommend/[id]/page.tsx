@@ -17,6 +17,9 @@ import {
   type ChipIconState,
 } from "@/components/ui/profile-detail-icons"
 import { calcAge, birthYearLabel } from "@/lib/age"
+import type { CompatibilitySectionViewModel } from "@/lib/matching"
+import { useMe } from "@/lib/queries/useMe"
+import { useUserDetail, useLikeMutation, useMessageMutation } from "@/lib/queries/useUserDetail"
 
 const LIKE_COST = 1
 const MESSAGE_COST = 3
@@ -26,27 +29,6 @@ const PURPOSE_SHORT_LABEL: Record<string, string> = {
   "아직은 연애에만 집중하고 싶어요.": "연애에만 집중",
   "결혼을 고려한 연애를 하고 싶어요.": "결혼 고려",
   "잘 모르겠어요.": "고민 중",
-}
-
-type TargetUser = {
-  id: number
-  nickname: string | null
-  name: string | null
-  birthDate: string | null
-  height: number | null
-  job: string | null
-  jobDetail: string | null
-  location: string | null
-  smoking: string | null
-  drinking: string | null
-  datingPurpose: string | null
-  politics: string | null
-  religion: string | null
-  photos: string | null
-  bioTags: string | null
-  bio: string | null
-  likedByMe: boolean
-  hasConversation: boolean
 }
 
 function InfoChip({ state, label }: { state: ChipIconState; label: string }) {
@@ -63,6 +45,120 @@ function BioCard({ tag, desc }: { tag: string; desc: string }) {
     <div className="flex flex-col gap-2 p-4 rounded-[4px] border border-[#cbdeff] bg-[#e9f1ff]">
       <p className="text-[17px] font-bold text-[#1f1f1f] tracking-[-0.34px]">{tag}</p>
       <p className="text-[15px] font-normal leading-[1.5] text-[#555] tracking-[-0.3px]">{desc}</p>
+    </div>
+  )
+}
+
+function Avatar({ src, size }: { src: string | null; size: number }) {
+  return (
+    <div
+      className="rounded-full overflow-hidden bg-[#f4f4f5] shrink-0"
+      style={{ width: size, height: size }}
+    >
+      {src && <img src={src} alt="" className="w-full h-full object-cover" />}
+    </div>
+  )
+}
+
+function CompatBadge({ type }: { type: "similar" | "complement" }) {
+  return type === "similar" ? (
+    <span className="flex items-center justify-center px-1 py-0.5 rounded-[4px] bg-[#fff5e5] text-[12px] font-semibold text-[#ff9f00]">
+      유사
+    </span>
+  ) : (
+    <span className="flex items-center justify-center px-1 py-0.5 rounded-[4px] bg-[#e2ffdf] text-[12px] font-semibold text-[#41de35]">
+      보완
+    </span>
+  )
+}
+
+function AxisBar({
+  axis,
+  myPhoto,
+  candidatePhoto,
+}: {
+  axis: CompatibilitySectionViewModel["axes"][number]
+  myPhoto: string | null
+  candidatePhoto: string | null
+}) {
+  return (
+    <div className="flex flex-col gap-2 items-start w-full">
+      <div className="flex gap-1 items-center w-full">
+        <p className="text-[13px] font-medium text-[#1f1f1f] whitespace-nowrap">{axis.label}</p>
+        <CompatBadge type={axis.relationType} />
+      </div>
+      <div className="flex flex-col gap-1 items-start w-full">
+        <div
+          className="relative h-7 w-full rounded-[40px] overflow-hidden"
+          style={{ background: "linear-gradient(to right, #e3dfff, #f4ddff)" }}
+        >
+          <div className="absolute top-0.5" style={{ left: `calc(${axis.userValue}% - 12px)` }}>
+            <Avatar src={myPhoto} size={24} />
+          </div>
+          <div className="absolute top-0.5" style={{ left: `calc(${axis.candidateValue}% - 12px)` }}>
+            <Avatar src={candidatePhoto} size={24} />
+          </div>
+        </div>
+        <div className="flex items-center justify-between w-full text-[11px] font-medium text-[#949494]">
+          <span>{axis.leftLabel}</span>
+          <span>{axis.rightLabel}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CompatSection({
+  compat,
+  myPhoto,
+  candidatePhoto,
+}: {
+  compat: CompatibilitySectionViewModel
+  myPhoto: string | null
+  candidatePhoto: string | null
+}) {
+  return (
+    <div className="flex flex-col gap-3 items-start w-full">
+      <p className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px] w-full">나와의 궁합</p>
+      <div className="flex flex-col gap-3 items-center w-full">
+        {compat.showSiJuNotice && compat.siJuNoticeText && (
+          <p className="text-[12px] text-[#949494] w-full">{compat.siJuNoticeText}</p>
+        )}
+
+        <div className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-3 items-center w-full">
+          <div className="flex flex-col gap-0.5 items-center">
+            <div className="flex gap-2 items-center justify-center">
+              <Avatar src={myPhoto} size={100} />
+              <img src="/icons/compat-link.svg" alt="" className="w-[42px] h-[42px] shrink-0" />
+              <Avatar src={candidatePhoto} size={100} />
+            </div>
+            <p className="text-[22px] font-bold text-[#1f1f1f] tracking-[-0.44px] whitespace-nowrap">{compat.score}점</p>
+          </div>
+          <div className="flex flex-wrap gap-2 items-start justify-center w-full">
+            {compat.chips.map(chip => (
+              <span
+                key={chip.slot}
+                className="h-6 flex items-center px-2 py-[3px] rounded-[4px] bg-[#cbdeff] text-[12px] font-medium text-[#1f1f1f] whitespace-nowrap"
+              >
+                {chip.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-[#eaf2fe] rounded-[4px] p-4 w-full">
+          <p className="text-[15px] font-normal leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">
+            {compat.interpretation.sentence1}. {compat.interpretation.sentence2}. {compat.interpretation.sentence3}.
+          </p>
+        </div>
+
+        <div className="bg-white border border-[#dfdfdf] rounded-[4px] p-4 flex flex-col gap-4 items-start w-full">
+          <p className="text-[15px] font-semibold leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">기질 비교</p>
+          {compat.axes.map(axis => (
+            <AxisBar key={axis.axisKey} axis={axis} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -87,42 +183,24 @@ export default function ProfileDetailPage() {
   const params = useParams<{ id: string }>()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  const [target, setTarget] = useState<TargetUser | null>(null)
-  const [myStars, setMyStars] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [photoIndex, setPhotoIndex] = useState(0)
+  const targetQuery = useUserDetail(params.id)
+  const target = targetQuery.data ?? null
+  const meQuery = useMe()
+  const myStars = meQuery.data?.stars ?? 0
+  const myPhotos: string[] = meQuery.data?.photos ? JSON.parse(meQuery.data.photos) : []
+  const myPhoto = myPhotos[0] ?? null
+  const loading = targetQuery.isLoading
 
-  const [liked, setLiked] = useState(false)
-  const [hasConversation, setHasConversation] = useState(false)
+  const likeMutation = useLikeMutation(params.id)
+  const messageMutation = useMessageMutation(params.id)
+  const liked = !!target?.likedByMe
+  const hasConversation = !!target?.hasConversation
+
+  const [photoIndex, setPhotoIndex] = useState(0)
   const [showLikeConfirm, setShowLikeConfirm] = useState(false)
   const [showMessageSheet, setShowMessageSheet] = useState(false)
-  const [likeBusy, setLikeBusy] = useState(false)
   const [messageText, setMessageText] = useState("")
-  const [messageBusy, setMessageBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  // 연타/중복 터치로 같은 요청이 겹쳐 나가는 걸 막는 동기 가드 (state는 리렌더 전까지 반영이 늦다)
-  const likeInFlightRef = useRef(false)
-  const messageInFlightRef = useRef(false)
-
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-
-    fetch(`/api/users/${params.id}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => {
-        setTarget(d)
-        if (d) {
-          setLiked(!!d.likedByMe)
-          setHasConversation(!!d.hasConversation)
-        }
-      })
-      .finally(() => setLoading(false))
-
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => { if (d?.stars != null) setMyStars(d.stars) })
-  }, [params.id])
 
   // 모달/바텀시트가 떠 있는 동안, 그 위에서 드래그해도 뒤쪽 스크롤 영역이 같이
   // 스크롤되지 않도록 잠근다 (iOS WebView에서 fixed 오버레이 위 터치가 뒤로 새는 문제).
@@ -141,31 +219,18 @@ export default function ProfileDetailPage() {
     setTimeout(() => setToast(null), 2000)
   }
 
-  async function handleConfirmLike() {
-    if (likeInFlightRef.current || !target) return
-    likeInFlightRef.current = true
-    setLikeBusy(true)
-    const token = localStorage.getItem("auth_token")
-    try {
-      const res = await fetch("/api/likes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ toUserId: target.id }),
-      })
-      const data = await res.json().catch(() => ({}))
-      setShowLikeConfirm(false)
-      if (!res.ok) {
-        setMyStars(data.stars ?? myStars)
-        showToast("별이 부족해요.")
-        return
-      }
-      setMyStars(data.stars)
-      setLiked(true)
-      showToast(`${displayName}님에게 호감을 보냈어요.`)
-    } finally {
-      likeInFlightRef.current = false
-      setLikeBusy(false)
-    }
+  function handleConfirmLike() {
+    if (likeMutation.isPending || !target) return
+    likeMutation.mutate(undefined, {
+      onSuccess: result => {
+        setShowLikeConfirm(false)
+        if (!result.ok) {
+          showToast("별이 부족해요.")
+          return
+        }
+        showToast(`${displayName}님에게 호감을 보냈어요.`)
+      },
+    })
   }
 
   function handleMessageTap() {
@@ -173,32 +238,19 @@ export default function ProfileDetailPage() {
     setShowMessageSheet(true)
   }
 
-  async function handleSendMessage() {
-    if (messageInFlightRef.current || !messageText.trim() || !target) return
-    messageInFlightRef.current = true
-    setMessageBusy(true)
-    const token = localStorage.getItem("auth_token")
-    try {
-      const res = await fetch("/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ toUserId: target.id, body: messageText.trim() }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setMyStars(data.stars ?? myStars)
-        showToast("별이 부족해요.")
-        return
-      }
-      setMyStars(data.stars)
-      setHasConversation(true)
-      setShowMessageSheet(false)
-      setMessageText("")
-      showToast(`${displayName}님에게 메시지를 보냈어요.`)
-    } finally {
-      messageInFlightRef.current = false
-      setMessageBusy(false)
-    }
+  function handleSendMessage() {
+    if (messageMutation.isPending || !messageText.trim() || !target) return
+    messageMutation.mutate(messageText.trim(), {
+      onSuccess: result => {
+        if (!result.ok) {
+          showToast("별이 부족해요.")
+          return
+        }
+        setShowMessageSheet(false)
+        setMessageText("")
+        showToast(`${displayName}님에게 메시지를 보냈어요.`)
+      },
+    })
   }
 
   if (loading) {
@@ -312,6 +364,10 @@ export default function ProfileDetailPage() {
               ))}
             </div>
           )}
+
+          {target.compat && (
+            <CompatSection compat={target.compat} myPhoto={myPhoto} candidatePhoto={photos[0] ?? null} />
+          )}
         </div>
       </div>
 
@@ -357,7 +413,7 @@ export default function ProfileDetailPage() {
               >
                 취소
               </button>
-              <CtaButton loading={likeBusy} onClick={handleConfirmLike} className="flex-1">보내기</CtaButton>
+              <CtaButton loading={likeMutation.isPending} onClick={handleConfirmLike} className="flex-1">보내기</CtaButton>
             </div>
           </div>
         </div>
@@ -399,7 +455,7 @@ export default function ProfileDetailPage() {
               {insufficientForMessage ? (
                 <CtaButton onClick={() => router.push("/my/store")}>별 충전하기</CtaButton>
               ) : (
-                <CtaButton disabled={!messageText.trim()} loading={messageBusy} onClick={handleSendMessage}>
+                <CtaButton disabled={!messageText.trim()} loading={messageMutation.isPending} onClick={handleSendMessage}>
                   메시지 보내기
                 </CtaButton>
               )}
