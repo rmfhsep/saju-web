@@ -174,11 +174,14 @@ export default function HomeScreen() {
         if (data.type !== 'navigate') return;
 
         // 로그아웃 / 탈퇴
+        // Landing과 PhoneInput을 묶어 리셋 url을 '/onboarding'으로 고정해뒀던 게 버그였다 —
+        // OnboardingWebViewScreen.tsx의 동일 분기 참고(무한 리셋 루프 원인).
         if (data.screen === 'Landing' || data.screen === 'PhoneInput') {
           clearStoredAuthToken();
+          const path = data.screen === 'PhoneInput' ? '/onboarding/phone' : '/onboarding';
           navigation.reset({
             index: 0,
-            routes: [{ name: 'OnboardingWebView', params: { url: buildUrl('/onboarding') } }],
+            routes: [{ name: 'OnboardingWebView', params: { url: buildUrl(path) } }],
           });
           return;
         }

@@ -111,11 +111,18 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
 
       // 로그아웃 / 탈퇴 — HomeScreen의 동일 분기와 맞춰서 여기서도 처리해야 한다.
       // 이 화면(서브페이지 push)에서 로그아웃하는 경우가 실제로 여기 해당.
+      //
+      // Landing과 PhoneInput을 같은 분기로 묶으면서 리셋 대상 url을 '/onboarding'으로
+      // 고정해뒀던 게 버그였다 — 웹의 navigateAndReplace("PhoneInput")이 이 메시지도
+      // 함께 보내는데, 그러면 방금 리셋한 '/onboarding'이 다시 통째로 리셋되고, 그
+      // 온보딩 랜딩 페이지가 마운트되며 또 navigateAndReplace("PhoneInput")을 호출해
+      // 무한 리셋 루프에 빠진다(탈퇴 후 "계속 이동하며 무한 로딩"으로 보였던 원인).
       if (data.screen === 'Landing' || data.screen === 'PhoneInput') {
         clearStoredAuthToken();
+        const path = data.screen === 'PhoneInput' ? '/onboarding/phone' : '/onboarding';
         navigation.reset({
           index: 0,
-          routes: [{ name: 'OnboardingWebView', params: { url: buildUrl('/onboarding') } }],
+          routes: [{ name: 'OnboardingWebView', params: { url: buildUrl(path) } }],
         });
         return;
       }

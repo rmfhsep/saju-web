@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { bridgeNavigate } from "@/lib/bridge"
+import { navigateAndReplace } from "@/lib/bridge"
 
 /** 하단 중앙 "계정 탈퇴" 텍스트 버튼 + 확인 모달 (설정/알림 화면 공통). */
 export default function DeleteAccountAction() {
@@ -20,7 +20,7 @@ export default function DeleteAccountAction() {
       if (res.ok) {
         localStorage.removeItem("auth_token")
         localStorage.removeItem("user_phone")
-        bridgeNavigate("Landing")
+        navigateAndReplace("Landing")
       }
     } finally {
       setDeleting(false)
