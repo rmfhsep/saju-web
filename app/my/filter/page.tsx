@@ -116,7 +116,7 @@ export default function MyFilterPage() {
         </div>
         <div className="flex-1 px-5 pt-5 flex flex-col gap-6 scroll-area overflow-y-auto pb-4">
           <div className="flex flex-col gap-2">
-            <h1 className="text-[28px] font-bold text-[#0f0f10] leading-[1.35] tracking-[-0.56px]">
+            <h1 className="text-[24px] font-bold text-[#0f0f10] leading-[33.6px] tracking-[-0.56px]">
               이성을 만날 때<br />가장 원하는 조건이 있나요?
             </h1>
             <p className="text-[14px] font-normal text-[#949494] tracking-[-0.14px]">가장 중요한 조건 1개만 선택할 수 있어요.</p>

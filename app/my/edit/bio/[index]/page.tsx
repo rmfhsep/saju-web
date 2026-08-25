@@ -86,7 +86,7 @@ export default function BioEditPage() {
             onClick={handleChangeTagClick}
             className="w-6 h-6 flex items-center justify-center"
           >
-            <PencilIcon size={18} />
+            <PencilIcon />
           </button>
         </div>
         <span className="h-[36px] w-fit flex items-center px-4 bg-[#e9f1ff] border border-[#b6d0ff] rounded-[4px] text-[13px] font-medium text-[#1f1f1f] mb-2">{tag}</span>

@@ -41,32 +41,41 @@ function TabIcon({ tab, active, profilePhotoUrl, dot, scaleAnim }: {
   const icon = (() => {
     switch (tab) {
       case 'recommend':
-        return (
-          <Svg width={22} height={22} viewBox="0 0 20.5 20.5" fill="none">
-            <Path
-              d="M0.75 7.5225C0.75 7.13258 0.948461 6.76678 1.2826 6.54081L9.51594 0.972904C9.95542 0.675698 10.5446 0.675699 10.9841 0.972904L19.2174 6.54081C19.5515 6.76678 19.75 7.13258 19.75 7.5225V17.9431C19.75 18.941 18.8993 19.75 17.85 19.75H2.65C1.60066 19.75 0.75 18.941 0.75 17.9431V7.5225Z"
-              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
-            />
-            <Path d="M5.5 15.5938H15" stroke={active ? '#efefef' : STROKE} strokeWidth={1.5} strokeLinecap="round" />
-          </Svg>
+        // Figma node 151:494 (inactive) / 151:496 (active) SVG export, 그대로.
+        return active ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M6.5 13.2725C6.5 12.8826 6.69846 12.5168 7.0326 12.2908L15.2659 6.7229C15.7054 6.4257 16.2946 6.4257 16.7341 6.7229L24.9674 12.2908C25.3015 12.5168 25.5 12.8826 25.5 13.2725V23.6931C25.5 24.691 24.6493 25.5 23.6 25.5H8.4C7.35066 25.5 6.5 24.691 6.5 23.6931V13.2725Z" fill="#1F1F1F" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11.25 21.3438H20.75" stroke="#EFEFEF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <path d="M11.25 21.3438H20.75M15.2659 6.7229L7.0326 12.2908C6.69846 12.5168 6.5 12.8826 6.5 13.2725V23.6931C6.5 24.691 7.35066 25.5 8.4 25.5H23.6C24.6493 25.5 25.5 24.691 25.5 23.6931V13.2725C25.5 12.8826 25.3015 12.5168 24.9674 12.2908L16.7341 6.7229C16.2946 6.4257 15.7054 6.4257 15.2659 6.7229Z" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
         );
       case 'like':
+        // Figma node 151:466 (inactive) / 151:468 (active) SVG export, 그대로.
         return (
-          <Svg width={23} height={20.1} viewBox="0 0 22.5 19.5986" fill="none">
-            <Path
-              d="M16.0227 0.75C14.5254 0.75 13.1612 1.34357 12.149 2.34069C11.6782 2.80443 10.8218 2.80443 10.351 2.34069C9.33879 1.34357 7.97461 0.75 6.47727 0.75C3.32727 0.75 0.75 3.48553 0.75 6.82895C0.75 12.1202 8.83954 17.4896 10.8175 18.7234C11.0844 18.8898 11.4161 18.8903 11.6834 18.7248C13.6631 17.4987 21.75 12.1638 21.75 6.82895C21.75 3.48553 19.1727 0.75 16.0227 0.75Z"
-              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
-            />
-          </Svg>
+          active ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <path d="M20.7727 7.30228C19.2754 7.30228 17.9112 7.89585 16.899 8.89297C16.4282 9.35671 15.5718 9.35671 15.101 8.89297C14.0888 7.89585 12.7246 7.30228 11.2273 7.30228C8.07727 7.30228 5.5 10.0378 5.5 13.3812C5.5 18.6725 13.5895 24.0419 15.5675 25.2757C15.8344 25.4421 16.1661 25.4426 16.4334 25.277C18.4131 24.051 26.5 18.7161 26.5 13.3812C26.5 10.0378 23.9227 7.30228 20.7727 7.30228Z" fill="#1F1F1F" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>  ) : ( 
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <path d="M20.7727 7.30228C19.2754 7.30228 17.9112 7.89585 16.899 8.89297C16.4282 9.35671 15.5718 9.35671 15.101 8.89297C14.0888 7.89585 12.7246 7.30228 11.2273 7.30228C8.07727 7.30228 5.5 10.0378 5.5 13.3812C5.5 18.6725 13.5895 24.0419 15.5675 25.2757C15.8344 25.4421 16.1661 25.4426 16.4334 25.277C18.4131 24.051 26.5 18.7161 26.5 13.3812C26.5 10.0378 23.9227 7.30228 20.7727 7.30228Z" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg> )
+
         );
       case 'message':
+        // Figma node 151:438 (inactive) / 151:449 (active) SVG export, 그대로.
         return (
-          <Svg width={21.5} height={22} viewBox="0 0 21.4981 21.5" fill="none">
-            <Path
-              d="M19.9926 14.57C20.4795 13.3931 20.7481 12.1029 20.7481 10.75C20.7481 5.22715 16.2714 0.75 10.7491 0.75C5.22673 0.75 0.75 5.22715 0.75 10.75C0.75 16.2728 5.22673 20.75 10.7491 20.75C12.4087 20.75 13.974 20.3456 15.3516 19.63C15.5406 19.5318 15.7584 19.501 15.9649 19.5527L19.5477 20.4484C20.1218 20.592 20.6584 20.108 20.5747 19.5222L19.9325 15.0259C19.9104 14.8714 19.933 14.7142 19.9926 14.57Z"
-              fill={active ? STROKE : 'none'} stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
-            />
-          </Svg>
+       active ? (
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <path d="M25.2426 19.82C25.7295 18.6431 25.9981 17.3529 25.9981 16C25.9981 10.4772 21.5214 6 15.9991 6C10.4767 6 6 10.4772 6 16C6 21.5228 10.4767 26 15.9991 26C17.6587 26 19.224 25.5956 20.6016 24.88C20.7906 24.7818 21.0084 24.751 21.2149 24.8027L24.7977 25.6984C25.3718 25.842 25.9084 25.358 25.8247 24.7722L25.1825 20.2759C25.1604 20.1214 25.183 19.9642 25.2426 19.82Z" fill="#1F1F1F" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+       ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <path d="M25.2426 19.82C25.7295 18.6431 25.9981 17.3529 25.9981 16C25.9981 10.4772 21.5214 6 15.9991 6C10.4767 6 6 10.4772 6 16C6 21.5228 10.4767 26 15.9991 26C17.6587 26 19.224 25.5956 20.6016 24.88C20.7906 24.7818 21.0084 24.751 21.2149 24.8027L24.7977 25.6984C25.3718 25.842 25.9084 25.358 25.8247 24.7722L25.1825 20.2759C25.1604 20.1214 25.183 19.9642 25.2426 19.82Z" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+       )
         );
       case 'my':
         if (profilePhotoUrl) {

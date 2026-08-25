@@ -44,6 +44,16 @@ function formatBirthDisplay(bd: string, bt: string, calendarType: string): strin
   return `${calLabel} ${dateStr} ${bt} 출생`
 }
 
+function ErrorIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <circle cx="10" cy="10" r="9" fill="#FF334B"/>
+  <path d="M10 6.66675V10.8334" stroke="white" stroke-width="1.25" stroke-linecap="round"/>
+  <circle cx="10.0002" cy="13.2292" r="0.729167" fill="white"/>
+</svg>
+  )
+}
+
 const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
 // 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-노랑
 const LEVEL_BADGE: Record<string, string> = {
@@ -237,7 +247,9 @@ function ResultContent() {
   const [report, setReport] = useState<SajuReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [retrying, setRetrying] = useState(false)
-  const [retryError, setRetryError] = useState<string | null>(null)
+  // 서버가 구분해서 내려주는 실패 사유 — "INVALID_LEAP_MONTH"면 재시도가 아니라
+  // 출생 정보를 고치러 돌아가야 하는 케이스라 CTA 문구/동작이 달라진다.
+  const [retryErrorCode, setRetryErrorCode] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [earnedStars, setEarnedStars] = useState(0)
   // 최초 리포트 생성 시 1회만 게임을 노출 — 이미 지급받은 유저는 게임을 건너뛴다.
@@ -277,7 +289,7 @@ function ResultContent() {
 
   async function generateReport(token: string) {
     setRetrying(true)
-    setRetryError(null)
+    setRetryErrorCode(null)
     try {
       const res = await fetch("/api/saju/generate", {
         method: "POST",
@@ -287,10 +299,10 @@ function ResultContent() {
       if (res.ok && data.sajuResult) {
         try { setReport(JSON.parse(data.sajuResult)) } catch { /* ignore */ }
       } else {
-        setRetryError(data.detail ?? data.error ?? "알 수 없는 오류")
+        setRetryErrorCode(data.error === "INVALID_LEAP_MONTH" ? "INVALID_LEAP_MONTH" : "UNKNOWN")
       }
-    } catch (e) {
-      setRetryError(String(e))
+    } catch {
+      setRetryErrorCode("UNKNOWN")
     } finally {
       setRetrying(false)
     }
@@ -400,24 +412,10 @@ function ResultContent() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             {/* Blue check circle */}
-            <div className="w-6 h-6 rounded-full bg-[#1a75ff] flex items-center justify-center shrink-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle cx="12" cy="12" r="10" fill="#1A75FF" />
-                <path
-                  d="M8.25 12L10.75 14.5L15.75 9.5"
-                  stroke="white"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <circle cx="12" cy="12" r="10" fill="#1A75FF"/>
+  <path d="M8.25 12L10.75 14.5L15.75 9.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
             <span className="text-[16px] font-semibold text-[#1a75ff] leading-normal tracking-[-0.32px]">
               분석 완료
             </span>
@@ -436,25 +434,19 @@ function ResultContent() {
         </div>
 
         {!report ? (
-          <>
+          <div className="flex flex-col gap-3">
             {infoCard}
-            <div className="flex flex-col gap-4 items-start">
-              <p className="text-[14px] text-[#777] leading-relaxed">
-                {retryError
-                  ? `분석 중 오류가 발생했어요.\n${retryError}`
-                  : "연애운 분석에 실패했어요. 다시 시도해주세요."}
+            <div className="flex items-center gap-2">
+              <ErrorIcon />
+              <p className="flex-1 text-[14px] font-medium text-[#1f1f1f] leading-normal tracking-[-0.14px]">
+                {retryErrorCode === "INVALID_LEAP_MONTH" ? (
+                  <>입력하신 생년월일이 윤달에 해당하지 않아 분석 중<br />오류가 발생했습니다.</>
+                ) : (
+                  <>일시적인 오류로 사주 분석을 완료하지 못했어요.<br />다시 시도해주세요.</>
+                )}
               </p>
-              <button
-                onClick={() => {
-                  const token = localStorage.getItem("auth_token");
-                  if (token) generateReport(token);
-                }}
-                className="h-[44px] px-6 bg-[#b6d0ff] rounded-[4px] text-[15px] font-semibold text-[#1f1f1f]"
-              >
-                다시 분석하기
-              </button>
             </div>
-          </>
+          </div>
         ) : isMale ? (
           <>
             {/* 유저 정보 + 나의 연애 기질 */}
@@ -578,12 +570,28 @@ function ResultContent() {
 
       {/* CTA */}
       <div className="keyboard-footer bg-white">
-        <button
-          onClick={() => bridgeNavigate("Blocking")}
-          className="w-full h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
-        >
-          내 프로필 만들기
-        </button>
+        {!report ? (
+          <button
+            onClick={() => {
+              if (retryErrorCode === "INVALID_LEAP_MONTH") {
+                bridgeNavigate("BirthInfo")
+                return
+              }
+              const token = localStorage.getItem("auth_token")
+              if (token) generateReport(token)
+            }}
+            className="w-full h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
+          >
+            {retryErrorCode === "INVALID_LEAP_MONTH" ? "출생 정보 다시 입력하기" : "다시 분석하기"}
+          </button>
+        ) : (
+          <button
+            onClick={() => bridgeNavigate("Blocking")}
+            className="w-full h-[48px] bg-[#b6d0ff] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] text-[#1f1f1f] active:opacity-80"
+          >
+            내 프로필 만들기
+          </button>
+        )}
       </div>
     </Screen>
   );

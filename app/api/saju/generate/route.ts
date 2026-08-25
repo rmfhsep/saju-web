@@ -48,6 +48,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, sajuResult })
   } catch (err) {
     console.error("[saju/generate] error:", err)
+    // manseryeok의 lunarToSolar가 던지는 에러 — 사용자가 음력(윤달)을 선택했지만
+    // 실제로는 그 연도에 해당 윤달이 존재하지 않는 경우. 재시도로는 해결되지 않으므로
+    // 클라이언트가 구분해서 "출생 정보 다시 입력하기"로 안내할 수 있게 별도 코드로 내려준다.
+    if (err instanceof RangeError && /윤\d+월이 존재하지 않습니다/.test(err.message)) {
+      return NextResponse.json(
+        { error: "INVALID_LEAP_MONTH", detail: err.message },
+        { status: 422 },
+      )
+    }
     return NextResponse.json(
       { error: "generation failed", detail: String(err) },
       { status: 500 },

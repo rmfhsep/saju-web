@@ -41,12 +41,14 @@ export default function JobEditPage() {
   const [jobDetail, setJobDetail] = useState("");
   const [q, setQ] = useState("");
   const [saving, setSaving] = useState(false);
+  const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
-    if (!meQuery.data || job) return;
+    if (!meQuery.data || seeded) return;
     if (meQuery.data.job) setJob(meQuery.data.job);
     if (meQuery.data.jobDetail) setJobDetail(meQuery.data.jobDetail);
-  }, [meQuery.data, job]);
+    setSeeded(true);
+  }, [meQuery.data, seeded]);
 
   if (!meQuery.data) return <ListSkeleton onBack={() => router.back()} />;
 
@@ -150,7 +152,7 @@ export default function JobEditPage() {
                   <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
                     <path
                       d="M1 1l5 5-5 5"
-                      stroke="#b0b0b0"
+                      stroke="#1f1f1f"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"

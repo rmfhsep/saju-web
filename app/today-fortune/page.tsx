@@ -178,7 +178,7 @@ export default function TodayFortunePage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.back()}
                     className="h-9 rounded-[4px] bg-white border border-[#b6d0ff] text-[13px] font-medium text-[#1a75ff] active:opacity-70"
                   >
                     지금 둘러보기

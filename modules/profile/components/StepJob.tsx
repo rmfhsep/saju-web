@@ -153,15 +153,17 @@ export default function StepJob({
               }`}
             >
               {job.id}
-              <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-                <path
-                  d="M1 1l5 5-5 5"
-                  stroke="#b0b0b0"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {job.hasDetail && (
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+                  <path
+                    d="M1 1l5 5-5 5"
+                    stroke="#1f1f1f"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           ))
         )}

@@ -4,8 +4,6 @@ interface CheckboxProps {
 }
 
 // 디자인 시스템 Control/Checkbox(28:5111) 기준
-// 히트 영역 20x20, 실제 박스 18x18 (rounded 4px, 중앙 정렬)
-// checked: bg Light Blue Strong(#B6D0FF) / unchecked: border Navy200(#E1E2E4)
 export default function Checkbox({ checked, onChange }: CheckboxProps) {
   return (
     <button
@@ -13,17 +11,16 @@ export default function Checkbox({ checked, onChange }: CheckboxProps) {
       onClick={e => { e.stopPropagation(); onChange() }}
       className="w-[20px] h-[20px] shrink-0 flex items-center justify-center"
     >
-      <span
-        className={`w-[18px] h-[18px] rounded-[4px] flex items-center justify-center transition-colors ${
-          checked ? "bg-[#b6d0ff]" : "border border-[#e1e2e4]"
-        }`}
-      >
-        {checked && (
-          <svg width="9" height="6.5" viewBox="0 0 9 6.5" fill="none">
-            <path d="M0.75 3.25L3.25 5.75L8.25 0.75" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </span>
+      {checked ? (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M1 5C1 2.79086 2.79086 1 5 1H15C17.2091 1 19 2.79086 19 5V15C19 17.2091 17.2091 19 15 19H5C2.79086 19 1 17.2091 1 15V5Z" fill="#B6D0FF" />
+          <path d="M6.25 10L8.75 12.5L13.75 7.5" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M5 1.5H15C16.933 1.5 18.5 3.067 18.5 5V15C18.5 16.933 16.933 18.5 15 18.5H5C3.067 18.5 1.5 16.933 1.5 15V5C1.5 3.067 3.067 1.5 5 1.5Z" stroke="#E1E2E4" />
+        </svg>
+      )}
     </button>
   )
 }
