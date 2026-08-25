@@ -8,6 +8,7 @@ import BackButton from "@/components/ui/back-button"
 import CtaButton from "@/components/ui/cta-button"
 import StarIcon from "@/components/ui/star-icon"
 import TextareaField from "@/components/ui/textarea-field"
+import RadioOption from "@/components/ui/radio-option"
 import {
   ProfileChipIcon,
   MoreDotsIcon,
@@ -210,29 +211,6 @@ function MoreActionSheet({
   )
 }
 
-function ReportReasonRow({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full h-[42px] flex items-center gap-2 px-4 rounded-[4px] transition-colors ${
-        selected ? "bg-[#e9f1ff] border border-[#b6d0ff]" : "bg-[#f7f7f8] border border-transparent"
-      }`}
-    >
-      <span
-        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-          selected ? "border-[#1f1f1f]" : "border-[#e1e2e4]"
-        }`}
-      >
-        {selected && <span className="w-[9px] h-[9px] rounded-full bg-[#1f1f1f]" />}
-      </span>
-      <span className={`flex-1 text-left text-[14px] tracking-[-0.14px] ${selected ? "font-medium text-[#1f1f1f]" : "font-medium text-[#777]"}`}>
-        {label}
-      </span>
-    </button>
-  )
-}
-
 function ReportSheet({
   reason,
   detail,
@@ -265,7 +243,7 @@ function ReportSheet({
             </div>
             <div className="flex flex-col gap-2">
               {REPORT_REASONS.map(r => (
-                <ReportReasonRow key={r} label={r} selected={reason === r} onClick={() => onSelectReason(r)} />
+                <RadioOption key={r} label={r} selected={reason === r} onClick={() => onSelectReason(r)} />
               ))}
               {reason === REPORT_REASON_OTHER && (
                 <TextareaField

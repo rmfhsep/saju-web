@@ -109,6 +109,31 @@ useEffect(() => {
 
 ## 공통 컴포넌트 사용법
 
+### 새 컴포넌트를 만들기 전에 먼저 찾기
+
+**Figma에 라디오/버튼/입력 같은 흔한 UI가 보이면, 그리는 대신 `components/ui/`부터 확인합니다.** 실제로 신고 사유 바텀시트를 만들면서 라디오 행을 직접 새로 그렸는데, `radio-option.tsx`가 이미 있었던 적이 있습니다 — 필요한 프롭만 맞으면 픽셀이 1~2px 달라도 새로 만들지 말고 기존 걸 씁니다.
+
+```bash
+# 예: "라디오" 관련 컴포넌트가 있는지 먼저 검색
+grep -ril "radio\|selected" components/ui
+```
+
+`components/ui/`에 이미 있는 것들(전체는 아니지만 자주 놓치는 것 위주):
+
+| 용도 | 컴포넌트 |
+| --- | --- |
+| 라디오 선택 행 | `radio-option.tsx` (`RadioOption`) |
+| 체크박스 | `checkbox.tsx` |
+| 토글 스위치 | `toggle-switch.tsx` |
+| 텍스트 입력(여러 줄, 글자수 카운터 포함) | `textarea-field.tsx` |
+| 주요 액션 버튼 | `cta-button.tsx` |
+| 뒤로가기 / 수정 화면 헤더 | `back-button.tsx`, `edit-header.tsx` |
+| 별 개수 칩 / 별 아이콘 | `star-chip.tsx`, `star-icon.tsx` |
+| 자기소개 유도 배너 | `intro-banner.tsx` |
+| 프로필 상세 전용 아이콘 세트 | `profile-detail-icons.tsx` |
+
+새로 만들어야 한다면(정말 없을 때) 이름과 위치를 이 표에 추가하는 것도 잊지 마세요.
+
 모든 온보딩 페이지는 아래 패턴을 따릅니다:
 
 ```tsx
