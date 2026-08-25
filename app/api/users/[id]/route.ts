@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { buildCompatibilitySection } from "@/lib/matching"
+import { isBlockedEitherWay } from "@/lib/moderation"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 
 /**
@@ -24,6 +25,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
+    if (await isBlockedEitherWay(payload.userId, targetId)) {
+      return NextResponse.json({ error: "user not found" }, { status: 404 })
+    }
+
     const [user, like, conversation, me] = await Promise.all([
       prisma.user.findUnique({
         where: { id: targetId, profileComplete: true },

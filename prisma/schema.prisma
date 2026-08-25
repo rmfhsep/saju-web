@@ -158,3 +158,27 @@ model ReviewAccount {
   userId       Int
   createdAt    DateTime @default(now())
 }
+
+// 프로필 신고 — 신고 자체는 매칭/열람을 막지 않고 운영진 검토용으로만 쌓인다.
+model Report {
+  id         Int      @id @default(autoincrement())
+  reporterId Int
+  reportedId Int
+  reason     String
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([reportedId])
+  @@index([reporterId])
+}
+
+// 유저 차단 — 단방향 기록이지만 조회 시 항상 양방향으로 확인해 서로의 프로필/추천에서 제외한다.
+model UserBlock {
+  id        Int      @id @default(autoincrement())
+  blockerId Int
+  blockedId Int
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}

@@ -48,6 +48,11 @@ interface SpendResult {
   error?: string
 }
 
+interface LikeResult extends SpendResult {
+  /** 이미 보낸 호감에 재요청한 경우(별 재차감 없이 200으로 응답) — "이미 호감을 보냈어요." 토스트 분기용 */
+  alreadyLiked?: boolean
+}
+
 /**
  * 호감 보내기(POST /api/likes). 별 부족 등 실패도 throw하지 않고 { ok:false } 로 반환한다 —
  * 실패 응답에도 서버가 현재 별 잔액을 함께 내려주므로, 성공/실패 관계없이 me 쿼리 캐시를
@@ -56,7 +61,7 @@ interface SpendResult {
 export function useLikeMutation(targetId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (): Promise<SpendResult> => {
+    mutationFn: async (): Promise<LikeResult> => {
       const token = localStorage.getItem("auth_token")
       const res = await fetch("/api/likes", {
         method: "POST",
@@ -64,7 +69,7 @@ export function useLikeMutation(targetId: string) {
         body: JSON.stringify({ toUserId: Number(targetId) }),
       })
       const data = await res.json().catch(() => ({}))
-      return { ok: res.ok, stars: data.stars, error: data.error }
+      return { ok: res.ok, stars: data.stars, error: data.error, alreadyLiked: data.alreadyLiked }
     },
     onSuccess: result => {
       if (result.stars != null) {

@@ -17,9 +17,12 @@ import {
   type ChipIconState,
 } from "@/components/ui/profile-detail-icons"
 import { calcAge, birthYearLabel } from "@/lib/age"
+import { withEulReul } from "@/lib/josa"
 import type { CompatibilitySectionViewModel } from "@/lib/matching"
 import { useMe } from "@/lib/queries/useMe"
 import { useUserDetail, useLikeMutation, useMessageMutation } from "@/lib/queries/useUserDetail"
+import { useReportMutation, useBlockMutation } from "@/lib/queries/useModeration"
+import { REPORT_REASONS, REPORT_REASON_OTHER, type ReportReason } from "@/lib/reportReasons"
 
 const LIKE_COST = 1
 const MESSAGE_COST = 3
@@ -163,6 +166,166 @@ function CompatSection({
   )
 }
 
+function MoreActionSheet({
+  onReport,
+  onBlock,
+  onCancel,
+}: {
+  onReport: () => void
+  onBlock: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ touchAction: "none" }}>
+      <div className="absolute inset-0 bg-black/61" onClick={onCancel} />
+      <div
+        className="relative w-full max-w-[430px] px-5 flex flex-col gap-3"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+      >
+        <div className="bg-white rounded-[8px] overflow-hidden flex flex-col">
+          <button
+            type="button"
+            onClick={onReport}
+            className="h-[53px] px-5 flex items-center justify-center text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px] border-b border-[#eaebec] active:bg-[#fafafa]"
+          >
+            신고
+          </button>
+          <button
+            type="button"
+            onClick={onBlock}
+            className="h-[53px] px-5 flex items-center justify-center text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px] active:bg-[#fafafa]"
+          >
+            차단
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-[42px] bg-white rounded-[8px] text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px] active:bg-[#fafafa]"
+        >
+          취소
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ReportReasonRow({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full h-[42px] flex items-center gap-2 px-4 rounded-[4px] transition-colors ${
+        selected ? "bg-[#e9f1ff] border border-[#b6d0ff]" : "bg-[#f7f7f8] border border-transparent"
+      }`}
+    >
+      <span
+        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+          selected ? "border-[#1f1f1f]" : "border-[#e1e2e4]"
+        }`}
+      >
+        {selected && <span className="w-[9px] h-[9px] rounded-full bg-[#1f1f1f]" />}
+      </span>
+      <span className={`flex-1 text-left text-[14px] tracking-[-0.14px] ${selected ? "font-medium text-[#1f1f1f]" : "font-medium text-[#777]"}`}>
+        {label}
+      </span>
+    </button>
+  )
+}
+
+function ReportSheet({
+  reason,
+  detail,
+  submitting,
+  onSelectReason,
+  onDetailChange,
+  onSubmit,
+  onClose,
+}: {
+  reason: ReportReason | null
+  detail: string
+  submitting: boolean
+  onSelectReason: (r: ReportReason) => void
+  onDetailChange: (v: string) => void
+  onSubmit: () => void
+  onClose: () => void
+}) {
+  const valid = !!reason && (reason !== REPORT_REASON_OTHER || detail.trim().length > 0)
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ touchAction: "none" }}>
+      <div className="absolute inset-0 bg-black/61" onClick={onClose} />
+      <div className="relative bg-white rounded-t-[28px] w-full max-w-[430px] pt-3 max-h-[85vh] flex flex-col items-center gap-6">
+        <div className="w-11 h-1 rounded-full bg-[#dfdfdf] shrink-0" />
+        <div className="w-full px-5 flex flex-col gap-7 overflow-y-auto scroll-area">
+          <p className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px] text-center">신고하기</p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-1">
+              <span className="text-[14px] font-semibold text-[#1f1f1f] tracking-[-0.14px]">신고 사유를 선택해주세요.</span>
+              <span className="text-[12px] font-medium text-[#1a75ff]">필수</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {REPORT_REASONS.map(r => (
+                <ReportReasonRow key={r} label={r} selected={reason === r} onClick={() => onSelectReason(r)} />
+              ))}
+              {reason === REPORT_REASON_OTHER && (
+                <TextareaField
+                  value={detail}
+                  onChange={onDetailChange}
+                  placeholder="신고 사유를 작성해주세요."
+                  maxLength={500}
+                  rows={3}
+                />
+              )}
+            </div>
+            <p className="text-[13px] font-normal text-[#ff9200]">허위 신고 시 서비스 이용이 제한될 수 있어요.</p>
+          </div>
+        </div>
+        <div className="w-full px-5 shrink-0" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}>
+          <CtaButton disabled={!valid} loading={submitting} onClick={onSubmit}>완료</CtaButton>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BlockConfirmModal({
+  displayName,
+  submitting,
+  onCancel,
+  onConfirm,
+}: {
+  displayName: string
+  submitting: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-8" style={{ touchAction: "none" }}>
+      <div className="absolute inset-0 bg-black/61" onClick={onCancel} />
+      <div className="relative bg-white rounded-[8px] p-5 w-[312px] flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px]">{displayName}님을 차단할까요?</p>
+          <p className="text-[15px] text-[#777] tracking-[-0.3px] leading-[1.5]">
+            차단하면 서로의 프로필을 볼 수 없어요.
+            <br />
+            차단한 사실은 상대방에게 알리지 않아요.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 h-[48px] bg-[#f4f4f5] rounded-[4px] text-[16px] font-semibold text-[#1f1f1f] active:opacity-80"
+          >
+            취소
+          </button>
+          <CtaButton loading={submitting} onClick={onConfirm} className="flex-1">차단하기</CtaButton>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StarCostRow({ cost, balance }: { cost: number; balance: number }) {
   return (
     <div className="flex flex-col gap-1 w-full">
@@ -196,27 +359,44 @@ export default function ProfileDetailPage() {
   const liked = !!target?.likedByMe
   const hasConversation = !!target?.hasConversation
 
+  const reportMutation = useReportMutation(params.id)
+  const blockMutation = useBlockMutation(params.id)
+
   const [photoIndex, setPhotoIndex] = useState(0)
   const [showLikeConfirm, setShowLikeConfirm] = useState(false)
   const [showMessageSheet, setShowMessageSheet] = useState(false)
   const [messageText, setMessageText] = useState("")
   const [toast, setToast] = useState<string | null>(null)
+  const [sheet, setSheet] = useState<"menu" | "report" | "block" | null>(null)
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null)
+  const [reportDetail, setReportDetail] = useState("")
+  const [reported, setReported] = useState(false)
 
   // 모달/바텀시트가 떠 있는 동안, 그 위에서 드래그해도 뒤쪽 스크롤 영역이 같이
   // 스크롤되지 않도록 잠근다 (iOS WebView에서 fixed 오버레이 위 터치가 뒤로 새는 문제).
   useEffect(() => {
     const el = scrollAreaRef.current
     if (!el) return
-    if (showLikeConfirm || showMessageSheet) {
+    if (showLikeConfirm || showMessageSheet || sheet) {
       el.style.overflow = "hidden"
     } else {
       el.style.overflow = ""
     }
-  }, [showLikeConfirm, showMessageSheet])
+  }, [showLikeConfirm, showMessageSheet, sheet])
 
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
+  }
+
+  function handleHeartTap() {
+    if (!target) return
+    // 캐시가 아직 안 따라온 경우를 대비한 1차 방어 — 실제 최종 판단은 서버의 alreadyLiked로 한다.
+    if (liked) {
+      showToast("이미 호감을 보냈어요.")
+      return
+    }
+    setShowLikeConfirm(true)
   }
 
   function handleConfirmLike() {
@@ -228,13 +408,17 @@ export default function ProfileDetailPage() {
           showToast("별이 부족해요.")
           return
         }
-        showToast(`${displayName}님에게 호감을 보냈어요.`)
+        showToast(result.alreadyLiked ? "이미 호감을 보냈어요." : `${displayName}님에게 호감을 보냈어요.`)
       },
     })
   }
 
   function handleMessageTap() {
-    if (!target || hasConversation) return
+    if (!target) return
+    if (hasConversation) {
+      showToast("이미 메시지를 보냈어요.")
+      return
+    }
     setShowMessageSheet(true)
   }
 
@@ -250,6 +434,34 @@ export default function ProfileDetailPage() {
         setMessageText("")
         showToast(`${displayName}님에게 메시지를 보냈어요.`)
       },
+    })
+  }
+
+  function handleSubmitReport() {
+    if (!reportReason || reportMutation.isPending) return
+    reportMutation.mutate(
+      { reason: reportReason, detail: reportReason === REPORT_REASON_OTHER ? reportDetail.trim() : undefined },
+      {
+        onSuccess: () => {
+          setSheet(null)
+          setReported(true)
+          setReportReason(null)
+          setReportDetail("")
+          showToast("신고가 접수됐어요.\n검토 후 필요한 조치가 진행됩니다.")
+        },
+        onError: () => showToast("신고에 실패했어요. 잠시 후 다시 시도해주세요."),
+      },
+    )
+  }
+
+  function handleConfirmBlock() {
+    if (blockMutation.isPending) return
+    blockMutation.mutate(undefined, {
+      onSuccess: () => {
+        localStorage.setItem("block_toast_pending", `${withEulReul(displayName)} 차단했어요.`)
+        router.replace("/")
+      },
+      onError: () => showToast("차단에 실패했어요. 잠시 후 다시 시도해주세요."),
     })
   }
 
@@ -293,7 +505,7 @@ export default function ProfileDetailPage() {
         </h1>
         <button
           type="button"
-          onClick={() => showToast("준비 중이에요.")}
+          onClick={() => setSheet("menu")}
           className="w-8 h-8 flex items-center justify-center"
         >
           <MoreDotsIcon />
@@ -377,19 +589,19 @@ export default function ProfileDetailPage() {
       >
         <button
           type="button"
-          disabled={liked}
-          onClick={() => setShowLikeConfirm(true)}
+          disabled={reported}
+          onClick={handleHeartTap}
           className="w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-[0_4px_5px_rgba(0,0,0,0.28)]"
-          style={{ backgroundColor: liked ? "#e8e8e8" : "#90b7ff" }}
+          style={{ backgroundColor: reported ? "#e8e8e8" : "#90b7ff" }}
         >
           <FlirtingHeartIcon size={36} />
         </button>
         <button
           type="button"
-          disabled={hasConversation}
+          disabled={reported}
           onClick={handleMessageTap}
           className="w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-[0_4px_5px_rgba(0,0,0,0.28)]"
-          style={{ backgroundColor: hasConversation ? "#e8e8e8" : "#37383c" }}
+          style={{ backgroundColor: reported ? "#e8e8e8" : "#37383c" }}
         >
           <FlirtingMessageIcon size={36} />
         </button>
@@ -466,11 +678,40 @@ export default function ProfileDetailPage() {
 
       {toast && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 z-[60] bg-black/74 text-white text-[14px] font-medium tracking-[-0.14px] px-6 py-3 rounded-[6px] whitespace-nowrap max-w-[296px] text-center"
+          className="fixed left-1/2 -translate-x-1/2 z-[60] bg-black/74 text-white text-[14px] font-medium tracking-[-0.14px] px-6 py-3 rounded-[6px] whitespace-pre-line max-w-[296px] text-center"
           style={{ bottom: "calc(env(safe-area-inset-bottom) + 100px)" }}
         >
           {toast}
         </div>
+      )}
+
+      {sheet === "menu" && (
+        <MoreActionSheet
+          onReport={() => setSheet("report")}
+          onBlock={() => setSheet("block")}
+          onCancel={() => setSheet(null)}
+        />
+      )}
+
+      {sheet === "report" && (
+        <ReportSheet
+          reason={reportReason}
+          detail={reportDetail}
+          submitting={reportMutation.isPending}
+          onSelectReason={setReportReason}
+          onDetailChange={setReportDetail}
+          onSubmit={handleSubmitReport}
+          onClose={() => setSheet(null)}
+        />
+      )}
+
+      {sheet === "block" && (
+        <BlockConfirmModal
+          displayName={displayName}
+          submitting={blockMutation.isPending}
+          onCancel={() => setSheet(null)}
+          onConfirm={handleConfirmBlock}
+        />
       )}
     </Screen>
   )

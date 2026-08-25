@@ -7,7 +7,7 @@ export const queryKeys = {
   me: ["me"] as const,
   discover: ["discover"] as const,
   userDetail: (id: number | string) => ["userDetail", String(id)] as const,
-  likes: ["likes"] as const,
+  likes: (type: "received" | "sent") => ["likes", type] as const,
   conversations: ["conversations"] as const,
   starHistory: ["starHistory"] as const,
 }

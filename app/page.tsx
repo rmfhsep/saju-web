@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
@@ -133,7 +131,7 @@ const MORE_INTRO_COST = 10;
 
 function EmptyTodayCard() {
   return (
-    <div className="w-[300px] h-[400px] rounded-[8px] bg-[#f7f7f8] flex flex-col items-center justify-center gap-4">
+    <div className="w-full h-[400px] rounded-[8px] bg-[#f7f7f8] flex flex-col items-center justify-center gap-4">
       <img
         src="/icons/logo-solid-72.svg"
         alt=""
@@ -154,7 +152,7 @@ function MoreIntroCard({
   onClick: () => void;
 }) {
   return (
-    <div className="w-[300px] h-[400px] rounded-[8px] bg-[#e9f1ff] relative flex flex-col items-center pt-[92px] gap-4">
+    <div className="w-full h-[400px] rounded-[8px] bg-[#e9f1ff] relative flex flex-col items-center pt-[92px] gap-4">
       <img
         src="/icons/more-intro-star.svg"
         alt=""
@@ -195,7 +193,7 @@ function RecoCard({
   return (
     <div
       onClick={onClick}
-      className="w-[300px] h-[400px] rounded-[8px] relative overflow-hidden bg-[#f4f4f5] cursor-pointer"
+      className="w-full h-[400px] rounded-[8px] relative overflow-hidden bg-[#f4f4f5] cursor-pointer"
     >
       <div
         className="absolute inset-0"
@@ -267,6 +265,11 @@ export default function HomePage() {
   const [starReward, setStarReward] = useState<number | null>(null);
   const bioIncomplete = useBioIncomplete(user);
 
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  }
+
   useEffect(() => {
     const pending = localStorage.getItem("star_reward_pending");
     if (pending) {
@@ -274,12 +277,14 @@ export default function HomePage() {
       const n = parseInt(pending, 10);
       if (n > 0) setStarReward(n);
     }
+    // 프로필 상세에서 차단 완료 후 홈으로 돌아왔을 때 보여줄 토스트 (app/recommend/[id] 참고)
+    const blockToast = localStorage.getItem("block_toast_pending");
+    if (blockToast) {
+      localStorage.removeItem("block_toast_pending");
+      showToast(blockToast);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
-  }
 
   function handleMoreIntro() {
     if (moreIntroMutation.isPending) return;
@@ -354,45 +359,24 @@ export default function HomePage() {
         </div>
 
         {recosLoading ? (
-          <Swiper
-            slidesPerView="auto"
-            spaceBetween={12}
-            slidesOffsetBefore={20}
-            slidesOffsetAfter={20}
-            className="pb-2! w-full min-w-0"
-          >
+          <div className="flex flex-col gap-3 px-5 pb-4">
             {[0, 1].map((i) => (
-              <SwiperSlide key={i} style={{ width: 300 }}>
-                <div className="w-[300px] h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse" />
-              </SwiperSlide>
+              <div key={i} className="w-full h-[400px] rounded-[8px] bg-[#f4f4f5] animate-pulse" />
             ))}
-          </Swiper>
+          </div>
         ) : (
-          <Swiper
-            slidesPerView={"auto"}
-            spaceBetween={12}
-            slidesOffsetBefore={20}
-            slidesOffsetAfter={20}
-            className="pb-2! w-full min-w-0"
-          >
-            {noNewToday && (
-              <SwiperSlide style={{ width: 300 }}>
-                <EmptyTodayCard />
-              </SwiperSlide>
-            )}
+          <div className="flex flex-col gap-3 px-5 pb-4">
+            {noNewToday && <EmptyTodayCard />}
             {recos.map((reco, i) => (
-              <SwiperSlide key={reco.id} style={{ width: 300 }}>
-                <RecoCard
-                  reco={reco}
-                  gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
-                  onClick={() => router.push(`/recommend/${reco.id}`)}
-                />
-              </SwiperSlide>
+              <RecoCard
+                key={reco.id}
+                reco={reco}
+                gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
+                onClick={() => router.push(`/recommend/${reco.id}`)}
+              />
             ))}
-            <SwiperSlide style={{ width: 300 }}>
-              <MoreIntroCard busy={moreIntroMutation.isPending} onClick={handleMoreIntro} />
-            </SwiperSlide>
-          </Swiper>
+            <MoreIntroCard busy={moreIntroMutation.isPending} onClick={handleMoreIntro} />
+          </div>
         )}
       </div>
 

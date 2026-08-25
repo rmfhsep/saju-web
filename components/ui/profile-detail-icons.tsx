@@ -44,6 +44,26 @@ export function FlirtingHeartIcon({ size = 36, className }: IconProps) {
   return <img src="/icons/flirting.svg" width={size} height={size} alt="" className={className} />
 }
 
+/**
+ * 호감 탭 "받은 호감" 카드 모서리의 맞호감 토글 하트(Figma btn_heart_on/off) — 반투명 원 배경 +
+ * 하트 아이콘(FlirtingHeartIcon과 같은 Icon/normal/flirting 계열, 28px 배지용 20px 변형).
+ * on/off는 fill 유무 차이뿐이라 별도 이미지 두 장 대신 이 컴포넌트 하나로 토글한다.
+ */
+export function LikeToggleHeartIcon({ on, size = 28, className }: { on: boolean } & IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" className={className}>
+      <circle cx="14" cy="14" r="14" fill="white" opacity="0.35" />
+      <path
+        d="M17.0496 8.5C16.0488 8.5 15.1384 9.18711 14.4693 9.99915C14.1891 10.3391 13.6291 10.3391 13.3489 9.99915C12.6798 9.18711 11.7694 8.5 10.7686 8.5C8.69587 8.5 7 10.3 7 12.5C7 15.978 12.3117 19.5073 13.6204 20.3241C13.7983 20.4351 14.0202 20.4354 14.1984 20.325C15.5082 19.5133 20.8182 16.0067 20.8182 12.5C20.8182 10.3 19.1223 8.5 17.0496 8.5Z"
+        fill={on ? "white" : "none"}
+        stroke="white"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 /** 플로팅 버튼 내부 흰색 메시지 아이콘 */
 export function FlirtingMessageIcon({ size = 36, className }: IconProps) {
   // eslint-disable-next-line @next/next/no-img-element

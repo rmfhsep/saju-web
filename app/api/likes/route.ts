@@ -4,8 +4,12 @@ import { verifyToken } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { sendPushNotification } from "@/lib/push"
 import { effectiveTrialStars, spendEffectiveStars, InsufficientStarsError } from "@/lib/stars"
+import { getBlockedUserIds } from "@/lib/moderation"
 
 const LIKE_COST = 1
+// "호감" 탭에서 응답하지 않은 호감은 7일 뒤 목록에서 사라진다(레코드 자체는 지우지 않고 조회 시 숨김).
+const LIKE_EXPIRE_DAYS = 7
+const DAY_MS = 24 * 60 * 60 * 1000
 
 /** 실제 stars + 만료 전 trialStars 합산 (auth/me 등 다른 화면에 노출되는 잔액과 동일 기준). */
 async function getCombinedStars(userId: number): Promise<number> {
@@ -80,7 +84,9 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * 내가 받은 호감 목록.
+ * 호감 탭 목록. query: ?type=received(기본) | sent
+ * 7일 넘은 항목은 숨기고(daysLeft<=0 필터), 각 항목에 daysLeft를 함께 내려준다.
+ * type=received에는 내가 이미 맞호감을 보냈는지(reciprocated)도 포함한다.
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("Authorization")
@@ -94,24 +100,54 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "invalid token" }, { status: 401 })
   }
 
+  const type = req.nextUrl.searchParams.get("type") === "sent" ? "sent" : "received"
+
   try {
+    const blockedIds = await getBlockedUserIds(payload.userId)
+
     const likes = await prisma.like.findMany({
-      where: { toUserId: payload.userId },
+      where:
+        type === "received"
+          ? { toUserId: payload.userId, fromUserId: { notIn: blockedIds } }
+          : { fromUserId: payload.userId, toUserId: { notIn: blockedIds } },
       orderBy: { createdAt: "desc" },
     })
     if (likes.length === 0) return NextResponse.json({ likes: [] })
 
-    const fromUsers = await prisma.user.findMany({
-      where: { id: { in: likes.map(l => l.fromUserId) } },
+    const counterpartIds = likes.map(l => (type === "received" ? l.fromUserId : l.toUserId))
+    const counterparts = await prisma.user.findMany({
+      where: { id: { in: counterpartIds } },
       select: { id: true, nickname: true, name: true, photos: true, birthDate: true, bioTags: true },
     })
-    const userMap = new Map(fromUsers.map(u => [u.id, u]))
+    const userMap = new Map(counterparts.map(u => [u.id, u]))
 
+    // 받은 호감 화면에서 하트 버튼(맞호감 즉시 보내기) 상태 표시용 — 내가 이미 보낸 호감 id 집합
+    const reciprocatedSet =
+      type === "received"
+        ? new Set(
+            (
+              await prisma.like.findMany({
+                where: { fromUserId: payload.userId, toUserId: { in: counterpartIds } },
+                select: { toUserId: true },
+              })
+            ).map(l => l.toUserId),
+          )
+        : null
+
+    const now = Date.now()
     const result = likes
       .map(l => {
-        const u = userMap.get(l.fromUserId)
+        const counterpartId = type === "received" ? l.fromUserId : l.toUserId
+        const u = userMap.get(counterpartId)
         if (!u) return null
-        return { ...u, likedAt: l.createdAt }
+        const daysLeft = LIKE_EXPIRE_DAYS - Math.floor((now - l.createdAt.getTime()) / DAY_MS)
+        if (daysLeft <= 0) return null
+        return {
+          ...u,
+          likedAt: l.createdAt,
+          daysLeft,
+          ...(reciprocatedSet ? { reciprocated: reciprocatedSet.has(u.id) } : {}),
+        }
       })
       .filter(Boolean)
 

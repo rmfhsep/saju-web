@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/db"
 import { spendEffectiveStars, InsufficientStarsError } from "@/lib/stars"
+import { getBlockedUserIds } from "@/lib/moderation"
 
 export const DAILY_RECO_LIMIT = 2
 export const MORE_INTRO_LIMIT = 3
@@ -37,11 +38,12 @@ async function findEligibleCandidates(
   excludeIds: number[],
   limit: number,
 ): Promise<RecoUser[]> {
+  const blockedIds = await getBlockedUserIds(userId)
   return tx.user.findMany({
     where: {
       gender: opposite,
       profileComplete: true,
-      id: { notIn: [...excludeIds, userId] },
+      id: { notIn: [...excludeIds, ...blockedIds, userId] },
     },
     select: RECO_USER_SELECT,
     orderBy: { createdAt: "desc" },
@@ -49,20 +51,28 @@ async function findEligibleCandidates(
   })
 }
 
+// 차단은 언제든 발생할 수 있어(과거에 추천됐던 상대를 나중에 차단), 누적 추천 이력을 읽을 때마다
+// 매번 걸러낸다 — Recommendation 테이블 자체에서 지우지는 않고 조회 시점에만 숨긴다.
 async function getRecommendedList(userId: number): Promise<RecoUser[]> {
-  const recos = await prisma.recommendation.findMany({
-    where: { userId },
-    orderBy: { createdAt: "asc" },
-    select: { recommendedId: true },
-  })
+  const [recos, blockedIds] = await Promise.all([
+    prisma.recommendation.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      select: { recommendedId: true },
+    }),
+    getBlockedUserIds(userId),
+  ])
   if (recos.length === 0) return []
+  const blocked = new Set(blockedIds)
 
   const users = await prisma.user.findMany({
     where: { id: { in: recos.map(r => r.recommendedId) } },
     select: RECO_USER_SELECT,
   })
   const userMap = new Map(users.map(u => [u.id, u]))
-  return recos.map(r => userMap.get(r.recommendedId)).filter((u): u is RecoUser => !!u)
+  return recos
+    .map(r => userMap.get(r.recommendedId))
+    .filter((u): u is RecoUser => !!u && !blocked.has(u.id))
 }
 
 /**
