@@ -1,17 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
-
-type StarTransactionItem = {
-  type: "charge" | "spend"
-  amount: number
-  reason: string
-  balanceAfter: number
-  createdAt: string
-}
+import { useStarHistory } from "@/lib/queries/useStarHistory"
 
 function formatDate(iso: string): string {
   const d = new Date(iso)
@@ -38,21 +30,9 @@ function HistorySkeletonRow() {
 
 export default function StoreHistoryPage() {
   const router = useAppRouter()
-  const [items, setItems] = useState<StarTransactionItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) {
-      setLoading(false)
-      return
-    }
-    fetch("/api/stars/history", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(data => { if (data?.transactions) setItems(data.transactions) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const historyQuery = useStarHistory()
+  const items = historyQuery.data ?? []
+  const loading = !historyQuery.data
 
   return (
     <Screen>

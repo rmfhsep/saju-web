@@ -90,6 +90,21 @@ const recosLoading = !discoverQuery.data // ✅
 // const recosLoading = discoverQuery.isLoading // ❌ enabled:false일 때 오판 가능
 ```
 
+### 마이페이지 수정 폼의 "1회 시드" 패턴
+
+`app/my/edit/*` 같은 수정 폼은 `/api/profile/update`로 저장하는 로컬 편집 state가 필요해서, 서버 값을 그대로 `useQuery`로 렌더링할 수 없습니다. 대신 `useMe()`가 데이터를 받아온 시점에 로컬 state를 **한 번만** 채웁니다 — 매 렌더마다 덮어쓰면 사용자가 입력 중인 값이 백그라운드 리페치로 지워집니다. 필드가 하나면 그 필드의 falsy 체크로 충분하고, 여러 필드를 한 번에 채워야 하면 별도 `seeded` 플래그를 씁니다.
+
+```tsx
+const meQuery = useMe()
+const [nickname, setNickname] = useState("")
+
+useEffect(() => {
+  if (meQuery.data?.nickname && !nickname) setNickname(meQuery.data.nickname)
+}, [meQuery.data, nickname])
+```
+
+저장(`/api/profile/update` 등) 성공 시에는 `queryClient.invalidateQueries({ queryKey: queryKeys.me })`를 호출해, 마이페이지·수정 목록 등 다른 화면에 바로 반영되게 합니다.
+
 ---
 
 ## 공통 컴포넌트 사용법

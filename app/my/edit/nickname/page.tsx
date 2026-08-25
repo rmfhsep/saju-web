@@ -1,25 +1,26 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 const DISALLOWED_RE = /[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]/g
 const MAX = 12
 
 export default function NicknameEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [nickname, setNickname] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => { if (user?.nickname) setNickname(user.nickname) })
-  }, [])
+    if (meQuery.data?.nickname && !nickname) setNickname(meQuery.data.nickname)
+  }, [meQuery.data, nickname])
 
   const valid = nickname.trim().length > 0 && nickname.trim().length <= MAX
 
@@ -33,6 +34,7 @@ export default function NicknameEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, nickname: nickname.trim() }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

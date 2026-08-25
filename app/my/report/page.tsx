@@ -1,12 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import type { SajuReport } from "@/lib/prompts/sajuReport"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
 import { WarningIcon } from "@/components/ui/icons"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
 // 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-노랑
@@ -158,21 +161,13 @@ function CautionCard({ items }: { items: SajuReport["섹션4_주의포인트"] }
   )
 }
 
-type MeUser = {
-  name: string | null
-  gender: string | null
-  calendarType: string | null
-  birthDate: string | null
-  birthTime: string | null
-  birthTimeUnknown: boolean
-  sajuResult: string | null
-}
-
 export default function ReportPage() {
   const router = useAppRouter()
-  const [user, setUser] = useState<MeUser | null>(null)
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
+  const user = meQuery.data ?? null
+  const loading = meQuery.isLoading
   const [report, setReport] = useState<SajuReport | null>(null)
-  const [loading, setLoading] = useState(true)
   const [regenerating, setRegenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -187,6 +182,7 @@ export default function ReportPage() {
       const data = await res.json()
       if (res.ok && data.sajuResult) {
         try { setReport(JSON.parse(data.sajuResult)) } catch { /* ignore */ }
+        queryClient.invalidateQueries({ queryKey: queryKeys.me })
       } else {
         setError(data.detail ?? data.error ?? "분석에 실패했어요.")
       }
@@ -198,22 +194,12 @@ export default function ReportPage() {
   }
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) { setLoading(false); return }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then((u: MeUser | null) => {
-        if (!u) return
-        setUser(u)
-        if (u.sajuResult) {
-          try {
-            const parsed = JSON.parse(u.sajuResult)
-            if (parsed?.섹션1_연애기질?.표현방식) setReport(parsed)
-          } catch { /* ignore */ }
-        }
-      })
-      .finally(() => setLoading(false))
-  }, [])
+    if (!user?.sajuResult || report) return
+    try {
+      const parsed = JSON.parse(user.sajuResult)
+      if (parsed?.섹션1_연애기질?.표현방식) setReport(parsed)
+    } catch { /* ignore */ }
+  }, [user, report])
 
   const name = user?.name ?? ""
   const genderLabel = user?.gender === "MALE" ? " (남성)" : user?.gender === "FEMALE" ? " (여성)" : ""

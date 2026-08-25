@@ -1,29 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import { ProfileChipIcon, CarouselIndicator, type ChipIconState } from "@/components/ui/profile-detail-icons"
+import { useMe } from "@/lib/queries/useMe"
 import { calcAge, birthYearLabel } from "@/lib/age"
-
-type MeUser = {
-  nickname: string | null
-  name: string | null
-  birthDate: string | null
-  height: number | null
-  job: string | null
-  jobDetail: string | null
-  location: string | null
-  smoking: string | null
-  drinking: string | null
-  datingPurpose: string | null
-  politics: string | null
-  religion: string | null
-  photos: string | null
-  bioTags: string | null
-  bio: string | null
-}
 
 const PURPOSE_SHORT_LABEL: Record<string, string> = {
   "아직은 연애에만 집중하고 싶어요.": "연애에만 집중",
@@ -52,22 +35,10 @@ function BioCard({ tag, desc }: { tag: string; desc: string }) {
 export default function ProfilePreviewPage() {
   const router = useAppRouter()
   const [tab, setTab] = useState<"card" | "detail">("card")
-  const [user, setUser] = useState<MeUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  const meQuery = useMe()
+  const user = meQuery.data ?? null
+  const loading = meQuery.isLoading
   const [photoIndex, setPhotoIndex] = useState(0)
-
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) {
-      setLoading(false)
-      return
-    }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(data => { if (data) setUser(data) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
 
   const photos: string[] = user?.photos ? JSON.parse(user.photos) : []
   const tags: string[] = user?.bioTags ? JSON.parse(user.bioTags) : []

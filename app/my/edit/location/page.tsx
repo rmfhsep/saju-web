@@ -1,28 +1,30 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import { SearchIcon } from "@/components/ui/icons"
 import { useLocationSearch } from "@/lib/useLocationSearch"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 export default function LocationEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const inputRef = useRef<HTMLInputElement>(null)
   const [q, setQ] = useState("")
   const [location, setLocation] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => {
-        if (user?.location) { setLocation(user.location); setQ(user.location) }
-      })
-  }, [])
+    if (meQuery.data?.location && !location) {
+      setLocation(meQuery.data.location)
+      setQ(meQuery.data.location)
+    }
+  }, [meQuery.data, location])
 
   const { results, loading } = useLocationSearch(q)
 
@@ -36,6 +38,7 @@ export default function LocationEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, location }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

@@ -1,33 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useAppRouter } from "@/lib/useAppRouter"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
+import { useLikes } from "@/lib/queries/useLikes"
 import { calcAge } from "@/lib/age"
 import { timeAgo } from "@/lib/time"
 
-type LikeUser = {
-  id: number
-  nickname: string | null
-  name: string | null
-  photos: string | null
-  birthDate: string | null
-  bioTags: string | null
-  likedAt: string
-}
-
 export default function LikesPage() {
   const router = useAppRouter()
-  const [likes, setLikes] = useState<LikeUser[] | null>(null)
-
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/likes", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => setLikes(d?.likes ?? []))
-      .catch(() => setLikes([]))
-  }, [])
+  const likesQuery = useLikes()
+  const likes = likesQuery.data ?? null
 
   return (
     <div className="flex flex-col min-h-screen bg-white" style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}>

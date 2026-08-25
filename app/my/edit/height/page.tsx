@@ -1,22 +1,23 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 export default function HeightEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [height, setHeight] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => { if (user?.height) setHeight(String(user.height)) })
-  }, [])
+    if (meQuery.data?.height && !height) setHeight(String(meQuery.data.height))
+  }, [meQuery.data, height])
 
   const valid = /^\d{3}$/.test(height) && +height >= 100 && +height <= 250
 
@@ -30,6 +31,7 @@ export default function HeightEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, height }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

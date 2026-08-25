@@ -8,6 +8,12 @@ export interface MeUser {
   phone: string
   name: string | null
   gender: string | null
+  calendarType: string | null
+  birthDate: string | null
+  birthTime: string | null
+  birthTimeUnknown: boolean
+  signupComplete: boolean
+  sajuResult: string | null
   nickname: string | null
   location: string | null
   job: string | null
@@ -22,8 +28,11 @@ export interface MeUser {
   photos: string | null
   bioTags: string | null
   bio: string | null
+  recommendedTags: string | null
   profileComplete: boolean
   filterComplete: boolean
+  blockedPhones: string | null
+  blockedCount: number
   preferredFilterType: string | null
   preferredHeightMin: number | null
   preferredHeightMax: number | null
@@ -31,8 +40,11 @@ export interface MeUser {
   preferredDrinking: string | null
   preferredPolitics: string | null
   preferredReligion: string | null
+  serviceNotify: boolean
+  pushEnabled: boolean
   stars: number
   trialStars: number
+  trialStarsExpireAt: string | null
   miniGamePlayed: boolean
 }
 

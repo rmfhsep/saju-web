@@ -105,6 +105,8 @@ export function useMessageMutation(targetId: string) {
         queryClient.setQueryData<TargetUser | undefined>(queryKeys.userDetail(targetId), prev =>
           prev ? { ...prev, hasConversation: true } : prev,
         )
+        // 새로 시작된 대화가 "메시지" 탭 목록에도 바로 보이도록 무효화한다.
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversations })
       }
     },
   })

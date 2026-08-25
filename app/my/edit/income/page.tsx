@@ -1,9 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 import { INCOME_OPTIONS } from "@/modules/profile/constants"
 
 function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean; onClick: () => void }) {
@@ -24,16 +27,14 @@ function IncomeCell({ opt, selected, onClick }: { opt: string; selected: boolean
 
 export default function IncomeEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [income, setIncome] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => { if (user?.income) setIncome(user.income) })
-  }, [])
+    if (meQuery.data?.income && !income) setIncome(meQuery.data.income)
+  }, [meQuery.data, income])
 
   async function handleSave() {
     if (!income || saving) return
@@ -45,6 +46,7 @@ export default function IncomeEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, income }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
@@ -13,6 +14,8 @@ import {
   SMOKING_OPTIONS, DRINKING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
 } from "@/modules/profile/constants"
 import type { FilterCategory } from "@/modules/filter/types"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 const LABELS: Record<FilterCategory, string> = {
   height: "키",
@@ -39,6 +42,8 @@ const OPTIONS: Record<Exclude<FilterCategory, "height">, string[]> = {
 
 export default function MyFilterPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [step, setStep] = useState<"category" | "detail">("category")
   const [gender, setGender] = useState<string>("MALE")
   const [category, setCategory] = useState<FilterCategory>("height")
@@ -47,34 +52,30 @@ export default function MyFilterPage() {
   const [heightMin, setHeightMin] = useState<number>(0)
   const [heightMax, setHeightMax] = useState<number>(0)
   const [submitting, setSubmitting] = useState(false)
+  const [seeded, setSeeded] = useState(false)
 
   const range = HEIGHT_RANGES[gender === "FEMALE" ? "FEMALE" : "MALE"]
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(u => {
-        if (!u) return
-        const g = u.gender === "FEMALE" ? "FEMALE" : "MALE"
-        setGender(g)
-        const r = HEIGHT_RANGES[g]
-        const def = defaultHeightRange(r.min, r.max)
-        // 기존 선호 조건 프리셀렉트
-        const preset = (u.preferredFilterType as FilterCategory | null) ?? null
-        if (preset) setCategory(preset)
-        setHeightMin(u.preferredHeightMin ?? def.min)
-        setHeightMax(u.preferredHeightMax ?? def.max)
-        setSavedValues({
-          smoking: u.preferredSmoking ?? undefined,
-          drinking: u.preferredDrinking ?? undefined,
-          politics: u.preferredPolitics ?? undefined,
-          religion: u.preferredReligion ?? undefined,
-        })
-      })
-      .catch(() => {})
-  }, [])
+    const u = meQuery.data
+    if (!u || seeded) return
+    const g = u.gender === "FEMALE" ? "FEMALE" : "MALE"
+    setGender(g)
+    const r = HEIGHT_RANGES[g]
+    const def = defaultHeightRange(r.min, r.max)
+    // 기존 선호 조건 프리셀렉트
+    const preset = (u.preferredFilterType as FilterCategory | null) ?? null
+    if (preset) setCategory(preset)
+    setHeightMin(u.preferredHeightMin ?? def.min)
+    setHeightMax(u.preferredHeightMax ?? def.max)
+    setSavedValues({
+      smoking: u.preferredSmoking ?? undefined,
+      drinking: u.preferredDrinking ?? undefined,
+      politics: u.preferredPolitics ?? undefined,
+      religion: u.preferredReligion ?? undefined,
+    })
+    setSeeded(true)
+  }, [meQuery.data, seeded])
 
   function goDetail() {
     if (category !== "height") {
@@ -99,6 +100,7 @@ export default function MyFilterPage() {
           value: category !== "height" ? value : undefined,
         }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSubmitting(false)

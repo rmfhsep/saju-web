@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import RadioOption from "@/components/ui/radio-option"
+import { useMe, type MeUser } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 import {
   SMOKING_OPTIONS, DRINKING_OPTIONS, DATING_OPTIONS, POLITICS_OPTIONS, RELIGION_OPTIONS,
 } from "@/modules/profile/constants"
@@ -20,20 +23,19 @@ const FIELD_CONFIG: Record<string, { title: string; options: string[] }> = {
 
 export default function FieldEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
   const params = useParams<{ field: string }>()
   const config = FIELD_CONFIG[params.field]
+  const meQuery = useMe()
 
   const [value, setValue] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (!config) return
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => { if (user?.[params.field]) setValue(user[params.field]) })
-  }, [config, params.field])
+    if (!config || value) return
+    const current = meQuery.data?.[params.field as keyof MeUser]
+    if (typeof current === "string" && current) setValue(current)
+  }, [config, params.field, meQuery.data, value])
 
   if (!config) return null
 
@@ -47,6 +49,7 @@ export default function FieldEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, [params.field]: value }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

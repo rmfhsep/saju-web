@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppRouter } from "@/lib/useAppRouter";
 import Screen from "@/components/ui/screen";
 import EditHeader from "@/components/ui/edit-header";
 import { SearchIcon } from "@/components/ui/icons";
+import { useMe } from "@/lib/queries/useMe";
+import { queryKeys } from "@/lib/queries/keys";
 import { JOBS, PROFESSIONALS } from "@/modules/profile/constants";
 
 const PROFESSIONAL_JOB_ID = "전문직";
@@ -32,28 +35,20 @@ function ListSkeleton({ onBack }: { onBack: () => void }) {
 
 export default function JobEditPage() {
   const router = useAppRouter();
+  const queryClient = useQueryClient();
+  const meQuery = useMe();
   const [job, setJob] = useState("");
   const [jobDetail, setJobDetail] = useState("");
   const [q, setQ] = useState("");
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((user) => {
-        if (user?.job) setJob(user.job);
-        if (user?.jobDetail) setJobDetail(user.jobDetail);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    if (!meQuery.data || job) return;
+    if (meQuery.data.job) setJob(meQuery.data.job);
+    if (meQuery.data.jobDetail) setJobDetail(meQuery.data.jobDetail);
+  }, [meQuery.data, job]);
 
-  if (loading) return <ListSkeleton onBack={() => router.back()} />;
+  if (!meQuery.data) return <ListSkeleton onBack={() => router.back()} />;
 
   const isProfessional = job === PROFESSIONAL_JOB_ID;
   const filtered = q
@@ -87,6 +82,7 @@ export default function JobEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, job, jobDetail: jobDetail.trim() }),
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me });
       router.back();
     } finally {
       setSaving(false);

@@ -1,42 +1,30 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useAppRouter } from "@/lib/useAppRouter"
 import AppBottomNav, { APP_BOTTOM_NAV_HEIGHT } from "@/components/ui/app-bottom-nav"
+import { useConversations } from "@/lib/queries/useMessages"
 import { timeAgo } from "@/lib/time"
-
-type Conversation = {
-  user: { id: number; nickname: string | null; name: string | null; photos: string | null }
-  lastMessage: string
-  lastAt: string
-  lastFromMe: boolean
-}
 
 export default function MessagesPage() {
   const router = useAppRouter()
-  const [conversations, setConversations] = useState<Conversation[] | null>(null)
+  const conversationsQuery = useConversations()
+  const conversations = conversationsQuery.data ?? null
 
+  // 앱이 다시 포그라운드로 올 때 새 메시지를 반영 — refetchOnWindowFocus는 전역에서
+  // 꺼뒀으므로(WebView 환경 특성) 이 화면에서만 명시적으로 재요청한다.
   useEffect(() => {
-    const fetchConversations = () => {
-      const token = localStorage.getItem("auth_token")
-      if (!token) return
-      fetch("/api/messages", { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => (r.ok ? r.json() : null))
-        .then(d => setConversations(d?.conversations ?? []))
-        .catch(() => setConversations([]))
-    }
-
-    fetchConversations()
-
+    const refetch = () => conversationsQuery.refetch()
     const handleVisible = () => {
-      if (document.visibilityState === "visible") fetchConversations()
+      if (document.visibilityState === "visible") refetch()
     }
-    window.addEventListener("focus", fetchConversations)
+    window.addEventListener("focus", refetch)
     document.addEventListener("visibilitychange", handleVisible)
     return () => {
-      window.removeEventListener("focus", fetchConversations)
+      window.removeEventListener("focus", refetch)
       document.removeEventListener("visibilitychange", handleVisible)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

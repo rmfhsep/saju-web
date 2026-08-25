@@ -1,10 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import Checkbox from "@/components/ui/checkbox"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 const AMPM = ["오전", "오후"]
 const HOURS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
@@ -89,6 +92,8 @@ function SelectedField({ label, children }: { label: string; children: React.Rea
 
 export default function BirthEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [name, setName] = useState("")
   const [gender, setGender] = useState("")
   const [calendarType, setCalendarType] = useState("")
@@ -100,22 +105,19 @@ export default function BirthEditPage() {
   const [pickerHour, setPickerHour] = useState("9")
   const [pickerMin, setPickerMin] = useState("00")
   const [saving, setSaving] = useState(false)
+  const [seeded, setSeeded] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => {
-        if (!user) return
-        setName(user.name ?? "")
-        setGender(user.gender ?? "")
-        setCalendarType(user.calendarType ?? "")
-        setBirthDate(user.birthDate ?? "")
-        setUnknownTime(!!user.birthTimeUnknown)
-        if (!user.birthTimeUnknown && user.birthTime) setBirthTime(user.birthTime)
-      })
-  }, [])
+    const user = meQuery.data
+    if (!user || seeded) return
+    setName(user.name ?? "")
+    setGender(user.gender ?? "")
+    setCalendarType(user.calendarType ?? "")
+    setBirthDate(user.birthDate ?? "")
+    setUnknownTime(!!user.birthTimeUnknown)
+    if (!user.birthTimeUnknown && user.birthTime) setBirthTime(user.birthTime)
+    setSeeded(true)
+  }, [meQuery.data, seeded])
 
   useEffect(() => {
     if (!showTimePicker) return
@@ -143,6 +145,7 @@ export default function BirthEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, birthTime: unknownTime ? null : birthTime, birthTimeUnknown: unknownTime }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

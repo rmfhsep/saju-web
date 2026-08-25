@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import PageFooter from "@/components/ui/page-footer"
 import CtaButton from "@/components/ui/cta-button"
 import { CloseIcon, CloseCircleIcon } from "@/components/ui/icons"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 import { DEFAULT_TAGS } from "@/modules/profile/constants"
 
 function Toast({ message }: { message: string }) {
@@ -20,6 +23,8 @@ function Toast({ message }: { message: string }) {
 
 export default function ChangeBioTagPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const params = useParams<{ index: string }>()
   const index = parseInt(params.index, 10)
 
@@ -31,35 +36,32 @@ export default function ChangeBioTagPage() {
   const [selected, setSelected] = useState("")
   const [showConfirm, setShowConfirm] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [seeded, setSeeded] = useState(false)
 
   const [customInput, setCustomInput] = useState("")
   const [showCustomModal, setShowCustomModal] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => {
-        if (!user) return
-        const tags: string[] = user.bioTags ? JSON.parse(user.bioTags) : []
-        setBioTags(tags)
-        setBio(user.bio ? JSON.parse(user.bio) : {})
-        setSelected(tags[index] ?? "")
+    const user = meQuery.data
+    if (!user || seeded) return
+    const tags: string[] = user.bioTags ? JSON.parse(user.bioTags) : []
+    setBioTags(tags)
+    setBio(user.bio ? JSON.parse(user.bio) : {})
+    setSelected(tags[index] ?? "")
 
-        let sugg = DEFAULT_TAGS
-        if (user.recommendedTags) {
-          try {
-            const rec = JSON.parse(user.recommendedTags)
-            sugg = [...(rec.love ?? []), ...(rec.life ?? [])].slice(0, 8)
-            setSuggested(sugg)
-          } catch { /* keep default pool */ }
-        }
-        // 추천 목록에 없는 기존 태그는 예전에 직접 입력했던 태그이므로 풀에 유지한다
-        setCustomTags(tags.filter(t => !sugg.includes(t)))
-      })
-  }, [index])
+    let sugg = DEFAULT_TAGS
+    if (user.recommendedTags) {
+      try {
+        const rec = JSON.parse(user.recommendedTags)
+        sugg = [...(rec.love ?? []), ...(rec.life ?? [])].slice(0, 8)
+        setSuggested(sugg)
+      } catch { /* keep default pool */ }
+    }
+    // 추천 목록에 없는 기존 태그는 예전에 직접 입력했던 태그이므로 풀에 유지한다
+    setCustomTags(tags.filter(t => !sugg.includes(t)))
+    setSeeded(true)
+  }, [meQuery.data, index, seeded])
 
   const currentTag = bioTags[index]
   const otherTags = bioTags.filter((_, i) => i !== index)
@@ -108,6 +110,7 @@ export default function ChangeBioTagPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, bioTags: nextTags, bio: nextBio }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.replace(`/my/edit/bio/${index}`)
     } finally {
       setSaving(false)

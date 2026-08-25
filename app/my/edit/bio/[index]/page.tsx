@@ -2,42 +2,43 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
 import TextareaField from "@/components/ui/textarea-field"
 import { PencilIcon } from "@/components/ui/icons"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 const MIN = 50
 const MAX = 500
 
 export default function BioEditPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const params = useParams<{ index: string }>()
   const index = parseInt(params.index, 10)
 
   const [bioTags, setBioTags] = useState<string[]>([])
   const [bio, setBio] = useState<Record<string, string>>({})
   const [text, setText] = useState("")
-  const [loading, setLoading] = useState(true)
+  const [seeded, setSeeded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showTagConfirm, setShowTagConfirm] = useState(false)
+  const loading = !meQuery.data
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => {
-        if (!user) return
-        const tags: string[] = user.bioTags ? JSON.parse(user.bioTags) : []
-        const bioObj: Record<string, string> = user.bio ? JSON.parse(user.bio) : {}
-        setBioTags(tags)
-        setBio(bioObj)
-        setText(bioObj[tags[index]] ?? "")
-      })
-      .finally(() => setLoading(false))
-  }, [index])
+    const user = meQuery.data
+    if (!user || seeded) return
+    const tags: string[] = user.bioTags ? JSON.parse(user.bioTags) : []
+    const bioObj: Record<string, string> = user.bio ? JSON.parse(user.bio) : {}
+    setBioTags(tags)
+    setBio(bioObj)
+    setText(bioObj[tags[index]] ?? "")
+    setSeeded(true)
+  }, [meQuery.data, index, seeded])
 
   const tag = bioTags[index]
   const valid = text.trim().length >= MIN
@@ -62,6 +63,7 @@ export default function BioEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, bio: nextBio }),
       })
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       router.back()
     } finally {
       setSaving(false)

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import { decodeJwt } from "jose"
 import Screen from "@/components/ui/screen"
@@ -9,6 +10,7 @@ import BackButton from "@/components/ui/back-button"
 import PageFooter from "@/components/ui/page-footer"
 import { getSupabaseClient } from "@/lib/supabaseClient"
 import { chatRoomId } from "@/lib/chatRoom"
+import { queryKeys } from "@/lib/queries/keys"
 
 type ThreadMessage = {
   id: number | string
@@ -23,7 +25,12 @@ type ThreadUser = { id: number; nickname: string | null; name: string | null; ph
 export default function MessageThreadPage() {
   const router = useAppRouter()
   const params = useParams<{ userId: string }>()
+  const queryClient = useQueryClient()
 
+  // 이 화면의 메시지 목록은 낙관적 전송(임시 id)과 Supabase Realtime 구독이 얽혀 있어
+  // TanStack Query 캐시로 옮기지 않고 로컬 state로 유지한다 — 큐 캐시로 옮기면 realtime
+  // payload 병합/재시도 로직이 쿼리 리페치와 경합할 수 있어 복잡도만 커진다. 다만 이 화면에서
+  // 벌어지는 부수효과(별 차감, 대화 목록 최신화)는 아래에서 명시적으로 캐시에 반영한다.
   const [user, setUser] = useState<ThreadUser | null>(null)
   const [messages, setMessages] = useState<ThreadMessage[]>([])
   const [loading, setLoading] = useState(true)
@@ -115,6 +122,13 @@ export default function MessageThreadPage() {
             : m,
         ),
       )
+      // 별 차감 결과와 대화 목록 미리보기를 홈/스토어/메시지 탭 등 다른 화면에도 반영한다.
+      if (data.stars != null) {
+        queryClient.setQueryData(queryKeys.me, (prev: { stars: number } | null | undefined) =>
+          prev ? { ...prev, stars: data.stars } : prev,
+        )
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations })
     } catch {
       setError("메시지 전송에 실패했어요.")
       setMessages(prev => prev.map(m => (m.id === tempId ? { ...m, status: "failed" } : m)))

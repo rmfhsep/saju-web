@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import EditHeader from "@/components/ui/edit-header"
@@ -9,25 +10,26 @@ import {
   onContactsReceived,
   onContactsPermissionDenied,
 } from "@/lib/bridge"
+import { useMe } from "@/lib/queries/useMe"
+import { queryKeys } from "@/lib/queries/keys"
 
 export default function BlockingPage() {
   const router = useAppRouter()
+  const queryClient = useQueryClient()
+  const meQuery = useMe()
   const [blockedCount, setBlockedCount] = useState(0)
-  const [phone, setPhone] = useState("")
+  const [seeded, setSeeded] = useState(false)
   const [showUnblock, setShowUnblock] = useState(false)
   const [showPermission, setShowPermission] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const phone = typeof window !== "undefined" ? localStorage.getItem("user_phone") ?? "" : ""
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-    setPhone(localStorage.getItem("user_phone") ?? "")
-    if (!token) return
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then(u => { if (u) setBlockedCount(u.blockedCount ?? 0) })
-      .catch(() => {})
-  }, [])
+    if (!meQuery.data || seeded) return
+    setBlockedCount(meQuery.data.blockedCount ?? 0)
+    setSeeded(true)
+  }, [meQuery.data, seeded])
 
   function showToast(msg: string) {
     setToast(msg)
@@ -44,6 +46,7 @@ export default function BlockingPage() {
       })
       const data = await res.json().catch(() => null)
       if (res.ok && data) setBlockedCount(data.blockedCount ?? contactPhones.length)
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
     } finally {
       setBusy(false)
     }

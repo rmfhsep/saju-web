@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppRouter } from "@/lib/useAppRouter";
 import Screen from "@/components/ui/screen";
 import EditHeader from "@/components/ui/edit-header";
+import { useMe } from "@/lib/queries/useMe";
+import { queryKeys } from "@/lib/queries/keys";
 import type { ProfileData } from "@/modules/profile/types";
 
 const MAX_PHOTOS = 5;
@@ -76,6 +79,8 @@ function formatBirthDisplay(
 
 export default function ProfileEditPage() {
   const router = useAppRouter();
+  const queryClient = useQueryClient();
+  const meQuery = useMe();
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [loadingSlots, setLoadingSlots] = useState<Set<number>>(new Set());
@@ -92,36 +97,34 @@ export default function ProfileEditPage() {
   const pressStart = useRef<{ x: number; y: number } | null>(null);
   const orderChanged = useRef(false);
 
+  // 사진 순서 변경 등 로컬 편집 중에 캐시가 백그라운드로 다시 받아와도 덮어쓰지 않도록,
+  // data가 비어있는(=최초 진입) 시점에만 useMe() 결과로 초기화한다. 이후 저장은 이 화면이
+  // 직접 /api/profile/update로 하고, 성공 시 me 쿼리를 무효화해 다른 화면에 반영한다.
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) return;
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((user) => {
-        if (!user) return;
-        setData({
-          nickname: user.nickname ?? "",
-          location: user.location ?? "",
-          job: user.job ?? "",
-          jobDetail: user.jobDetail ?? "",
-          height: user.height ? String(user.height) : "",
-          smoking: user.smoking ?? "",
-          drinking: user.drinking ?? "",
-          datingPurpose: user.datingPurpose ?? "",
-          politics: user.politics ?? "",
-          religion: user.religion ?? "",
-          income: user.income ?? "",
-          photos: user.photos ? JSON.parse(user.photos) : [],
-          bioTags: user.bioTags ? JSON.parse(user.bioTags) : [],
-          bio: user.bio ? JSON.parse(user.bio) : {},
-          birthDisplay: formatBirthDisplay(
-            user.calendarType,
-            user.birthDate,
-            user.birthTimeUnknown ? null : user.birthTime
-          ),
-        });
-      });
-  }, []);
+    const user = meQuery.data;
+    if (!user || data) return;
+    setData({
+      nickname: user.nickname ?? "",
+      location: user.location ?? "",
+      job: user.job ?? "",
+      jobDetail: user.jobDetail ?? "",
+      height: user.height ? String(user.height) : "",
+      smoking: user.smoking ?? "",
+      drinking: user.drinking ?? "",
+      datingPurpose: user.datingPurpose ?? "",
+      politics: user.politics ?? "",
+      religion: user.religion ?? "",
+      income: user.income ?? "",
+      photos: user.photos ? JSON.parse(user.photos) : [],
+      bioTags: user.bioTags ? JSON.parse(user.bioTags) : [],
+      bio: user.bio ? JSON.parse(user.bio) : {},
+      birthDisplay: formatBirthDisplay(
+        user.calendarType ?? "",
+        user.birthDate ?? "",
+        user.birthTimeUnknown ? null : user.birthTime
+      ),
+    });
+  }, [meQuery.data, data]);
 
   async function savePhotos(photos: string[]) {
     setData((prev) => (prev ? { ...prev, photos } : prev));
@@ -131,6 +134,7 @@ export default function ProfileEditPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone, photos }),
     }).catch(() => {});
+    queryClient.invalidateQueries({ queryKey: queryKeys.me });
   }
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -194,7 +198,9 @@ export default function ProfileEditPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone, photos }),
-    }).catch(() => {});
+    })
+      .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.me }))
+      .catch(() => {});
   }
 
   function clearPress() {
