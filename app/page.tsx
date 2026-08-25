@@ -324,7 +324,7 @@ export default function HomePage() {
 
   if (meQuery.isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex items-center justify-center h-screen bg-white">
         <div className="w-8 h-8 border-2 border-[#b6d0ff] border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -333,10 +333,7 @@ export default function HomePage() {
   if (!user) return null;
 
   return (
-    <div
-      className="flex flex-col min-h-screen bg-white"
-      style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}
-    >
+    <div className="flex flex-col h-screen overflow-hidden bg-white">
       {/* 헤더 */}
       <div className="h-[52px] flex items-center gap-4 px-5 py-3.5 shrink-0">
         <h1 className="flex-1 text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
@@ -345,7 +342,10 @@ export default function HomePage() {
         <StarChip stars={user.stars} onClick={() => router.push("/my/store")} className="shrink-0" />
       </div>
 
-      <div className="flex-1 flex flex-col gap-7 pt-5">
+      <div
+        className="flex-1 flex flex-col gap-7 pt-5 scroll-area overflow-y-auto"
+        style={{ paddingBottom: APP_BOTTOM_NAV_HEIGHT }}
+      >
         <div className="flex flex-col gap-2">
           {/* 자기소개 작성 유도 배너 */}
           {bioIncomplete && (
