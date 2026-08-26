@@ -10,6 +10,7 @@ import PageFooter from "@/components/ui/page-footer"
 import { WarningIcon } from "@/components/ui/icons"
 import { useMe } from "@/lib/queries/useMe"
 import { queryKeys } from "@/lib/queries/keys"
+import { useAnalyzingMessage } from "@/lib/useAnalyzingMessage"
 
 const LEVEL_LABEL: Record<string, string> = { HIGH: "높음", MID: "보통", LOW: "낮음" }
 // 레벨별 뱃지 색상: 높음-빨강 / 보통-파랑 / 낮음-노랑
@@ -170,6 +171,7 @@ export default function ReportPage() {
   const [report, setReport] = useState<SajuReport | null>(null)
   const [regenerating, setRegenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const analyzingMessage = useAnalyzingMessage(loading || regenerating)
 
   async function generateReport(token: string) {
     setRegenerating(true)
@@ -226,7 +228,7 @@ export default function ReportPage() {
         </h1>
 
         {loading || regenerating ? (
-          <p className="pt-8 text-[14px] text-[#777]">연애운을 분석하고 있어요...</p>
+          <p className="pt-8 text-[14px] text-[#777]">{analyzingMessage}</p>
         ) : !report ? (
           <div className="pt-6 flex flex-col gap-4">
             {infoCard}
@@ -257,7 +259,7 @@ export default function ReportPage() {
           disabled={regenerating}
           className="w-full h-[48px] bg-[#e9f1ff] rounded-[4px] text-[16px] font-semibold tracking-[-0.32px] text-[#1a75ff] active:opacity-80 disabled:opacity-50"
         >
-          {regenerating ? "분석 중..." : "다시 분석하기"}
+          {regenerating ? analyzingMessage : "다시 분석하기"}
         </button>
       </PageFooter>
     </Screen>

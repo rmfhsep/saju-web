@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/HomeScreen';
+import MainTabs from './MainTabs';
 import OnboardingWebViewScreen from '../screens/OnboardingWebViewScreen';
 import { WEB_URL } from '../config/env';
 import { getStoredAuthToken } from '../lib/authStorage';
@@ -48,7 +48,7 @@ export default function AppNavigator() {
           component={OnboardingWebViewScreen}
           initialParams={{ url: ONBOARDING_URL }}
         />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

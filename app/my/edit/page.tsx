@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppRouter } from "@/lib/useAppRouter";
+import { bridgeSyncAuthToken } from "@/lib/bridge";
 import Screen from "@/components/ui/screen";
 import EditHeader from "@/components/ui/edit-header";
 import { useMe } from "@/lib/queries/useMe";
@@ -126,6 +127,14 @@ export default function ProfileEditPage() {
     });
   }, [meQuery.data, data]);
 
+  // 사진(특히 슬롯 0)이 바뀌면 네이티브 탭바의 "내 정보" 아이콘도 즉시 갱신되도록,
+  // 이미 로그인 직후 동기화에 쓰던 authToken 메시지를 재사용해 네이티브에 다시 보낸다
+  // (네이티브가 이 메시지를 받으면 /api/auth/me를 다시 불러 최신 사진으로 아이콘을 다시 굽는다).
+  function notifyNativeProfileChanged() {
+    const token = localStorage.getItem("auth_token");
+    if (token) bridgeSyncAuthToken(token);
+  }
+
   async function savePhotos(photos: string[]) {
     setData((prev) => (prev ? { ...prev, photos } : prev));
     const phone = localStorage.getItem("user_phone") ?? "";
@@ -135,6 +144,7 @@ export default function ProfileEditPage() {
       body: JSON.stringify({ phone, photos }),
     }).catch(() => {});
     queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    notifyNativeProfileChanged();
   }
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -199,7 +209,10 @@ export default function ProfileEditPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone, photos }),
     })
-      .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.me }))
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.me });
+        notifyNativeProfileChanged();
+      })
       .catch(() => {});
   }
 

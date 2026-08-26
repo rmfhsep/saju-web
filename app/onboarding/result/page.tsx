@@ -11,6 +11,7 @@ import StarIcon from "@/components/ui/star-icon"
 import { WarningIcon } from "@/components/ui/icons"
 import { calcAge } from "@/lib/age"
 import { queryKeys } from "@/lib/queries/keys"
+import { useAnalyzingMessage } from "@/lib/useAnalyzingMessage"
 
 type Reco = {
   id: number
@@ -200,6 +201,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
   onGameOver: (survivalSeconds: number) => void
   onReveal: () => void
 }) {
+  const analyzingMessage = useAnalyzingMessage(!ready)
   return (
     <Screen>
       <div className="flex flex-col px-5 pt-[52px] gap-2">
@@ -229,7 +231,7 @@ function AnalyzingGameScreen({ name, ready, showGame, earnedStars, onGameOver, o
             ready ? "bg-[#b6d0ff] text-[#1f1f1f] active:opacity-80" : "bg-[#f4f4f5] text-[#a0a0a0]"
           }`}
         >
-          {ready ? "결과 보기" : "분석 중..."}
+          {ready ? "결과 보기" : analyzingMessage}
         </button>
       </div>
     </Screen>
