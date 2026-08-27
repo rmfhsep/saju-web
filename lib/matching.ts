@@ -44,8 +44,6 @@ export interface CompatibilitySectionViewModel {
   // 4개 축을 모두 보여준다. UI 인터페이스는 spec에서도 "참고용"으로 명시돼 있어, 화면은 4축 전부를
   // 그대로 렌더링하고 대표축 선택(selectRepresentativeAxes)은 interpretation 문장 생성에만 사용한다.
   axes: AxisComparison[]
-  showSiJuNotice: boolean
-  siJuNoticeText?: string
 }
 
 // § 4-2 재사용 — 유사도: 수치 차이가 작을수록 높은 점수
@@ -249,15 +247,10 @@ export function buildCompatibilitySection(input: {
   const interpretation = buildInterpretation(candidateTags, input.candidateNickname, similarAxis, complementAxis, score)
   const axes = buildAxes(userTags, candidateTags)
 
-  const hasSiJu = input.userReport.meta.시주입력여부 && input.candidateReport.meta.시주입력여부
-  const siJuNoticeText = input.candidateReport.meta.시주미입력안내 ?? input.userReport.meta.시주미입력안내
-
   return {
     score,
     chips,
     interpretation,
     axes,
-    showSiJuNotice: !hasSiJu,
-    siJuNoticeText,
   }
 }

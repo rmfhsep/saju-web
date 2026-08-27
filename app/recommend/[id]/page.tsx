@@ -127,10 +127,6 @@ function CompatSection({
     <div className="flex flex-col gap-3 items-start w-full">
       <p className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px] w-full">나와의 궁합</p>
       <div className="flex flex-col gap-3 items-center w-full">
-        {compat.showSiJuNotice && compat.siJuNoticeText && (
-          <p className="text-[12px] text-[#949494] w-full">{compat.siJuNoticeText}</p>
-        )}
-
         <div className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-3 items-center w-full">
           <div className="flex flex-col gap-0.5 items-center">
             <div className="flex gap-2 items-center justify-center">
