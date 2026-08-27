@@ -8,6 +8,9 @@ import CtaButton from "@/components/ui/cta-button"
 
 const PHONE_RE = /^010[0-9]{7,8}$/
 const LONG_PRESS_MS = 3000
+// 3초간 손가락을 완벽히 고정하는 건 불가능해서, 이 픽셀 이내의 떨림은 누르는 중으로 본다
+// (app/my/edit/page.tsx의 사진 순서변경 롱프레스와 동일한 값).
+const MOVE_CANCEL_PX = 14
 
 function formatPhone(raw: string) {
   const digits = raw.replace(/\D/g, "")
@@ -107,6 +110,7 @@ export default function PhoneInputPage() {
   const [phone, setPhone] = useState("")
   const [showReviewLogin, setShowReviewLogin] = useState(false)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pressStart = useRef<{ x: number; y: number } | null>(null)
 
   const rawPhone = phone.replace(/\D/g, "")
   const touched = rawPhone.length > 0
@@ -122,7 +126,8 @@ export default function PhoneInputPage() {
     navigateAndReplace("Verify", { phone: rawPhone })
   }
 
-  function startLongPress() {
+  function startLongPress(x: number, y: number) {
+    pressStart.current = { x, y }
     longPressTimer.current = setTimeout(() => setShowReviewLogin(true), LONG_PRESS_MS)
   }
 
@@ -131,6 +136,15 @@ export default function PhoneInputPage() {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
     }
+    pressStart.current = null
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    const touch = e.touches[0]
+    if (!touch || !pressStart.current) return
+    const dx = Math.abs(touch.clientX - pressStart.current.x)
+    const dy = Math.abs(touch.clientY - pressStart.current.y)
+    if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) cancelLongPress()
   }
 
   return (
@@ -143,10 +157,13 @@ export default function PhoneInputPage() {
         <div className="flex flex-col gap-[48px]" style={{ marginTop: 52 }}>
           <h1
             className="text-[24px] font-bold text-[#1f1f1f] leading-[1.4] tracking-[-0.48px] select-none"
-            onTouchStart={startLongPress}
+            onTouchStart={e => {
+              const t = e.touches[0]
+              if (t) startLongPress(t.clientX, t.clientY)
+            }}
             onTouchEnd={cancelLongPress}
-            onTouchMove={cancelLongPress}
-            onMouseDown={startLongPress}
+            onTouchMove={handleTouchMove}
+            onMouseDown={e => startLongPress(e.clientX, e.clientY)}
             onMouseUp={cancelLongPress}
             onMouseLeave={cancelLongPress}
           >

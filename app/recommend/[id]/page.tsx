@@ -7,6 +7,8 @@ import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
 import CtaButton from "@/components/ui/cta-button"
 import StarIcon from "@/components/ui/star-icon"
+// TODO(심사 완료 후 제거): 결제 심사 대비 안내 모달 — 아래 사용처와 함께 제거할 것
+import StarInfoModal from "@/components/ui/star-info-modal"
 import TextareaField from "@/components/ui/textarea-field"
 import RadioOption from "@/components/ui/radio-option"
 import {
@@ -341,6 +343,7 @@ export default function ProfileDetailPage() {
   const blockMutation = useBlockMutation(params.id)
 
   const [photoIndex, setPhotoIndex] = useState(0)
+  const [showStarInfo, setShowStarInfo] = useState(false)
   const [showLikeConfirm, setShowLikeConfirm] = useState(false)
   const [showMessageSheet, setShowMessageSheet] = useState(false)
   const [messageText, setMessageText] = useState("")
@@ -643,7 +646,9 @@ export default function ProfileDetailPage() {
 
             <div className="w-full px-5 pb-5" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}>
               {insufficientForMessage ? (
-                <CtaButton onClick={() => router.push("/my/store")}>별 충전하기</CtaButton>
+                // TODO(심사 완료 후 제거): 결제 심사 대비로 스토어 이동 대신 안내 모달을 띄운다.
+                // 심사 끝나면 onClick을 다시 () => router.push("/my/store")로 되돌릴 것.
+                <CtaButton onClick={() => setShowStarInfo(true)}>별 충전하기</CtaButton>
               ) : (
                 <CtaButton disabled={!messageText.trim()} loading={messageMutation.isPending} onClick={handleSendMessage}>
                   메시지 보내기
@@ -691,6 +696,9 @@ export default function ProfileDetailPage() {
           onConfirm={handleConfirmBlock}
         />
       )}
+
+      {/* TODO(심사 완료 후 제거): 결제 심사용 안내 모달 — 위 "별 충전하기" onClick과 함께 되돌릴 것 */}
+      {showStarInfo && <StarInfoModal onClose={() => setShowStarInfo(false)} />}
     </Screen>
   )
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { bridgeNavigate } from "@/lib/bridge";
 import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
@@ -9,8 +10,11 @@ import StarChip from "@/components/ui/star-chip";
 import StarIcon from "@/components/ui/star-icon";
 import CtaButton from "@/components/ui/cta-button";
 import IntroBanner from "@/components/ui/intro-banner";
+// TODO(심사 완료 후 제거): 결제 심사 대비 안내 모달 — 아래 사용처와 함께 제거할 것
+import StarInfoModal from "@/components/ui/star-info-modal";
 import { useBioIncomplete } from "@/lib/useBioIncomplete";
 import { useMe } from "@/lib/queries/useMe";
+import { queryKeys } from "@/lib/queries/keys";
 import { useDiscover, useMoreIntroMutation, type RecoUser } from "@/lib/queries/useDiscover";
 import { calcAge } from "@/lib/age";
 import { useAppRouter } from "@/lib/useAppRouter";
@@ -97,16 +101,22 @@ function FortuneBanner({
 // Figma "02_추천_가입 직후 별 적립 안내 modal" (node 416:6997) — 온보딩 미니게임으로 별을
 // 적립한 직후, 홈 화면 첫 진입 시 1회 노출된다. app/onboarding/result/page.tsx에서
 // localStorage에 적립분을 남겨두면 여기서 읽어 보여주고 지운다.
-function StarRewardModal({ stars, onClose }: { stars: number; onClose: () => void }) {
+function StarRewardModal({
+  stars,
+  message,
+  onClose,
+}: {
+  stars: number;
+  message: React.ReactNode;
+  onClose: () => void;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-8" style={{ touchAction: "none" }}>
       <div className="absolute inset-0 bg-black/61" onClick={onClose} />
       <div className="relative bg-white rounded-[8px] p-5 w-[312px] flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <p className="text-[16px] font-semibold text-[#1f1f1f] tracking-[-0.32px] leading-[1.5]">
-            미니게임으로 별이 {stars}개 적립됐어요.
-            <br />
-            바로 호감을 보내보세요.
+            {message}
           </p>
           <div className="flex items-center gap-1">
             <StarIcon size={20} color="#FFA100" />
@@ -251,6 +261,7 @@ function RecoCard({
 
 export default function HomePage() {
   const router = useAppRouter();
+  const queryClient = useQueryClient();
   const meQuery = useMe();
   const user = meQuery.data ?? null;
   // 프로필 완성 전에는 추천 API가 의미 없으니 그때까지는 쿼리 자체를 실행하지 않는다.
@@ -263,6 +274,10 @@ export default function HomePage() {
   const [fortune, setFortune] = useState<DailyFortune | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [starReward, setStarReward] = useState<number | null>(null);
+  // TODO(심사 완료 후 제거): 결제 심사 대비 임시 출석 적립 — 아래 useEffect, StarChip onClick,
+  // StarInfoModal 사용처와 함께 제거할 것
+  const [showStarInfo, setShowStarInfo] = useState(false);
+  const [showCheckInReward, setShowCheckInReward] = useState(false);
   const bioIncomplete = useBioIncomplete(user);
 
   function showToast(msg: string) {
@@ -322,6 +337,22 @@ export default function HomePage() {
       .catch(() => {});
   }, [user?.profileComplete]);
 
+  // TODO(심사 완료 후 제거): 결제 심사 대비 임시 매일 출석 별 적립 — 추천 탭 진입 시 24시간에
+  // 한 번 별 1개를 자동 지급한다. app/api/daily-checkin와 함께 제거할 것.
+  useEffect(() => {
+    if (!user?.profileComplete) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    fetch("/api/daily-checkin", { method: "POST", headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) return;
+        queryClient.setQueryData(queryKeys.me, (prev: typeof user) => (prev ? { ...prev, stars: d.stars } : prev));
+        if (d.credited) setShowCheckInReward(true);
+      })
+      .catch(() => {});
+  }, [user?.profileComplete, queryClient]);
+
   if (meQuery.isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -339,7 +370,8 @@ export default function HomePage() {
         <h1 className="flex-1 text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           추천
         </h1>
-        <StarChip stars={user.stars} onClick={() => router.push("/my/store")} className="shrink-0" />
+        {/* TODO(심사 완료 후 제거): onClick을 다시 () => router.push("/my/store")로 되돌릴 것 */}
+        <StarChip stars={user.stars} onClick={() => setShowStarInfo(true)} className="shrink-0" />
       </div>
 
       <div
@@ -396,7 +428,35 @@ export default function HomePage() {
       <AppBottomNav />
 
       {starReward != null && (
-        <StarRewardModal stars={starReward} onClose={() => setStarReward(null)} />
+        <StarRewardModal
+          stars={starReward}
+          message={
+            <>
+              미니게임으로 별이 {starReward}개 적립됐어요.
+              <br />
+              바로 호감을 보내보세요.
+            </>
+          }
+          onClose={() => setStarReward(null)}
+        />
+      )}
+
+      {/* TODO(심사 완료 후 제거): 결제 심사용 안내 모달 */}
+      {showStarInfo && <StarInfoModal onClose={() => setShowStarInfo(false)} />}
+
+      {/* TODO(심사 완료 후 제거): 결제 심사용 매일 출석 적립 모달 */}
+      {showCheckInReward && (
+        <StarRewardModal
+          stars={1}
+          message={
+            <>
+              오늘 출석 완료!
+              <br />
+              별 1개가 적립되었어요.
+            </>
+          }
+          onClose={() => setShowCheckInReward(false)}
+        />
       )}
     </div>
   );

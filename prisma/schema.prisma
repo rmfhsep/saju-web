@@ -68,6 +68,10 @@ model User {
   // 추천(오늘의 추천) 24시간 배치 마지막 확인 시각 — 매번 새로 계산하지 않고 이걸로 24h 경과 여부만 체크
   lastRecoCheckAt DateTime?
 
+  // 매일 출석 별 적립 마지막 지급 시각 — 24시간 지났으면 추천 탭 진입 시 별 1개 자동 적립
+  // TODO(심사 완료 후 제거): 결제 심사 대비 임시 기능. app/api/daily-checkin 및 관련 UI와 함께 정리할 것
+  lastStarCheckInAt DateTime?
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppRouter } from "@/lib/useAppRouter";
 import { bridgeNavigate } from "@/lib/bridge";
 import Screen from "@/components/ui/screen";
@@ -8,6 +8,8 @@ import AppBottomNav, {
   APP_BOTTOM_NAV_HEIGHT,
 } from "@/components/ui/app-bottom-nav";
 import StarChip from "@/components/ui/star-chip";
+// TODO(심사 완료 후 제거): 결제 심사 대비 안내 모달 — 아래 사용처와 함께 제거할 것
+import StarInfoModal from "@/components/ui/star-info-modal";
 import IntroBanner from "@/components/ui/intro-banner";
 import { useBioIncomplete } from "@/lib/useBioIncomplete";
 import { useMe, type MeUser } from "@/lib/queries/useMe";
@@ -96,6 +98,7 @@ export default function MyPage() {
   const meQuery = useMe();
   const user = meQuery.data ?? null;
   const bioIncomplete = useBioIncomplete(user);
+  const [showStarInfo, setShowStarInfo] = useState(false);
 
   useEffect(() => {
     if (meQuery.isLoading) return;
@@ -113,7 +116,8 @@ export default function MyPage() {
         <span className="text-[18px] font-semibold text-[#1f1f1f] tracking-[-0.36px]">
           {displayName}
         </span>
-        <StarChip stars={user?.stars ?? 0} onClick={() => router.push("/my/store")} />
+        {/* TODO(심사 완료 후 제거): onClick을 다시 () => router.push("/my/store")로 되돌릴 것 */}
+        <StarChip stars={user?.stars ?? 0} onClick={() => setShowStarInfo(true)} />
       </div>
 
       <div
@@ -198,6 +202,9 @@ export default function MyPage() {
       </div>
 
       <AppBottomNav />
+
+      {/* TODO(심사 완료 후 제거): 결제 심사용 안내 모달 */}
+      {showStarInfo && <StarInfoModal onClose={() => setShowStarInfo(false)} />}
     </Screen>
   );
 }
