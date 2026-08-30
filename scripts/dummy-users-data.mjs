@@ -60,12 +60,22 @@ export const LOCATIONS = [
   "대구광역시 수성구", "대전광역시 유성구", "광주광역시 서구",
 ]
 
-const MALE_GIVEN = ["민준", "서준", "도윤", "예준", "시우", "주원", "지호", "준서", "현우", "우진", "지훈", "동현"]
-const FEMALE_GIVEN = ["서연", "서윤", "지우", "하윤", "지민", "다은", "채원", "수아", "예린", "소율", "은서", "유나"]
-const SURNAMES = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오"]
+const MALE_GIVEN = [
+  "민준", "서준", "도윤", "예준", "시우", "주원", "지호", "준서", "현우", "우진", "지훈", "동현",
+  "그루", "하늘", "라온", "지환", "태윤", "성민", "재우", "동욱",
+]
+const FEMALE_GIVEN = [
+  "서연", "서윤", "지우", "하윤", "지민", "다은", "채원", "수아", "예린", "소율", "은서", "유나",
+  "유미", "채영", "다솜", "새봄", "가은", "나연", "수빈", "혜진",
+]
+const SURNAMES = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "송", "권", "황", "안"]
 
-const NICKNAME_PREFIX = ["하늘", "라온", "다온", "그루", "소망", "별빛", "새봄", "온유", "다솜", "가온", "누리", "solar", "moon", "hana", "rin"]
-const NICKNAME_SUFFIX = ["이", "언니", "님", "star", "day", "light", ""]
+// 실제 이름처럼 보이는 성+이름 조합을 name/nickname 둘 다에 각각 독립적으로 뽑아 쓴다
+// (예: 김유미, 한그루, 이채영) — 영단어 섞인 닉네임(solar, rin 등)은 쓰지 않는다.
+function pickFullName(gender) {
+  const given = gender === "MALE" ? pick(MALE_GIVEN) : pick(FEMALE_GIVEN)
+  return `${pick(SURNAMES)}${given}`
+}
 
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -86,9 +96,8 @@ function pad2(n) {
 
 /** MALE/FEMALE 랜덤 더미 유저 1명치 데이터를 만든다. phone은 호출부에서 유니크하게 채워야 한다. */
 export function buildDummyUser(gender, seed) {
-  const given = gender === "MALE" ? pick(MALE_GIVEN) : pick(FEMALE_GIVEN)
-  const name = `${pick(SURNAMES)}${given}`
-  const nickname = `${pick(NICKNAME_PREFIX)}${pick(NICKNAME_SUFFIX)}`.slice(0, 12)
+  const name = pickFullName(gender)
+  const nickname = pickFullName(gender)
 
   const year = randInt(1987, 2005) // 2026 기준 21~39세(한국식 나이)
   const month = randInt(1, 12)

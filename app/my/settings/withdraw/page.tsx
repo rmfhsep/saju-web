@@ -25,8 +25,8 @@ const ETC_REASON = "기타";
 
 function ReasonRow({ label, selected, onClick, showDivider }: { label: string; selected: boolean; onClick: () => void; showDivider: boolean }) {
   return (
-    <button type="button" onClick={onClick} className="w-full flex flex-col gap-[14.5px] pt-[14.5px] px-5 text-left">
-      <span className="flex items-center gap-3">
+    <button type="button" onClick={onClick} className="w-full flex flex-col gap-[14.5px]  px-5 text-left">
+      <span className="flex items-center gap-3 ">
         <Image src={selected ? RadioOnIcon : RadioOffIcon} alt="" width={24} height={24} className="shrink-0" />
         <span className="flex-1 text-[14px] font-medium text-[#1f1f1f] tracking-[-0.14px]">{label}</span>
       </span>
@@ -126,7 +126,7 @@ export default function WithdrawReasonPage() {
           <p className="text-[15px] text-[#777] leading-[1.5] tracking-[-0.3px]">이유를 알려주시면 더 좋은 만남을 만들기 위해 개선할게요.</p>
         </div>
 
-        <div className="flex flex-col mt-10">
+        <div className="flex flex-col mt-10 gap-4">
           {REASONS.map((r, i) => (
             <ReasonRow key={r} label={r} selected={reason === r} onClick={() => setReason(r)} showDivider={i < REASONS.length - 1} />
           ))}
