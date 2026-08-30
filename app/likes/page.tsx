@@ -127,11 +127,19 @@ export default function LikesPage() {
           ))}
         </div>
       ) : likes.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-5">
-          <p className="text-[15px] font-semibold text-[#1f1f1f]">
-            {tab === "received" ? "아직 받은 호감이 없어요" : "아직 보낸 호감이 없어요"}
+        <div className="flex flex-col gap-5 px-5">
+          <p className="text-[14px] text-[#777] leading-[1.5] tracking-[-0.14px] whitespace-pre-line">
+            {tab === "received"
+              ? "아직 받은 호감이 없어요.\n당신과 잘 맞는 인연을 찾아보고, 마음에 드는 사람에게 먼저\n호감을 보내보세요."
+              : "아직 보낸 호감이 없어요\n마음에 드는 사람이 있다면 먼저 호감을 보내보세요."}
           </p>
-          <p className="text-[13px] text-[#777]">추천 프로필에 먼저 호감을 보내보세요.</p>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="self-start h-[40px] px-5 bg-[#e9f1ff] rounded-[4px] text-[14px] font-semibold text-[#1a75ff] tracking-[-0.14px]"
+          >
+            {tab === "received" ? "인연 찾아보기" : "추천 프로필 보러가기"}
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 px-5 pb-4">
@@ -140,7 +148,7 @@ export default function LikesPage() {
               key={u.id}
               user={u}
               showHeart={tab === "received"}
-              onClick={() => router.push(`/recommend/${u.id}`)}
+              onClick={() => router.push(`/recommend/${u.id}?from=likes`)}
               onReciprocate={() => handleReciprocate(u)}
             />
           ))}

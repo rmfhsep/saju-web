@@ -71,6 +71,9 @@ export async function GET(req: NextRequest) {
       await prisma.user.update({ where: { id: user.id }, data: { trialStars: 0, trialStarsExpireAt: null } }).catch(() => {})
     }
 
+    // 매칭 풀 activityScore(§4-1)용 최근 접속 시각 — 별도 heartbeat 엔드포인트가 없어 여기서 갱신
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {})
+
     // 마이/스토어 화면은 stars 하나만 읽으므로, 만료 전 체험용 별을 합산해 노출한다.
     return NextResponse.json({ ...user, stars: user.stars + trial, trialStars: trial })
   } catch {

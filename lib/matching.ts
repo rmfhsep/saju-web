@@ -80,18 +80,18 @@ function mapLifestyleLabel(matchCount: number): string {
 }
 
 // matching_pool_spec § 3-4 POLITICS_MATCH_MAP 양방향 재사용 — 실제 옵션 값(modules/profile/constants.ts) 기준
-const POLITICS_MATCH_MAP: Record<string, string[]> = {
+export const POLITICS_MATCH_MAP: Record<string, string[]> = {
   보수: ["보수", "중도", "관심 없음"],
   중도: ["보수", "중도", "진보", "관심 없음"],
   진보: ["진보", "중도", "관심 없음"],
   "관심 없음": ["보수", "중도", "진보", "관심 없음"],
 }
-function politicsMatched(a: string, b: string): boolean {
+export function politicsMatched(a: string, b: string): boolean {
   return (POLITICS_MATCH_MAP[a]?.includes(b) ?? true) && (POLITICS_MATCH_MAP[b]?.includes(a) ?? true)
 }
 
 // modules/profile/constants.ts DRINKING_OPTIONS 순서 그대로
-const DRINKING_ORDER: Record<string, number> = {
+export const DRINKING_ORDER: Record<string, number> = {
   비음주: 1,
   "가끔 마심": 2,
   "월 3~4회 정도": 3,
@@ -99,10 +99,10 @@ const DRINKING_ORDER: Record<string, number> = {
 }
 
 // matching_pool_spec § 2-2 재사용 — "잘 모르겠어요."(unknown)는 항상 매칭 허용
-const DATING_UNKNOWN = "잘 모르겠어요."
-const DATING_MARRIAGE = "결혼을 고려한 연애를 하고 싶어요."
-const DATING_CASUAL = "아직은 연애에만 집중하고 싶어요."
-function datingPurposeCompatible(a: string, b: string): boolean {
+export const DATING_UNKNOWN = "잘 모르겠어요."
+export const DATING_MARRIAGE = "결혼을 고려한 연애를 하고 싶어요."
+export const DATING_CASUAL = "아직은 연애에만 집중하고 싶어요."
+export function datingPurposeCompatible(a: string, b: string): boolean {
   if (a === DATING_UNKNOWN || b === DATING_UNKNOWN) return true
   return !((a === DATING_MARRIAGE && b === DATING_CASUAL) || (a === DATING_CASUAL && b === DATING_MARRIAGE))
 }

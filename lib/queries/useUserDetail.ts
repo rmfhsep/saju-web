@@ -24,6 +24,7 @@ export interface TargetUser {
   likedByMe: boolean
   hasConversation: boolean
   compat: CompatibilitySectionViewModel | null
+  compatUnlocked: boolean
 }
 
 async function fetchUserDetail(id: string): Promise<TargetUser> {
@@ -80,6 +81,35 @@ export function useLikeMutation(targetId: string) {
       if (result.ok) {
         queryClient.setQueryData<TargetUser | undefined>(queryKeys.userDetail(targetId), prev =>
           prev ? { ...prev, likedByMe: true } : prev,
+        )
+      }
+    },
+  })
+}
+
+/** 궁합 잠금해제(POST /api/compat/unlock). 별 차감 실패도 던지지 않는 방식은 useLikeMutation과 동일. */
+export function useUnlockCompatMutation(targetId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (): Promise<SpendResult> => {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch("/api/compat/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ targetUserId: Number(targetId) }),
+      })
+      const data = await res.json().catch(() => ({}))
+      return { ok: res.ok, stars: data.stars, error: data.error }
+    },
+    onSuccess: result => {
+      if (result.stars != null) {
+        queryClient.setQueryData(queryKeys.me, (prev: { stars: number } | null | undefined) =>
+          prev ? { ...prev, stars: result.stars } : prev,
+        )
+      }
+      if (result.ok) {
+        queryClient.setQueryData<TargetUser | undefined>(queryKeys.userDetail(targetId), prev =>
+          prev ? { ...prev, compatUnlocked: true } : prev,
         )
       }
     },

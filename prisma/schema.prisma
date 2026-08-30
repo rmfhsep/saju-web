@@ -68,6 +68,12 @@ model User {
   // 추천(오늘의 추천) 24시간 배치 마지막 확인 시각 — 매번 새로 계산하지 않고 이걸로 24h 경과 여부만 체크
   lastRecoCheckAt DateTime?
 
+  // 매칭 풀(prompt/maju_matching_pool_spec.1.1.1.md) 관련 필드
+  lastLoginAt        DateTime? // GET /api/auth/me 호출 시마다 갱신 — activityScore(§4-1) 산출용
+  grade              String?   // "gold" | "silver" | "newbie" — 주간 배치(app/api/cron/weekly-grade)가 갱신, 비공개(§5)
+  gradeScore         Float?    // grade 산출에 쓰인 원점수(§5-2), 디버깅/운영용
+  preferenceFilters  String?   // JSON string[] — 활성화된 필터 타입("height"|"smoking"|"drinking"|"politics"|"religion", §3)
+
   // 매일 출석 별 적립 마지막 지급 시각 — 24시간 지났으면 추천 탭 진입 시 별 1개 자동 적립
   // TODO(심사 완료 후 제거): 결제 심사 대비 임시 기능. app/api/daily-checkin 및 관련 UI와 함께 정리할 것
   lastStarCheckInAt DateTime?
@@ -82,6 +88,15 @@ model WithdrawnPhone {
   withdrawnAt DateTime @default(now())
 }
 
+// 탈퇴 사유 로그 — WithdrawnPhone(재가입 제한, phone당 1행)과 달리 append-only로 매 탈퇴마다 남긴다.
+model WithdrawReason {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  reason    String // 탈퇴 사유 선택지 원문 (예: "좋은 인연을 만났어요")
+  detail    String? // "기타" 선택 시 직접입력 텍스트
+  createdAt DateTime @default(now())
+}
+
 // 호감(좋아요) — 별 1개 소모, 같은 상대에게 중복 전송 불가
 model Like {
   id         Int      @id @default(autoincrement())
@@ -91,6 +106,16 @@ model Like {
 
   @@unique([fromUserId, toUserId])
   @@index([toUserId])
+}
+
+// 궁합 잠금해제 — 별 1개 소모, 같은 상대 궁합은 한 번만 차감(재방문 시 그대로 노출)
+model CompatUnlock {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  targetUserId Int
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, targetUserId])
 }
 
 // 메시지 — 두 유저 사이 첫 메시지는 별 3개 소모, 이후 답장은 무료

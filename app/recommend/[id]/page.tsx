@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useParams } from "next/navigation"
+import { Suspense, useEffect, useRef, useState } from "react"
+import { useParams, useSearchParams } from "next/navigation"
 import { useAppRouter } from "@/lib/useAppRouter"
 import Screen from "@/components/ui/screen"
 import BackButton from "@/components/ui/back-button"
@@ -23,11 +23,12 @@ import { calcAge, birthYearLabel } from "@/lib/age"
 import { withEulReul } from "@/lib/josa"
 import type { CompatibilitySectionViewModel } from "@/lib/matching"
 import { useMe } from "@/lib/queries/useMe"
-import { useUserDetail, useLikeMutation, useMessageMutation } from "@/lib/queries/useUserDetail"
+import { useUserDetail, useLikeMutation, useMessageMutation, useUnlockCompatMutation } from "@/lib/queries/useUserDetail"
 import { useReportMutation, useBlockMutation } from "@/lib/queries/useModeration"
 import { REPORT_REASONS, REPORT_REASON_OTHER, type ReportReason } from "@/lib/reportReasons"
 
 const LIKE_COST = 1
+const COMPAT_UNLOCK_COST = 1
 const MESSAGE_COST = 3
 const MESSAGE_MAX = 100
 
@@ -160,6 +161,42 @@ function CompatSection({
             <AxisBar key={axis.axisKey} axis={axis} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// 호감 탭에서 넘어온 상세페이지는 궁합을 블러 처리하고, 별 1개를 내야 볼 수 있다.
+function LockedCompatSection({
+  compat,
+  myPhoto,
+  candidatePhoto,
+  unlocking,
+  onUnlock,
+}: {
+  compat: CompatibilitySectionViewModel
+  myPhoto: string | null
+  candidatePhoto: string | null
+  unlocking: boolean
+  onUnlock: () => void
+}) {
+  return (
+    <div className="relative w-full">
+      <div className="pointer-events-none select-none blur-md">
+        <CompatSection compat={compat} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <button
+          type="button"
+          disabled={unlocking}
+          onClick={onUnlock}
+          className="flex items-center gap-1.5 h-[44px] px-5 bg-[#1f1f1f] rounded-full text-white shadow-[0_4px_12px_rgba(0,0,0,0.25)] active:opacity-80 disabled:opacity-60"
+        >
+          <StarIcon size={18} color="#FFA100" />
+          <span className="text-[15px] font-semibold tracking-[-0.3px] whitespace-nowrap">
+            별 {COMPAT_UNLOCK_COST}개로 궁합 보기
+          </span>
+        </button>
       </div>
     </div>
   )
@@ -317,9 +354,11 @@ function StarCostRow({ cost, balance }: { cost: number; balance: number }) {
   )
 }
 
-export default function ProfileDetailPage() {
+function ProfileDetailContent() {
   const router = useAppRouter()
   const params = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const fromLikes = searchParams.get("from") === "likes"
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   const targetQuery = useUserDetail(params.id)
@@ -332,8 +371,10 @@ export default function ProfileDetailPage() {
 
   const likeMutation = useLikeMutation(params.id)
   const messageMutation = useMessageMutation(params.id)
+  const unlockCompatMutation = useUnlockCompatMutation(params.id)
   const liked = !!target?.likedByMe
   const hasConversation = !!target?.hasConversation
+  const compatUnlocked = !!target?.compatUnlocked
 
   const reportMutation = useReportMutation(params.id)
   const blockMutation = useBlockMutation(params.id)
@@ -386,6 +427,15 @@ export default function ProfileDetailPage() {
           return
         }
         showToast(result.alreadyLiked ? "이미 호감을 보냈어요." : `${displayName}님에게 호감을 보냈어요.`)
+      },
+    })
+  }
+
+  function handleUnlockCompat() {
+    if (unlockCompatMutation.isPending || !target) return
+    unlockCompatMutation.mutate(undefined, {
+      onSuccess: result => {
+        if (!result.ok) showToast("별이 부족해요.")
       },
     })
   }
@@ -555,7 +605,17 @@ export default function ProfileDetailPage() {
           )}
 
           {target.compat && (
-            <CompatSection compat={target.compat} myPhoto={myPhoto} candidatePhoto={photos[0] ?? null} />
+            fromLikes && !compatUnlocked ? (
+              <LockedCompatSection
+                compat={target.compat}
+                myPhoto={myPhoto}
+                candidatePhoto={photos[0] ?? null}
+                unlocking={unlockCompatMutation.isPending}
+                onUnlock={handleUnlockCompat}
+              />
+            ) : (
+              <CompatSection compat={target.compat} myPhoto={myPhoto} candidatePhoto={photos[0] ?? null} />
+            )
           )}
         </div>
       </div>
@@ -696,5 +756,13 @@ export default function ProfileDetailPage() {
       {/* TODO(심사 완료 후 제거): 결제 심사용 안내 모달 — 위 "별 충전하기" onClick과 함께 되돌릴 것 */}
       {showStarInfo && <StarInfoModal onClose={() => setShowStarInfo(false)} />}
     </Screen>
+  )
+}
+
+export default function ProfileDetailPage() {
+  return (
+    <Suspense>
+      <ProfileDetailContent />
+    </Suspense>
   )
 }

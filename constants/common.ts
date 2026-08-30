@@ -1,0 +1,6 @@
+export const STAR_300_URL = "https://www.latpeed.com/products/RbJyv"
+export const STAR_150_URL = "https://www.latpeed.com/products/iN7f6"
+export const STAR_70_URL ="https://www.latpeed.com/products/f9oMe"
+export const STAR_30_URL = "https://www.latpeed.com/products/VaGYk"
+export const STAR_10_URL = "https://www.latpeed.com/products/3z9O8"
+export const STAR_3_URL ="https://www.latpeed.com/products/szRqD"

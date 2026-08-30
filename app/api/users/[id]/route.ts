@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "user not found" }, { status: 404 })
     }
 
-    const [user, like, conversation, me] = await Promise.all([
+    const [user, like, conversation, me, compatUnlock] = await Promise.all([
       prisma.user.findUnique({
         where: { id: targetId, profileComplete: true },
         select: {
@@ -69,6 +69,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         where: { id: payload.userId },
         select: { sajuResult: true, datingPurpose: true, politics: true, drinking: true, smoking: true, religion: true },
       }),
+      prisma.compatUnlock.findUnique({
+        where: { userId_targetUserId: { userId: payload.userId, targetUserId: targetId } },
+        select: { id: true },
+      }),
     ])
 
     if (!user) return NextResponse.json({ error: "user not found" }, { status: 404 })
@@ -103,7 +107,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    return NextResponse.json({ ...publicUser, likedByMe: !!like, hasConversation: !!conversation, compat })
+    return NextResponse.json({
+      ...publicUser,
+      likedByMe: !!like,
+      hasConversation: !!conversation,
+      compat,
+      compatUnlocked: !!compatUnlock,
+    })
   } catch (err) {
     console.error("[api/users/:id] failed:", err)
     return NextResponse.json({ error: "internal error", detail: String(err) }, { status: 500 })

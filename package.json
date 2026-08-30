@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start"
+    "start": "next start",
+    "seed:dummy": "node scripts/seed-dummy-users.mjs",
+    "seed:dummy:delete": "node scripts/delete-dummy-users.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.107.0",

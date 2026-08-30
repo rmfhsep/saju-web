@@ -1,12 +1,11 @@
-import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/db"
 import { spendEffectiveStars, InsufficientStarsError } from "@/lib/stars"
 import { getBlockedUserIds } from "@/lib/moderation"
+import { buildPool } from "@/lib/pool/buildPool"
+import { toRecoUser, POOL_USER_SELECT } from "@/lib/pool/types"
 
-export const DAILY_RECO_LIMIT = 2
 export const MORE_INTRO_LIMIT = 3
 export const MORE_INTRO_COST = 10
-const RECO_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000
 
 export class NoMoreCandidatesError extends Error {
   constructor() {
@@ -16,39 +15,14 @@ export class NoMoreCandidatesError extends Error {
 
 export { InsufficientStarsError }
 
-const RECO_USER_SELECT = {
-  id: true,
-  nickname: true,
-  name: true,
-  photos: true,
-  birthDate: true,
-  bioTags: true,
-} satisfies Prisma.UserSelect
+export type RecoUser = ReturnType<typeof toRecoUser>
 
-type RecoUser = Prisma.UserGetPayload<{ select: typeof RECO_USER_SELECT }>
-
-function oppositeGender(gender: string | null): string | null {
-  return gender === "MALE" ? "FEMALE" : gender === "FEMALE" ? "MALE" : null
-}
-
-async function findEligibleCandidates(
-  tx: Prisma.TransactionClient,
-  userId: number,
-  opposite: string,
-  excludeIds: number[],
-  limit: number,
-): Promise<RecoUser[]> {
-  const blockedIds = await getBlockedUserIds(userId)
-  return tx.user.findMany({
-    where: {
-      gender: opposite,
-      profileComplete: true,
-      id: { notIn: [...excludeIds, ...blockedIds, userId] },
-    },
-    select: RECO_USER_SELECT,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  })
+// § 6-0 — 매일 20:00 KST(= 11:00 UTC, vercel.json 참고) 고정 배치 기준 시각.
+// 지금이 그 시각 이전이면 "오늘 배치"는 아직 어제 20:00 것이다.
+function lastBatchBoundaryUTC(now: Date): Date {
+  const boundary = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 11, 0, 0))
+  if (now.getTime() < boundary.getTime()) boundary.setUTCDate(boundary.getUTCDate() - 1)
+  return boundary
 }
 
 // 차단은 언제든 발생할 수 있어(과거에 추천됐던 상대를 나중에 차단), 누적 추천 이력을 읽을 때마다
@@ -67,70 +41,38 @@ async function getRecommendedList(userId: number): Promise<RecoUser[]> {
 
   const users = await prisma.user.findMany({
     where: { id: { in: recos.map(r => r.recommendedId) } },
-    select: RECO_USER_SELECT,
+    select: POOL_USER_SELECT,
   })
   const userMap = new Map(users.map(u => [u.id, u]))
   return recos
     .map(r => userMap.get(r.recommendedId))
-    .filter((u): u is RecoUser => !!u && !blocked.has(u.id))
+    .filter((u): u is (typeof users)[number] => !!u && !blocked.has(u.id))
+    .map(toRecoUser)
 }
 
 /**
- * 홈 화면 "오늘의 추천" — 누적 추천 목록을 반환하고, 마지막 확인으로부터 24시간이
- * 지났으면 새 후보를 찾아 배치로 추가한다(없으면 noNewToday만 표시).
+ * 홈 화면 "오늘의 추천" — 이제 순수 읽기 전용이다. 실제 추천 선별(하드필터→유저필터→소프트스코어링→
+ * 슬롯믹싱)은 app/api/cron/daily-recommendations가 매일 20:00 KST에 미리 채워두고, 여기서는
+ * 누적 목록을 읽고 "가장 최근 배치에 새로 추가된 게 있는가"만 판단한다.
  */
 export async function getDailyRecommendations(userId: number): Promise<{ users: RecoUser[]; noNewToday: boolean }> {
-  const me = await prisma.user.findUnique({ where: { id: userId }, select: { gender: true, lastRecoCheckAt: true } })
-  const opposite = oppositeGender(me?.gender ?? null)
-  if (!opposite) return { users: await getRecommendedList(userId), noNewToday: false }
-
-  const needsCheck = !me?.lastRecoCheckAt || Date.now() - me.lastRecoCheckAt.getTime() >= RECO_CHECK_INTERVAL_MS
-  let lastCheckAt = me?.lastRecoCheckAt ?? null
-
-  if (needsCheck) {
-    const checkedAt = new Date()
-    await prisma.$transaction(async tx => {
-      const existing = await tx.recommendation.findMany({ where: { userId }, select: { recommendedId: true } })
-      const candidates = await findEligibleCandidates(tx, userId, opposite, existing.map(r => r.recommendedId), DAILY_RECO_LIMIT)
-
-      if (candidates.length > 0) {
-        await tx.recommendation.createMany({
-          data: candidates.map(c => ({ userId, recommendedId: c.id, createdAt: checkedAt })),
-          skipDuplicates: true,
-        })
-      }
-      await tx.user.update({ where: { id: userId }, data: { lastRecoCheckAt: checkedAt } })
-    })
-    lastCheckAt = checkedAt
-  }
-
-  // "오늘은 추천 인연이 없어요" 카드는 "후보 풀이 바닥났는지"가 아니라 "가장 최근 체크 주기에서
-  // 실제로 새 추천이 추가됐는지"로 판단한다 — 이번 주기에 추천을 받았으면(그게 마지막 남은
-  // 후보였더라도) 표시하지 않고, 다음 24시간 주기에 추가된 게 하나도 없을 때만 표시한다.
-  // Recommendation.createdAt을 lastRecoCheckAt과 동일한 시각으로 심어두었기 때문에
-  // needsCheck=false로 같은 날 재방문한 요청에서도 그 주기의 결과가 그대로 유지된다.
-  const users = await getRecommendedList(userId)
-  const foundInLastCheck = lastCheckAt
-    ? await prisma.recommendation.count({ where: { userId, createdAt: lastCheckAt } })
-    : 0
-
-  return { users, noNewToday: foundInLastCheck === 0 }
+  const [users, foundInLastBatch] = await Promise.all([
+    getRecommendedList(userId),
+    prisma.recommendation.count({ where: { userId, createdAt: { gte: lastBatchBoundaryUTC(new Date()) } } }),
+  ])
+  return { users, noNewToday: foundInLastBatch === 0 }
 }
 
 /**
- * "더 소개 받기" — 별 소모하고 아직 추천 안 한 상대를 최대 N명 더 추가한다.
- * 추천 가능한 상대가 0명이면 별을 소모하지 않고 NoMoreCandidatesError를 던진다.
+ * "더 소개 받기" — 별 소모하고 매칭 풀(하드필터+유저필터+소프트스코어링, 등급 슬롯믹싱은 미적용)
+ * 상위 N명을 더 추가한다. 추천 가능한 상대가 0명이면 별을 소모하지 않고 NoMoreCandidatesError.
  */
 export async function addMoreIntroductions(userId: number): Promise<{ users: RecoUser[]; stars: number }> {
-  const me = await prisma.user.findUnique({ where: { id: userId }, select: { gender: true } })
-  const opposite = oppositeGender(me?.gender ?? null)
-  if (!opposite) throw new NoMoreCandidatesError()
+  const scored = await buildPool(userId)
+  const candidates = scored.slice(0, MORE_INTRO_LIMIT).map(c => c.user)
+  if (candidates.length === 0) throw new NoMoreCandidatesError()
 
   const stars = await prisma.$transaction(async tx => {
-    const existing = await tx.recommendation.findMany({ where: { userId }, select: { recommendedId: true } })
-    const candidates = await findEligibleCandidates(tx, userId, opposite, existing.map(r => r.recommendedId), MORE_INTRO_LIMIT)
-    if (candidates.length === 0) throw new NoMoreCandidatesError()
-
     const spent = await spendEffectiveStars(tx, userId, MORE_INTRO_COST, "인연 추천 더 받기")
     await tx.recommendation.createMany({
       data: candidates.map(c => ({ userId, recommendedId: c.id })),

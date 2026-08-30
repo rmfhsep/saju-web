@@ -55,7 +55,7 @@ export default function BlockingPage() {
   function handleAdd() {
     if (busy) return
     onContactsReceived((phones) => {
-      saveBlocking(phones).then(() => showToast("내 연락처에 있는 모든 목록을\n차단했어요."))
+      saveBlocking(phones).then(() => showToast("내 연락처에 있는 모든 목록을 차단했어요."))
     })
     onContactsPermissionDenied(() => setShowPermission(true))
     bridgeRequestContacts()

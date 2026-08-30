@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/daily-recommendations", "schedule": "0 11 * * *" },
+    { "path": "/api/cron/weekly-grade", "schedule": "0 11 * * 1" }
+  ]
+}
