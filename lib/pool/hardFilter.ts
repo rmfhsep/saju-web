@@ -55,24 +55,25 @@ export async function getExcludedCandidateIds(userId: number): Promise<number[]>
   return [...ids]
 }
 
-function regionWhere(myRegion: string | null, stage: RegionStage): Prisma.UserWhereInput {
-  if (stage === "nation" || !myRegion) return {}
-  if (stage === "same") return { location: { startsWith: myRegion } }
+/** 후보의 거주지가 내 거주지 기준 해당 region 단계(§7-1)에 속하는지 — DB 왕복 없이 메모리에서 판정. */
+export function matchesRegionStage(myRegion: string | null, candidateLocation: string | null, stage: RegionStage): boolean {
+  if (stage === "nation" || !myRegion) return true
+  const candidateRegion = getRegion(candidateLocation)
+  if (!candidateRegion) return false
+  if (stage === "same") return candidateRegion === myRegion
   const adjacent = adjacentRegions(myRegion)
-  if (adjacent.length === 0) return { id: -1 } // 인접 지역 없음(제주 등) → 매칭 없음
-  return { OR: adjacent.map(r => ({ location: { startsWith: r } })) }
+  if (adjacent.length === 0) return false // 인접 지역 없음(제주 등) → 매칭 없음
+  return adjacent.includes(candidateRegion)
 }
 
 /**
- * region 단계 하나에 대해 성별/profileComplete/제외목록/거주지단계로 DB에서 후보를 가져온 뒤,
- * datingPurpose 호환성(§2-2) + 사주 궁합 50점 미만 제외(§2-5)를 JS에서 마저 적용해 반환한다.
+ * 성별/profileComplete/제외목록으로 전국 단위 후보를 한 번에 DB에서 가져온 뒤, datingPurpose
+ * 호환성(§2-2) + 사주 궁합 50점 미만 제외(§2-5)를 JS에서 마저 적용해 반환한다. region 단계별로
+ * 따로 쿼리하지 않고 한 번만 조회해서, 호출부(buildPool)가 매번 스테이지별로 DB 왕복하지 않고
+ * 메모리에서 matchesRegionStage로 단계를 나눌 수 있게 한다.
  * 내 sajuResult가 없거나(비정상 케이스) 파싱 실패하면 궁합 계산이 불가능하므로 빈 배열을 반환한다.
  */
-export async function fetchHardFilteredCandidates(
-  me: PoolUser,
-  stage: RegionStage,
-  excludeIds: number[],
-): Promise<PoolUser[]> {
+export async function fetchHardFilteredCandidates(me: PoolUser, excludeIds: number[]): Promise<PoolUser[]> {
   const opposite = oppositeGender(me.gender)
   if (!opposite) return []
 
@@ -83,7 +84,6 @@ export async function fetchHardFilteredCandidates(
     gender: opposite,
     profileComplete: true,
     id: { notIn: excludeIds },
-    ...regionWhere(getRegion(me.location), stage),
   }
 
   const rows = await prisma.user.findMany({ where, select: POOL_USER_SELECT, orderBy: { createdAt: "desc" } })

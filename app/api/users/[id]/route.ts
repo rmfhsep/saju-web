@@ -25,11 +25,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
-    if (await isBlockedEitherWay(payload.userId, targetId)) {
-      return NextResponse.json({ error: "user not found" }, { status: 404 })
-    }
-
-    const [user, like, conversation, me, compatUnlock] = await Promise.all([
+    const [blocked, user, like, conversation, me, compatUnlock] = await Promise.all([
+      isBlockedEitherWay(payload.userId, targetId),
       prisma.user.findUnique({
         where: { id: targetId, profileComplete: true },
         select: {
@@ -75,7 +72,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     ])
 
-    if (!user) return NextResponse.json({ error: "user not found" }, { status: 404 })
+    if (blocked || !user) return NextResponse.json({ error: "user not found" }, { status: 404 })
 
     // sajuResult는 본인 리포트라 타인에게 원본 그대로 내려주지 않고, 궁합 섹션 계산에만 사용한다.
     const { sajuResult: candidateSajuResult, ...publicUser } = user

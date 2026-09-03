@@ -115,6 +115,66 @@ function AxisBar({
   )
 }
 
+function CompatScoreCard({
+  compat,
+  myPhoto,
+  candidatePhoto,
+}: {
+  compat: CompatibilitySectionViewModel
+  myPhoto: string | null
+  candidatePhoto: string | null
+}) {
+  return (
+    <div className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-3 items-center w-full">
+      <div className="flex flex-col gap-0.5 items-center">
+        <div className="flex gap-2 items-center justify-center">
+          <Avatar src={myPhoto} size={100} />
+          <img src="/icons/compat-link.svg" alt="" className="w-[42px] h-[42px] shrink-0" />
+          <Avatar src={candidatePhoto} size={100} />
+        </div>
+        <p className="text-[22px] font-bold text-[#1f1f1f] tracking-[-0.44px] whitespace-nowrap">{compat.score}점</p>
+      </div>
+      <div className="flex flex-wrap gap-2 items-start justify-center w-full">
+        {compat.chips.map(chip => (
+          <span
+            key={chip.slot}
+            className="h-6 flex items-center px-2 py-[3px] rounded-[4px] bg-[#cbdeff] text-[12px] font-medium text-[#1f1f1f] whitespace-nowrap"
+          >
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CompatDetails({
+  compat,
+  myPhoto,
+  candidatePhoto,
+}: {
+  compat: CompatibilitySectionViewModel
+  myPhoto: string | null
+  candidatePhoto: string | null
+}) {
+  return (
+    <>
+      <div className="bg-[#eaf2fe] rounded-[4px] p-4 w-full">
+        <p className="text-[15px] font-normal leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">
+          {compat.interpretation.sentence1}. {compat.interpretation.sentence2}. {compat.interpretation.sentence3}.
+        </p>
+      </div>
+
+      <div className="bg-white border border-[#dfdfdf] rounded-[4px] p-4 flex flex-col gap-4 items-start w-full">
+        <p className="text-[15px] font-semibold leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">기질 비교</p>
+        {compat.axes.map(axis => (
+          <AxisBar key={axis.axisKey} axis={axis} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
+        ))}
+      </div>
+    </>
+  )
+}
+
 function CompatSection({
   compat,
   myPhoto,
@@ -128,45 +188,15 @@ function CompatSection({
     <div className="flex flex-col gap-3 items-start w-full">
       <p className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px] w-full">나와의 궁합</p>
       <div className="flex flex-col gap-3 items-center w-full">
-        <div className="bg-[#f7f7f8] rounded-[4px] p-4 flex flex-col gap-3 items-center w-full">
-          <div className="flex flex-col gap-0.5 items-center">
-            <div className="flex gap-2 items-center justify-center">
-              <Avatar src={myPhoto} size={100} />
-              <img src="/icons/compat-link.svg" alt="" className="w-[42px] h-[42px] shrink-0" />
-              <Avatar src={candidatePhoto} size={100} />
-            </div>
-            <p className="text-[22px] font-bold text-[#1f1f1f] tracking-[-0.44px] whitespace-nowrap">{compat.score}점</p>
-          </div>
-          <div className="flex flex-wrap gap-2 items-start justify-center w-full">
-            {compat.chips.map(chip => (
-              <span
-                key={chip.slot}
-                className="h-6 flex items-center px-2 py-[3px] rounded-[4px] bg-[#cbdeff] text-[12px] font-medium text-[#1f1f1f] whitespace-nowrap"
-              >
-                {chip.label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-[#eaf2fe] rounded-[4px] p-4 w-full">
-          <p className="text-[15px] font-normal leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">
-            {compat.interpretation.sentence1}. {compat.interpretation.sentence2}. {compat.interpretation.sentence3}.
-          </p>
-        </div>
-
-        <div className="bg-white border border-[#dfdfdf] rounded-[4px] p-4 flex flex-col gap-4 items-start w-full">
-          <p className="text-[15px] font-semibold leading-[1.5] text-[#1f1f1f] tracking-[-0.3px] w-full">기질 비교</p>
-          {compat.axes.map(axis => (
-            <AxisBar key={axis.axisKey} axis={axis} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
-          ))}
-        </div>
+        <CompatScoreCard compat={compat} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
+        <CompatDetails compat={compat} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
       </div>
     </div>
   )
 }
 
-// 호감 탭에서 넘어온 상세페이지는 궁합을 블러 처리하고, 별 1개를 내야 볼 수 있다.
+// 호감 탭에서 넘어온 상세페이지는 사진/점수 카드만 블러 처리해서 보여주고, 해석 문장·기질
+// 비교는 별 1개를 내기 전에는 렌더링하지 않는다(잠금 해제 후에야 CompatSection 전체를 보여줌).
 function LockedCompatSection({
   compat,
   myPhoto,
@@ -181,22 +211,24 @@ function LockedCompatSection({
   onUnlock: () => void
 }) {
   return (
-    <div className="relative w-full">
-      <div className="pointer-events-none select-none blur-md">
-        <CompatSection compat={compat} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <button
-          type="button"
-          disabled={unlocking}
-          onClick={onUnlock}
-          className="flex items-center gap-1.5 h-[44px] px-5 bg-[#1f1f1f] rounded-full text-white shadow-[0_4px_12px_rgba(0,0,0,0.25)] active:opacity-80 disabled:opacity-60"
-        >
-          <StarIcon size={18} color="#FFA100" />
-          <span className="text-[15px] font-semibold tracking-[-0.3px] whitespace-nowrap">
-            별 {COMPAT_UNLOCK_COST}개로 궁합 보기
-          </span>
-        </button>
+    <div className="flex flex-col gap-3 items-start w-full">
+      <p className="text-[17px] font-semibold text-[#1f1f1f] tracking-[-0.34px] w-full">나와의 궁합</p>
+      <div className="relative w-full rounded-[4px] overflow-hidden">
+        <CompatScoreCard compat={compat} myPhoto={myPhoto} candidatePhoto={candidatePhoto} />
+        <div className="absolute inset-0 backdrop-blur-[15px] bg-[rgba(223,223,223,0.52)]" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-[14px] font-semibold leading-[1.5] text-[#1f1f1f] tracking-[-0.14px] text-center whitespace-pre-line">
+            {"나에게 호감을 보낸 이유가 궁금하지 않나요?\n나와의 궁합을 확인해보세요."}
+          </p>
+          <button
+            type="button"
+            disabled={unlocking}
+            onClick={onUnlock}
+            className="h-[42px] w-[200px] px-5 rounded-[4px] bg-white border border-[#b6d0ff] text-[14px] font-semibold text-[#1a75ff] tracking-[-0.14px] active:opacity-70 disabled:opacity-60"
+          >
+            별 {COMPAT_UNLOCK_COST}개로 확인하기
+          </button>
+        </div>
       </div>
     </div>
   )

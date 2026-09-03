@@ -80,6 +80,16 @@ model User {
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  // 매칭 풀 조회(lib/pool/hardFilter.ts)가 gender+profileComplete(+location startsWith)로
+  // 매번 필터링하는데 인덱스가 없어 풀 테이블 스캔이 나던 것을 방지.
+  @@index([gender, profileComplete, location])
+}
+
+// 실제 유저와 섞인 더미(시드) 유저의 User.id 마커 — User row 자체와는 별도 테이블로 표시만 한다.
+model DummyUser {
+  userId    Int      @id
+  createdAt DateTime @default(now())
 }
 
 // 탈퇴 회원 재가입 제한 — 탈퇴일로부터 30일간 동일 번호 재가입 불가
