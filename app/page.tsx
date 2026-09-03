@@ -264,8 +264,11 @@ export default function HomePage() {
   const queryClient = useQueryClient();
   const meQuery = useMe();
   const user = meQuery.data ?? null;
-  // 프로필 완성 전에는 추천 API가 의미 없으니 그때까지는 쿼리 자체를 실행하지 않는다.
-  const discoverQuery = useDiscover({ enabled: !!user?.profileComplete });
+  // me 쿼리 완료를 기다리지 않고 마운트 시점에 바로 쏜다 — /api/users/discover는 토큰만 있으면
+  // 동작하고(profileComplete는 서버에서 체크 안 함), 프로필 미완성 유저는 아래 리다이렉트 effect가
+  // 곧바로 랜딩으로 보내므로 먼저 요청해도 무해하다. me 완료를 기다리면 요청 두 개가 순차(워터폴)로
+  // 걸려 첫 로딩이 눈에 띄게 느려졌었다.
+  const discoverQuery = useDiscover();
   const moreIntroMutation = useMoreIntroMutation();
   const recos = discoverQuery.data?.users ?? [];
   const noNewToday = discoverQuery.data?.noNewToday ?? false;
