@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Linking, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -22,7 +22,6 @@ type Props = {
 export default function OnboardingWebViewScreen({ navigation, route }: Props) {
   const { url } = route.params;
   const webViewRef = useRef<WebView>(null);
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -147,9 +146,7 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
         ref={webViewRef}
         source={{ uri: url }}
         style={styles.webview}
-        onLoadStart={() => setLoading(true)}
         onLoadEnd={() => {
-          setLoading(false);
           // 페이지가 새로 로드될 때마다 로그인 토큰을 네이티브에 미러링해둔다
           // (다음 콜드 스타트 때 온보딩을 건너뛰고 Home으로 바로 갈 수 있도록).
           webViewRef.current?.injectJavaScript(`
@@ -168,11 +165,6 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
         allowsBackForwardNavigationGestures={false}
         automaticallyAdjustContentInsets={false}
       />
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#aecbff" />
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -180,10 +172,4 @@ export default function OnboardingWebViewScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1 },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
 });

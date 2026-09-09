@@ -13,12 +13,12 @@ import StarInfoModal from "@/components/ui/star-info-modal";
 import IntroBanner from "@/components/ui/intro-banner";
 import { useBioIncomplete } from "@/lib/useBioIncomplete";
 import { useMe, type MeUser } from "@/lib/queries/useMe";
-import FilterIcon from "@/public/icons/filter.svg"
-import LoveLuckIcon from "@/public/icons/loveluck.svg"
-import ProfileCardIcon from "@/public/icons/profileCard.svg"
-import ProhibitionIcon from "@/public/icons/prohibition.svg"
-import SettingIcon from "@/public/icons/setting.svg"
-import KakaoIcon from "@/public/icons/kakao.svg"
+import FilterIcon from "@/public/icons/filter.svg";
+import LoveLuckIcon from "@/public/icons/loveluck.svg";
+import ProfileCardIcon from "@/public/icons/profileCard.svg";
+import ProhibitionIcon from "@/public/icons/prohibition.svg";
+import SettingIcon from "@/public/icons/setting.svg";
+import KakaoIcon from "@/public/icons/kakao.svg";
 import Image from "next/image";
 
 // 문의하기 → 카카오톡 비즈니스 채널 1:1 채팅
@@ -117,7 +117,10 @@ export default function MyPage() {
           {displayName}
         </span>
         {/* TODO(심사 완료 후 제거): onClick을 다시 () => router.push("/my/store")로 되돌릴 것 */}
-        <StarChip stars={user?.stars ?? 0} onClick={() => setShowStarInfo(true)} />
+        <StarChip
+          stars={user?.stars ?? 0}
+          onClick={() => setShowStarInfo(true)}
+        />
       </div>
 
       <div
@@ -144,11 +147,13 @@ export default function MyPage() {
               onClick={() => router.push("/my/edit")}
               className="h-[36px] px-4 bg-[#e9f1ff] rounded-[4px] text-[13px] font-medium text-[#1a75ff] active:opacity-80"
             >
-              프로필 수정
+              프로필 편집
             </button>
           </div>
 
-          {user && bioIncomplete && <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />}
+          {user && bioIncomplete && (
+            <IntroBanner onClick={() => router.push("/my/edit/bio/0")} />
+          )}
         </div>
 
         {/* 리스트 */}
@@ -165,21 +170,36 @@ export default function MyPage() {
             label="내 연애운 리포트"
             onClick={() => router.push("/my/report")}
             icon={
-              <Image src={LoveLuckIcon} alt="love luck" width={20} height={20} />
+              <Image
+                src={LoveLuckIcon}
+                alt="love luck"
+                width={20}
+                height={20}
+              />
             }
           />
           <ListCell
             label="내 프로필 확인하기"
             onClick={() => router.push("/my/profile-preview")}
             icon={
-              <Image src={ProfileCardIcon} alt="profile card" width={20} height={20} />
+              <Image
+                src={ProfileCardIcon}
+                alt="profile card"
+                width={20}
+                height={20}
+              />
             }
           />
           <ListCell
             label="지인 차단"
             onClick={() => router.push("/my/blocking")}
             icon={
-              <Image src={ProhibitionIcon} alt="prohibition" width={20} height={20} />
+              <Image
+                src={ProhibitionIcon}
+                alt="prohibition"
+                width={20}
+                height={20}
+              />
             }
           />
           <ListCell
@@ -194,9 +214,7 @@ export default function MyPage() {
             onClick={() => {
               window.location.href = KAKAO_CHANNEL_CHAT_URL;
             }}
-            icon={
-              <Image src={KakaoIcon} alt="kakao" width={20} height={20} />
-            }
+            icon={<Image src={KakaoIcon} alt="kakao" width={20} height={20} />}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Linking, Platform, StyleSheet, View } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { BackHandler, Linking, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,7 +35,6 @@ export default function TabWebViewScreen({ tabKey, path }: { tabKey: TabKey; pat
   const isFocused = useIsFocused();
   const { webViewRefs, setProfilePhotoUrl, pushRegisteredRef } = useHomeTabsContext();
   const webViewRef = useRef<WebView | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -177,7 +176,6 @@ export default function TabWebViewScreen({ tabKey, path }: { tabKey: TabKey; pat
   }
 
   function handleLoadEnd() {
-    setLoading(false);
     webViewRef.current?.injectJavaScript(`
       (function() {
         var token = localStorage.getItem('auth_token');
@@ -225,7 +223,6 @@ export default function TabWebViewScreen({ tabKey, path }: { tabKey: TabKey; pat
         }}
         source={{ uri: buildUrl(path) }}
         style={styles.webview}
-        onLoadStart={() => setLoading(true)}
         onLoadEnd={handleLoadEnd}
         onMessage={handleMessage}
         onNavigationStateChange={handleNavStateChange}
@@ -235,11 +232,6 @@ export default function TabWebViewScreen({ tabKey, path }: { tabKey: TabKey; pat
         allowsBackForwardNavigationGestures={isFocused}
         startInLoadingState={false}
       />
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#aecbff" />
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -247,10 +239,4 @@ export default function TabWebViewScreen({ tabKey, path }: { tabKey: TabKey; pat
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1 },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
 });
